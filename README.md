@@ -1,2 +1,3 @@
 # EYoung21.github.io
-Welcome to my CS portfolio! Explore my education, work, projects, activities, and skills. Contact: eyoung4@swarthmore.edu.
+Eli Young - Computer Science Portfolio
+Welcome to my computer science portfolio! This repository provides an overview of my educational background, professional experience, projects, activities, and skills in computer science. It includes details about my academic journey, roles in various professional positions, projects I've worked on, involvement in clubs and activities, and a list of technical skills. For inquiries or collaboration opportunities, contact me at eyoung4@swarthmore.edu.
