@@ -45,6 +45,6 @@ footer {
     padding: 10px 0;
 }
 
-img {
-    transform: scale(0.5); /* 50% of its original size */
+imgs {
+    width: 50%; /* Make the image width 50% of its original size */
 }
