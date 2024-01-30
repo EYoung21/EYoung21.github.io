@@ -6,7 +6,7 @@ body {
 }
 
 header {
-    background-color: #228B22;
+    background-color: #006400;
     color: #fff;
     padding: 20px;
 }
@@ -39,7 +39,7 @@ section {
 }
 
 footer {
-    background-color: #228B22; /* Forest green */
+    background-color: #006400; /* Forest green */
     color: #fff;
     text-align: center;
     padding: 10px 0;
