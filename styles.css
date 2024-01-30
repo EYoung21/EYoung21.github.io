@@ -48,3 +48,10 @@ footer {
 .imgContainer{
     float:left;
 }
+
+div {
+  /* This is the default, you don't need to
+     explicitly declare it unless overriding
+     another declaration */
+  white-space: normal; 
+}
