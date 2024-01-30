@@ -44,3 +44,7 @@ footer {
     text-align: center;
     padding: 10px 0;
 }
+
+img {
+    transform: scale(0.5); /* 50% of its original size */
+}
