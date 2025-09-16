@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eli Young - Computer Science Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
+    
+    <!-- Back to Landing -->
+    <a href="index.html" class="back-to-landing" aria-label="Back to landing page">
+        <i class="fas fa-home"></i>
+        <span>Landing</span>
+    </a>
+
+    <!-- 3D Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+        <header>
+        <div class="container">
+            <div class="logo-container">
+                <h1 class="logo">Eli Young</h1>
+                <p class="tagline">Computer Science & Innovation</p>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#about" data-section="about">About</a></li>
+                    <li class="dropdown">
+                        <a href="#experience" data-section="experience">Experience <i class="fas fa-chevron-down"></i></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#research">Research</a></li>
+                            <li><a href="#internships">Internships</a></li>
+                            <li><a href="#mentoring">Mentoring</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#projects" data-section="projects">Projects <i class="fas fa-chevron-down"></i></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#games">Game Development</a></li>
+                            <li><a href="#ml-projects">Machine Learning</a></li>
+                            <li><a href="#web-projects">Web Development</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#activities" data-section="activities">Activities</a></li>
+                    <li><a href="#skills" data-section="skills">Skills</a></li>
+                    <li><a href="#contact" data-section="contact">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="typing-text">Hello, I'm Eli Young</span>
+                    </h1>
+                    <p class="hero-subtitle">Computer Science Student • Game Developer • ML Researcher</p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="15">0</span>
+                            <span class="stat-label">Projects</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="8">0</span>
+                            <span class="stat-label">Experiences</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" data-target="12">0</span>
+                            <span class="stat-label">Technologies</span>
+                        </div>
+                    </div>
+                    <div class="hero-cta">
+                        <a href="#projects" class="cta-button primary">View Projects</a>
+                        <a href="#contact" class="cta-button secondary">Get in Touch</a>
+                </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="floating-card">
+                        <div class="code-snippet">
+                            <div class="code-header">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                                <span class="filename">eli_young.py</span>
+                            </div>
+                            <div class="code-content">
+                                <span class="keyword">class</span> <span class="class-name">EliYoung</span>:<br>
+                                &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(<span class="keyword">self</span>):<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">self</span>.skills = [<span class="string">"Python"</span>, <span class="string">"C++"</span>, <span class="string">"Unity"</span>]<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">self</span>.passion = <span class="string">"Innovation"</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">self</span>.location = <span class="string">"Signal Mountain, TN"</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="section-header">
+                <h2 class="section-title">About Me</h2>
+                <p class="section-subtitle">From Nashville to Signal Mountain, passionate about technology and innovation</p>
+            </div>
+            
+            <div class="about-content">
+                <div class="about-text">
+                    <div class="about-card animate-on-scroll">
+                        <div class="card-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Computer Science Enthusiast</h3>
+                        <p>Passionate about website development, mobile and web app development, and honing my data structure and algorithmic knowledge. Currently studying at Swarthmore College with a focus on CS and Mathematics.</p>
+                    </div>
+                    
+                    <div class="about-card animate-on-scroll">
+                        <div class="card-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Journey Across America</h3>
+                        <p>Born in Nashville, TN, grew up in San Diego, California, and relocated back to Signal Mountain, TN during the pandemic. Studied abroad in Copenhagen, Denmark in 2025.</p>
+                    </div>
+                    
+                    <div class="about-card animate-on-scroll">
+                        <div class="card-icon">
+                            <i class="fas fa-basketball-ball"></i>
+                        </div>
+                        <h3>Beyond Code</h3>
+                        <p>When I'm not coding, you'll find me on the basketball court, playing Magic: The Gathering, or helping seniors navigate technology through my Savvy Seniors Tech Institute.</p>
+                    </div>
+                </div>
+                
+                <div class="about-gallery">
+                    <div class="gallery-container">
+                        <div class="image-card animate-on-scroll" data-delay="0.1">
+                            <img src="imgs/IMG_5586.jpeg" alt="Eli at Brookgreen Gardens" />
+                            <div class="image-overlay">
+                                <h4>Brookgreen Gardens</h4>
+                                <p>Exploring South Carolina's beautiful botanical gardens</p>
+                            </div>
+                        </div>
+                        
+                        <div class="image-card animate-on-scroll" data-delay="0.2">
+                            <img src="imgs/Snapchat-988918029.jpeg" alt="Signal Mountain, TN" />
+                            <div class="image-overlay">
+                                <h4>Signal Mountain</h4>
+                                <p>Home sweet home in Tennessee</p>
+                            </div>
+                        </div>
+                        
+                        <div class="image-card animate-on-scroll" data-delay="0.3">
+                            <img src="imgs/IMG_2173.jpeg" alt="NYC Basketball" />
+                            <div class="image-overlay">
+                                <h4>NYC Central Park</h4>
+                                <p>Pickup basketball game in the heart of Manhattan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Experience Section -->
+        <section id="experience" class="experience-section">
+            <div class="section-header">
+                <h2 class="section-title">Experience</h2>
+                <p class="section-subtitle">Professional journey from research to industry</p>
+            </div>
+            
+            <div class="experience-timeline">
+                <!-- Research Experience -->
+                <div id="research" class="experience-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-microscope"></i>
+                        Research & Academia
+                    </h3>
+                    
+                    <div class="experience-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="company-logo">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <div class="job-info">
+                                <h4>Applied Machine Learning Researcher</h4>
+                                <p class="company">USDA Agricultural Research Service & Swarthmore College</p>
+                                <span class="duration">Sept 2025 - Present</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-stack">
+                                <span class="tech-tag">Semi-Supervised Learning</span>
+                                <span class="tech-tag">Time-Series ML</span>
+                                <span class="tech-tag">Signal Processing</span>
+                            </div>
+                            <ul class="achievements">
+                                <li>Designing semi-supervised and time-series ML models to classify electropenetrograph (EPG) insect-feeding signals</li>
+                                <li>Reducing costly manual annotation through automated signal classification</li>
+                                <li>Collaborating with USDA ARS and entomologists on open-source EPG analysis toolkit for agricultural pest management</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="experience-card animate-on-scroll" data-delay="0.2">
+                        <div class="card-header">
+                            <div class="company-logo">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="job-info">
+                                <h4>Research Assistant - REU Fellowship</h4>
+                                <p class="company">Center for Digital Agriculture, UIUC</p>
+                                <span class="duration">May 2025 - Aug 2025</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-stack">
+                                <span class="tech-tag">Machine Learning</span>
+                                <span class="tech-tag">Computer Vision</span>
+                                <span class="tech-tag">Hyperspectral Imaging</span>
+                            </div>
+                            <ul class="achievements">
+                                <li>Developed ML on 690 eggs' VNIR spectroscopy (374-1015 nm) for prediction of chick gender and mortality through transformers, meta-learning, and gradient boosting</li>
+                                <li>Conducted PCA of embryo developmental pathways with PC1 capturing 76.7% variance, identifying wavelengths (~390nm, ~630nm) for biological classification</li>
+                                <li>Achieved 98.8% mortality, 59.5% sex classification accuracy, with 100% accuracy on confident predictions, proving commercial viability</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Industry Experience -->
+                <div id="internships" class="experience-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-building"></i>
+                        Industry & Internships
+                    </h3>
+                    
+                    <div class="experience-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="company-logo">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="job-info">
+                                <h4>Software Engineering Intern</h4>
+                                <p class="company">Update International Inc.</p>
+                                <span class="duration">May 2025 - July 2025</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-stack">
+                                <span class="tech-tag">C++</span>
+                                <span class="tech-tag">Windows Wi-Fi Direct</span>
+                                <span class="tech-tag">JSON</span>
+                                <span class="tech-tag">Threading</span>
+                            </div>
+                            <ul class="achievements">
+                                <li>Fixed undetected connections in Windows Wi-Fi Direct vibration analysis with C++ JSON persistence and 2s ping-based check</li>
+                                <li>Eliminated thread race conditions and deadlocks, stabilizing flaky Wi-Fi adapter behavior</li>
+                                <li>Delivered a crash-free production build for industrial vibration monitoring systems</li>
+            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="experience-card animate-on-scroll" data-delay="0.2">
+                        <div class="card-header">
+                            <div class="company-logo">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                            <div class="job-info">
+                                <h4>Software Engineering Intern</h4>
+                                <p class="company">Torchman IP LLC</p>
+                                <span class="duration">Sept 2024 - Apr 2025</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-stack">
+                                <span class="tech-tag">Python</span>
+                                <span class="tech-tag">OCR</span>
+                                <span class="tech-tag">OpenAI API</span>
+                                <span class="tech-tag">Selenium</span>
+                            </div>
+                            <ul class="achievements">
+                                <li>Automated USPTO office action processing for legal teams</li>
+                                <li>Integrated OCR, Regex, and AI for patent data extraction</li>
+                                <li>Built automated response template generation system</li>
+            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mentoring & Teaching -->
+                <div id="mentoring" class="experience-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        Mentoring & Teaching
+                    </h3>
+                    
+                    <div class="experience-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="company-logo">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <div class="job-info">
+                                <h4>Founder</h4>
+                                <p class="company">Savvy Seniors Tech Institute</p>
+                                <span class="duration">June 2023 - Present</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-stack">
+                                <span class="tech-tag">Tech Literacy</span>
+                                <span class="tech-tag">Teaching</span>
+                                <span class="tech-tag">Community Service</span>
+                            </div>
+                            <ul class="achievements">
+                                <li>Founded tech literacy business serving 1,000+ seniors</li>
+                                <li>Hired by Ascension Living's Alexian Village for weekly sessions</li>
+                                <li>Teaching Windows, macOS, social media, and productivity software</li>
+            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="projects-section">
+            <div class="section-header">
+                <h2 class="section-title">Projects</h2>
+                <p class="section-subtitle">From game development to machine learning research</p>
+            </div>
+            
+            <!-- Featured Project: Free Throw vs Fatigue (Basketball Theme) -->
+            <div class="featured-project basketball-court">
+                <div class="court-background">
+                    <div class="court-lines"></div>
+                    <div class="three-point-line"></div>
+                    <div class="free-throw-line"></div>
+                    <div class="basketball-hoop">
+                        <div class="rim"></div>
+                        <div class="net"></div>
+                    </div>
+                </div>
+                
+                <div class="project-content">
+                    <div class="project-header">
+                        <div class="project-icon">
+                            <i class="fas fa-basketball-ball"></i>
+                        </div>
+                        <div class="project-info">
+                            <h3>Free Throw vs. Fatigue</h3>
+                            <p class="project-tagline">NBA Analytics • Machine Learning • Sports Science</p>
+                            <a href="https://github.com/EYoung21/FreeThrowVSFatigue" class="github-link">
+                                <i class="fab fa-github"></i> View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="project-stats">
+                        <div class="stat-box">
+                            <span class="stat-number" data-target="24">24</span>
+                            <span class="stat-label">Seasons (1997-2024)</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number stat-text">30+</span>
+                            <span class="stat-label">NBA Teams</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number stat-text">0-56</span>
+                            <span class="stat-label">Minutes Range</span>
+                        </div>
+                    </div>
+                    
+                    <div class="project-description">
+                        <p>Comprehensive statistical analysis tracking how consecutive minutes played affects NBA free throw accuracy. Collaborated with a team of four Swarthmore undergraduates to combine play-by-play parsing, season totals, and reproducible visualizations at season, group, and player levels across nearly three decades of NBA data.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">NBA API</span>
+                            <span class="tech-tag">Basketball Reference</span>
+                            <span class="tech-tag">Pandas</span>
+                            <span class="tech-tag">NumPy</span>
+                            <span class="tech-tag">SciPy</span>
+                            <span class="tech-tag">Matplotlib</span>
+                        </div>
+                        
+                        <div class="project-features">
+                            <div class="feature">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Consecutive minutes tracking with first continuous stint analysis</span>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-robot"></i>
+                                <span>Rate-limited web scraping with retry logic and error handling</span>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Regression analysis comparing FT% by minute vs baseline averages</span>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-database"></i>
+                                <span>Multi-year data aggregation with season/career baseline comparisons</span>
+                            </div>
+                            <div class="feature">
+                                <i class="fas fa-file-alt"></i>
+                                <span>STAT 011 final project with comprehensive statistical methodology</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Development Projects -->
+            <div id="games" class="project-category">
+                <h3 class="category-title">
+                    <i class="fas fa-gamepad"></i>
+                    Game Development
+                </h3>
+                
+                <div class="projects-grid">
+                    <div class="project-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>Cave Climber</h4>
+                                <span class="project-date">Apr 2025 - May 2025</span>
+                                <a href="https://github.com/EYoung21/CaveClimber" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Vertical platforming game with dynamic platform generation and adaptive difficulty scaling.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Godot</span>
+                                <span class="tech-tag">GDScript</span>
+                                <span class="tech-tag">Game Design</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Dynamic platform generation system</li>
+                                <li>Adaptive enemy AI and spawn rates</li>
+                                <li>Extensive power-up mechanics</li>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card animate-on-scroll" data-delay="0.2">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-chess-rook"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>A Star Defense</h4>
+                                <span class="project-date">Feb 2025 - Mar 2025</span>
+                                <a href="https://github.com/EYoung21/AStarDefense" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Unity tower defense game featuring A* pathfinding and strategic turret placement.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Unity</span>
+                                <span class="tech-tag">C#</span>
+                                <span class="tech-tag">A* Algorithm</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Real-time A* pathfinding implementation</li>
+                                <li>Multi-tier turret upgrade system</li>
+                                <li>Wave-based difficulty progression</li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Machine Learning Projects -->
+            <div id="ml-projects" class="project-category">
+                <h3 class="category-title">
+                    <i class="fas fa-brain"></i>
+                    Machine Learning & AI
+                </h3>
+                
+                <div class="projects-grid">
+                    <div class="project-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-pig"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>Precise Swine & Dine</h4>
+                                <span class="project-date">Jun 2025</span>
+                                <a href="https://github.com/EYoung21/AutomaticWeightEstimationAndFeeding" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>🏆 Hackathon Winner: Automated pig weight estimation and feeding control system using computer vision.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">YOLO</span>
+                                <span class="tech-tag">Computer Vision</span>
+                                <span class="tech-tag">Neural Networks</span>
+                                <span class="tech-tag">Random Forest</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>YOLO detection with <5kg MAE weight estimation</li>
+                                <li>Trained on 9,579 weight-labeled RGB images</li>
+                                <li>Won Livestock Monitoring Track at AI Foundry for Ag Applications Hackathon</li>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card animate-on-scroll" data-delay="0.2">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>PredictaCare</h4>
+                                <span class="project-date">Apr 2024 - Jun 2024</span>
+                                <a href="https://github.com/EYoung21/Predictacare" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>ML model optimizing medical scheduling through appointment duration predictions.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Python</span>
+                                <span class="tech-tag">SkLearn</span>
+                                <span class="tech-tag">Docker</span>
+                                <span class="tech-tag">Flask</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Linear regression on patient demographics and appointment types</li>
+                                <li>Dockerized deployment with Node/Express server and HTML/JS frontend</li>
+                                <li>Showcased at Drexel's 11th annual Philly Codefest among 30+ teams</li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Web Development Projects -->
+            <div id="web-projects" class="project-category">
+                <h3 class="category-title">
+                    <i class="fas fa-code"></i>
+                    Web Development
+                </h3>
+                
+                <div class="projects-grid">
+                    <div class="project-card animate-on-scroll" data-delay="0.1">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>Swat Swap</h4>
+                                <span class="project-date">Jan 2024 - Present</span>
+                                <a href="https://github.com/swat-sccs/swat-swap" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Swarthmore-specific marketplace with advanced search and secure messaging.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Next.js</span>
+                                <span class="tech-tag">TypeScript</span>
+                                <span class="tech-tag">PostgreSQL</span>
+                                <span class="tech-tag">Prisma</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Full-stack marketplace development</li>
+                                <li>Secure messaging with MinIO storage</li>
+                                <li>Advanced search and user profiles</li>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card animate-on-scroll" data-delay="0.2">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>Lock In</h4>
+                                <span class="project-date">May 2024 - Present</span>
+                                <a href="https://github.com/EYoung21/Lock-In" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Cross-platform productivity app with distraction blocking and cloud sync.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">JavaScript</span>
+                                <span class="tech-tag">TypeScript</span>
+                                <span class="tech-tag">Firebase</span>
+                                <span class="tech-tag">Kotlin</span>
+                                <span class="tech-tag">Swift</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Stopwatch productivity app that limits distractions and provides incentives</li>
+                                <li>Firebase cloud synchronization across devices</li>
+                                <li>Kotlin foreground services and Swift Screen Time APIs for app monitoring</li>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card animate-on-scroll" data-delay="0.3">
+                        <div class="card-header">
+                            <div class="project-thumbnail">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="project-meta">
+                                <h4>Hoop Hunter</h4>
+                                <span class="project-date">Spring 2024</span>
+                                <a href="https://github.com/EYoung21/Hoop-Hunter" class="project-link">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Cross-platform app for finding basketball courts using Google Maps integration.</p>
+                            <div class="tech-stack">
+                                <span class="tech-tag">Flutter</span>
+                                <span class="tech-tag">Dart</span>
+                                <span class="tech-tag">Google Maps API</span>
+                            </div>
+                            <div class="project-highlights">
+                                <li>Google Maps API integration for court discovery</li>
+                                <li>Cross-platform Flutter development</li>
+                                <li>Location-based basketball court information system</li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section with WebGL Visualization -->
+        <section id="skills" class="skills-section">
+            <div class="section-header">
+                <h2 class="section-title">Skills & Technologies</h2>
+                <p class="section-subtitle">Technical expertise across multiple domains</p>
+            </div>
+            
+            <div class="skills-container">
+                <div class="skills-visualization">
+                    <canvas id="skills-canvas"></canvas>
+                </div>
+                
+                <div class="skills-grid">
+                    <div class="skill-category animate-on-scroll" data-delay="0.1">
+                        <div class="category-header">
+                            <i class="fas fa-code"></i>
+                            <h3>Programming Languages</h3>
+                        </div>
+                        <div class="skill-tags">
+                            <span class="skill-tag expert">Python</span>
+                            <span class="skill-tag expert">C++</span>
+                            <span class="skill-tag advanced">JavaScript</span>
+                            <span class="skill-tag advanced">TypeScript</span>
+                            <span class="skill-tag advanced">Java</span>
+                            <span class="skill-tag intermediate">C</span>
+                            <span class="skill-tag intermediate">C#</span>
+                            <span class="skill-tag intermediate">SQL</span>
+                            <span class="skill-tag intermediate">R</span>
+                            <span class="skill-tag beginner">Dart</span>
+                            <span class="skill-tag beginner">Swift</span>
+                            <span class="skill-tag beginner">GDScript</span>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-category animate-on-scroll" data-delay="0.2">
+                        <div class="category-header">
+                            <i class="fas fa-laptop-code"></i>
+                            <h3>Frameworks & Technologies</h3>
+                        </div>
+                        <div class="skill-tags">
+                            <span class="skill-tag expert">React</span>
+                            <span class="skill-tag expert">Unity</span>
+                            <span class="skill-tag advanced">Next.js</span>
+                            <span class="skill-tag advanced">Flask</span>
+                            <span class="skill-tag advanced">Node.js</span>
+                            <span class="skill-tag advanced">Git</span>
+                            <span class="skill-tag intermediate">Flutter</span>
+                            <span class="skill-tag intermediate">Docker</span>
+                            <span class="skill-tag intermediate">Firebase</span>
+                            <span class="skill-tag intermediate">Selenium</span>
+                            <span class="skill-tag intermediate">Tesseract</span>
+                            <span class="skill-tag beginner">AWS</span>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-category animate-on-scroll" data-delay="0.3">
+                        <div class="category-header">
+                            <i class="fas fa-brain"></i>
+                            <h3>Machine Learning & AI</h3>
+                        </div>
+                        <div class="skill-tags">
+                            <span class="skill-tag expert">PyTorch</span>
+                            <span class="skill-tag advanced">TensorFlow</span>
+                            <span class="skill-tag advanced">SkLearn</span>
+                            <span class="skill-tag intermediate">Computer Vision</span>
+                            <span class="skill-tag intermediate">NLP</span>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-category animate-on-scroll" data-delay="0.4">
+                        <div class="category-header">
+                            <i class="fas fa-gamepad"></i>
+                            <h3>Game Development</h3>
+                        </div>
+                        <div class="skill-tags">
+                            <span class="skill-tag expert">Godot</span>
+                            <span class="skill-tag advanced">Unity</span>
+                            <span class="skill-tag intermediate">Game Design</span>
+                            <span class="skill-tag intermediate">3D Modeling</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activities Section -->
+        <section id="activities" class="activities-section">
+            <div class="section-header">
+                <h2 class="section-title">Activities & Leadership</h2>
+                <p class="section-subtitle">Building communities and competitive excellence</p>
+            </div>
+            
+            <div class="activities-grid">
+                <div class="activity-card animate-on-scroll" data-delay="0.1">
+                    <div class="activity-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h3>ICPC Programming Contest</h3>
+                        <p class="activity-role">Team Member</p>
+                        <p class="activity-duration">Sept 2024 - Present</p>
+                        <p>Placed 5th at ICPC's 2024 NA South Division 2 competition, solving complex algorithmic problems under pressure.</p>
+                        <div class="activity-tags">
+                            <span class="activity-tag">Algorithms</span>
+                            <span class="activity-tag">Competitive Programming</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="activity-card animate-on-scroll" data-delay="0.2">
+                    <div class="activity-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h3>Computer Society (SCCS)</h3>
+                        <p class="activity-role">Project Lead</p>
+                        <p class="activity-duration">Feb 2024 - Present</p>
+                        <p>Leading Swat Swap project development and maintaining servers for 60+ members in the CS community.</p>
+                        <div class="activity-tags">
+                            <span class="activity-tag">Leadership</span>
+                            <span class="activity-tag">Software Development</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="activity-card animate-on-scroll" data-delay="0.3">
+                    <div class="activity-icon">
+                        <i class="fas fa-hat-wizard"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h3>Magic: The Gathering Club</h3>
+                        <p class="activity-role">Founder & President</p>
+                        <p class="activity-duration">Dec 2023 - Present</p>
+                        <p>Founded and organized MTG strategy card game club with 30+ active members meeting weekly.</p>
+                        <div class="activity-tags">
+                            <span class="activity-tag">Leadership</span>
+                            <span class="activity-tag">Community Building</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="activity-card animate-on-scroll" data-delay="0.4">
+                    <div class="activity-icon">
+                        <i class="fas fa-frisbee"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h3>Disc Golf Club</h3>
+                        <p class="activity-role">Founder & President</p>
+                        <p class="activity-duration">2022 - Present</p>
+                        <p>Founded and organized disc golf activities for Swarthmore students, promoting outdoor recreation.</p>
+                        <div class="activity-tags">
+                            <span class="activity-tag">Leadership</span>
+                            <span class="activity-tag">Recreation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="section-header">
+                <h2 class="section-title">Get In Touch</h2>
+                <p class="section-subtitle">Let's connect and build something amazing together</p>
+            </div>
+            
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-card animate-on-scroll" data-delay="0.1">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email</h3>
+                            <a href="mailto:eliyoung4now@gmail.com">eliyoung4now@gmail.com</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card animate-on-scroll" data-delay="0.2">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Phone</h3>
+                            <a href="tel:6199302573">+1 (619) 930-2573</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card animate-on-scroll" data-delay="0.3">
+                        <div class="contact-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>LinkedIn</h3>
+                            <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank">linkedin.com/in/eliyoung12</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card animate-on-scroll" data-delay="0.4">
+                        <div class="contact-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>GitHub</h3>
+                            <a href="https://github.com/EYoung21" target="_blank">github.com/EYoung21</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card animate-on-scroll" data-delay="0.5">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Location</h3>
+                            <span>Signal Mountain, TN</span>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-card animate-on-scroll" data-delay="0.6">
+                        <div class="contact-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Resume</h3>
+                            <a href="imgs/Eli Young CV.pdf" download>Download CV</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Chatbot -->
+        <div id="ai-chatbot" class="chatbot-container">
+            <div class="chatbot-toggle" id="chatbot-toggle">
+                <i class="fas fa-robot"></i>
+                <span>Ask about Eli</span>
+            </div>
+            <div class="chatbot-window" id="chatbot-window">
+                <div class="chatbot-header">
+                    <div class="chatbot-title">
+                        <i class="fas fa-robot"></i>
+                        <span>EliBot - Ask me anything!</span>
+                    </div>
+                    <button class="chatbot-close" id="chatbot-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="chatbot-messages" id="chatbot-messages">
+                    <div class="message bot-message">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            Hi! I'm EliBot. I know all about Eli's projects, experiences, and skills. Ask me anything!
+                        </div>
+                    </div>
+                </div>
+                <div class="chatbot-input">
+                    <input type="text" id="chatbot-input" placeholder="Ask about Eli's projects, skills, or experiences...">
+                    <button id="chatbot-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Eli Young</h3>
+                <p>Computer Science Student & Innovation Enthusiast</p>
+                <div class="social-links">
+                    <a href="https://github.com/EYoung21" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    <a href="mailto:eliyoung4now@gmail.com"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Signal Mountain, TN</p>
+                <p><a href="tel:6199302573">+1 (619) 930-2573</a></p>
+                <p><a href="mailto:eliyoung4now@gmail.com">eliyoung4now@gmail.com</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Eli Young. Built with passion and code.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>

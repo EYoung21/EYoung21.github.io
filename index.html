@@ -3,274 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eli Young - Computer Science Portfolio</title>
+    <title>Eli Young - Welcome</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="landing.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-        <header>
-        <div class="container">
-            <h1>Eli Young</h1>
-            <nav>
-                <ul>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                    <li><a href="#education">Education</a></li>
-                    <li><a href="#work-experience">Experience</a></li>
-                    <li><a href="#projects">Projects</a></li>
-                    <li><a href="#activities">Activities</a></li>
-                    <li><a href="#skills">Skills</a></li>
-                    <li><a href="#resume">Resume</a></li>
-                    <li><a href="#linkedin">LinkedIn</a></li>
-                </ul>
+    <!-- Interactive 3D Background -->
+    <canvas id="landing-canvas"></canvas>
+    
+    <!-- Particle System -->
+    <div id="particles"></div>
+    
+    <!-- Main Landing Content -->
+    <div class="landing-container">
+        <!-- Navigation Dots -->
+        <nav class="nav-dots">
+            <div class="dot active" data-section="0"></div>
+            <div class="dot" data-section="1"></div>
+            <div class="dot" data-section="2"></div>
+            <div class="dot" data-section="3"></div>
             </nav>
-        </div>
-    </header>
-    <br>
-    <main>
-        <section id="about">
-            <h2>About Me</h2>
-            <p>Welcome to my personal website! I am passionate about computer science and technology, with a focus on website development, mobile and web app development, and honing my data structure and algorithmic knowledge.</p>
-            <p>I was born in Nashville, TN, but grew up in San Diego, California. Amidst the pandemic, my family relocated back to Signal Mountain, TN!</p>
-            <br>
-            <div class="image123" style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 189px;">
-                <div class="imgContainer" style="text-align: center;">
-                    <img src="imgs/IMG_5586.jpeg" alt="Me!" width="504" height="378" style="padding: 10px;"/>
-                    <p>Here is me at Brookgreen Gardens in South Carolina!</p>
+        
+        <!-- Section 1: Welcome -->
+        <section class="landing-section active" id="section-0">
+            <div class="content-wrapper">
+                <div class="glitch-container">
+                    <h1 class="glitch-text" data-text="ELI YOUNG">ELI YOUNG</h1>
                 </div>
-                <div class="imgContainer" style="text-align: center;">
-                    <img class="middle-img" src="imgs/Snapchat-988918029.jpeg" height="378" width="304.8" style="padding: 10px;"/>
-                    <p>Signal Mountain, TN</p>
+                <div class="subtitle-container">
+                    <p class="animated-subtitle">
+                        <span class="word">Computer</span>
+                        <span class="word">Science</span>
+                        <span class="word">•</span>
+                        <span class="word">Machine</span>
+                        <span class="word">Learning</span>
+                        <span class="word">•</span>
+                        <span class="word">Game</span>
+                        <span class="word">Development</span>
+                    </p>
                 </div>
-                <div class="imgContainer" style="text-align: center;">
-                    <img src="/imgs/IMG_2173.jpeg" height="378" width="493.2" style="padding: 10px;"/>
-                    <p>NYC central park pickup basketball game I played in.</p>
+                <div class="scroll-indicator">
+                    <div class="mouse">
+                        <div class="wheel"></div>
+                    </div>
+                    <p>Scroll to explore</p>
                 </div>
             </div>
         </section>
-        <div style="clear: both;"></div>
-
-        <section id="contact">
-            <h2>Contact Information</h2>
-            <ul>
-                <li><strong>Phone:</strong> <a href="tel:6199302573">+1 (619) 930-2573</a></li>
-                <li><strong>Email:</strong> <a href="mailto:eliyoung4now@gmail.com">eliyoung4now@gmail.com</a></li>
-                <li><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/eliyoung12/">linkedin.com/in/eliyoung12</a></li>
-                <li><strong>GitHub:</strong> <a href="https://github.com/EYoung21">github.com/EYoung21</a></li>
-                <li><strong>Portfolio:</strong> <a href="https://eyoung21.github.io/">eyoung21.github.io</a></li>
-                <li><strong>Location:</strong> Signal Mountain, TN</li>
-            </ul>
+        
+        <!-- Section 2: About Preview -->
+        <section class="landing-section" id="section-1">
+            <div class="content-wrapper">
+                <div class="section-header">
+                    <h2>Innovation Through Code</h2>
+                </div>
+                <div class="preview-grid">
+                    <div class="preview-card" data-category="research">
+                        <div class="card-icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h3>Research</h3>
+                        <p>ML & AI applications in agriculture and data science</p>
+                        <div class="card-stats">
+                            <span>98.8% Accuracy</span>
+                        </div>
+                    </div>
+                    <div class="preview-card" data-category="development">
+                        <div class="card-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Development</h3>
+                        <p>Full-stack applications and game development</p>
+                        <div class="card-stats">
+                            <span>15+ Projects</span>
+                        </div>
+                    </div>
+                    <div class="preview-card" data-category="leadership">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Leadership</h3>
+                        <p>Founding clubs and mentoring communities</p>
+                        <div class="card-stats">
+                            <span>1000+ Impact</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
         
-        <section id="education">
-            <h2>Education</h2>
-            <p><strong>Swarthmore College</strong> - B.Sc. in Computer Science & Mathematics with an emphasis in Statistics (Sept. 2022 - May 2026)</p>
-            <p><strong>Relevant coursework:</strong> Algorithms, Data Structures, Computer Systems, Computational Analysis of Big Data, Game Development, Discrete Math, Linear Algebra, Statistical Methods I, Calc I-III</p>
-            
-            <p><strong>DIS - Study Abroad</strong> - Copenhagen, Denmark (Jan. 2025 - May 2025)</p>
-            <p>Study abroad program focused on game development, big data analysis, and the business potential of generative AI through interdisciplinary and experiential learning.</p>
-            
-            <p><strong>International Baccalaureate Diploma</strong> - Signal Mountain Middle/High School (2022)</p>
-            <p>Graduated with International Baccalaureate diploma while finishing in the top 10% of class.</p>
+        <!-- Section 3: Tech Stack Visualization -->
+        <section class="landing-section" id="section-2">
+            <div class="content-wrapper">
+                <div class="section-header">
+                    <h2>Technology Arsenal</h2>
+                </div>
+                <div class="tech-constellation">
+                    <div class="tech-orbit orbit-1">
+                        <div class="tech-node" data-tech="Python">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                        </div>
+                        <div class="tech-node" data-tech="JavaScript">
+                            <i class="fab fa-js"></i>
+                            <span>JavaScript</span>
+                        </div>
+                        <div class="tech-node" data-tech="React">
+                            <i class="fab fa-react"></i>
+                            <span>React</span>
+                        </div>
+                    </div>
+                    <div class="tech-orbit orbit-2">
+                        <div class="tech-node" data-tech="Unity">
+                            <i class="fab fa-unity"></i>
+                            <span>Unity</span>
+                        </div>
+                        <div class="tech-node" data-tech="Docker">
+                            <i class="fab fa-docker"></i>
+                            <span>Docker</span>
+                        </div>
+                        <div class="tech-node" data-tech="Git">
+                            <i class="fab fa-git-alt"></i>
+                            <span>Git</span>
+                        </div>
+                    </div>
+                    <div class="tech-center">
+                        <div class="center-avatar">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
         
-        <section id="work-experience">
-            <h2>Work Experience</h2>
-            
-            <p><strong>Center for Digital Agriculture, University of Illinois Urbana-Champaign - Research Assistant - REU Fellowship (May 2025 - Present)</strong>:</p>
-            <ul>
-                <li>Developing machine learning-driven hyperspectral imaging technology for early prediction of chick embryo sex and embryonic mortality, addressing animal welfare concerns affecting 300 million annually culled male layer chicks in the US.</li>
-                <li>Optimizing computer vision algorithms and explainable AI models to enable rapid, non-invasive, high-throughput detection at early incubation stages before embryo sensitivity develops.</li>
-                <li>Generating preliminary data and refining hyperspectral imaging systems for real-time egg sensing applications in the poultry industry.</li>
-            </ul>
-
-            <p><strong>Torchman IP LLC, Software Engineering Intern (Sept. 2024 - Apr. 2025)</strong>:</p>
-            <ul>
-                <li>Enabled lawyers to rapidly automate processing office actions, track response deadlines, and generate legal response documents.</li>
-                <li>Processes USPTO office actions, integrating OCR (tesseract) and Regex, the OpenAI API, and Selenium and BeautifulSoup to extract critical patent data to CSVs, generate patent summaries and response templates, and retrieve referenced PDFs from Google Patents.</li>
-            </ul>
-
-            <p><strong>The Nonprofit Alliance, Front-end Intern (June 2024)</strong>:</p>
-            <ul>
-                <li>Revamped a non-profit's Fundraiser Symposium page, cleaning and modernizing the design, user interface, and performance.</li>
-                <li>Wrote JavaScript and PHP in WordPress terminals to remove ~1,000 redundant pages and integrated custom plugins, HTML, and CSS.</li>
-                <li>Increased event registrations by nearly 8% year-over-year, despite federal funding cuts causing nonprofits to reduce budgets.</li>
-            </ul>
-
-            <p><strong>Savvy Seniors Tech Institute Initiative, Founder (June 2023 - Present)</strong>:</p>
-            <ul>
-                <li>Founded a local tech literacy business that makes personalized help available for 1,000s of seniors in Signal Mountain aged ~55+.</li>
-                <li>Increased skills including navigating Windows, macOS, social media, mobile devices, productivity software, video calling family, etc.</li>
-                <li>Hired by Ascension Living's Alexian Village retirement home to facilitate a weekly "office hours" for tech help, assisting ~300+ elders.</li>
-                <li><strong><a href="https://www.ascensionliving.org/en/find-a-community/alexian-village-chattanooga-tn">Alexian Village</a></strong></li>
-            </ul>
-
-            <p><strong>Meridian Health Solutions, SEO Intern (May 2023 - Aug. 2023)</strong>:</p>
-            <ul>
-                <li>Leveraged Expression Engine (EE) and Google Keyword Planner for an SEO audit adjusting keywords, meta tags, headers, and structure.</li>
-                <li>Ultimately elevated overall traffic as demonstrated by an increase in Google's search ranking from ~#70 to ~#6 within three months.</li>
-            </ul>
-
-            <p><strong>Swarthmore College - Computer Science Student Mentor (Oct. 2024 - Dec. 2024)</strong>:</p>
-            <ul>
-                <li>Selected to mentor students in the Swarthmore College CS Department, specifically supporting those enrolled in CPCS 31 and CPCS 35 and promoting academic success and department engagement.</li>
-                <li>Provided guidance to mentees on course selection, internship opportunities, and developing an identity as a computer scientist.</li>
-            </ul>
-
-            <p><strong>Chester Children's Chorus - Math Tutor (Sept. 2024 - Dec. 2024)</strong>:</p>
-            <ul>
-                <li>Tutored elementary to high school students in math, guiding them through individualized curricula, maintained logs, and participated in mandatory coaching training sessions.</li>
-            </ul>
-
-            <p><strong>Sharples Commons - Desk Attendant (Sept. 2024 - Dec. 2024)</strong>:</p>
-            <ul>
-                <li>Performed front desk duties at Sharples Commons, assisting visitors, answering inquiries, and maintaining a welcoming atmosphere while ensuring adherence to building maintenance and security protocols.</li>
-            </ul>
-
-            <p><strong>McCabe Library Assistant, Swarthmore Libraries (Sept. 2023 - Present)</strong>:</p>
-            <ul>
-                <li>Administered circulation and reserve desks, maintained library, provided customer service and technical support.</li>
-            </ul>
+        <!-- Section 4: Enter Portfolio -->
+        <section class="landing-section" id="section-3">
+            <div class="content-wrapper">
+                <div class="section-header">
+                    <h2>Ready to Explore?</h2>
+                    <p>Dive into my complete portfolio and discover the full story</p>
+                </div>
+                <div class="enter-buttons">
+                    <a href="portfolio.html" class="enter-btn primary">
+                        <span class="btn-text">Enter Portfolio</span>
+                        <div class="btn-particles"></div>
+                    </a>
+                    <div class="quick-links">
+                        <a href="portfolio.html#projects" class="quick-link">
+                            <i class="fas fa-rocket"></i>
+                            <span>Projects</span>
+                        </a>
+                        <a href="portfolio.html#experience" class="quick-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Experience</span>
+                        </a>
+                        <a href="portfolio.html#contact" class="quick-link">
+                            <i class="fas fa-envelope"></i>
+                            <span>Contact</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="social-preview">
+                    <a href="https://github.com/EYoung21" target="_blank" class="social-link">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank" class="social-link">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="mailto:eliyoung4now@gmail.com" class="social-link">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
         </section>
-
-        <section id="projects">
-            <h2>Projects</h2>
-            
-            <p><strong>Political Science Survey Analysis Research (Jan. 2025 - May 2025)</strong>:</p>
-            <ul>
-                <li>Contributed to interdisciplinary research project applying machine learning techniques to political science survey data analysis challenges, working with neural networks and statistical validation methods.</li>
-                <li>Collaborated with research team on computational approaches to survey methodology and cross-dataset analysis.</li>
-                <li>Participated in academic research contributing to political science methodology literature and computational social science advancement.</li>
-            </ul>
-            
-            <p><strong><a href="https://github.com/EYoung21/CaveClimber">Cave Climber</a> (Apr. 2025 - May 2025)</strong>:</p>
-            <ul>
-                <li>Developed a vertical platforming game featuring dynamic platform generation with varied types (moving, breaking, single-use).</li>
-                <li>Implemented an adaptive difficulty system that scales enemy spawn rates and behaviors, including ground flying-based enemies.</li>
-                <li>Created an extensive power-up system with multiple effects (potions, wings, etc.), each featuring unique visual/gameplay mechanics.</li>
-            </ul>
-
-            <p><strong><a href="https://github.com/EYoung21/AStarDefense">A Star Defense</a> (Feb. 2025 - Mar. 2025)</strong>:</p>
-            <ul>
-                <li>Implemented A* pathfinding for a Unity tower defense game with enemy movement paths that dynamically adapt to placed defenses.</li>
-                <li>Engineered a turret system with multiple upgrade paths and specializations, enabling strategic gameplay through diverse options.</li>
-                <li>Created a wave-based progression system featuring enemies with unique attributes and behaviors that increase in difficulty over time.</li>
-            </ul>
-            
-            <p><strong><a href="https://github.com/EYoung21/FreeThrowVSFatigue">Free Throw vs. Fatigue</a> (Sept 2024 - Present)</strong>:</p>
-            <ul>
-                <li>Utilized Python to analyze the effect of fatigue on NBA free throw accuracy, isolating impact across 24 seasons and 30 teams.</li>
-                <li>Engineered web scraping pipelines to track real-time player fatigue by parsing play-by-play data for free throws, substitutions, and in-game time implementing exponential backoff for API rate limit handling and error exception during large-scale data collection.</li>
-                <li>Visualized players' free throw percentages in consecutive minutes against baseline career averages through matplotlib.</li>
-            </ul>
-
-            <p><strong>Lock In (May 2024 - Present)</strong>:</p>
-            <ul>
-                <li>Employed JavaScript and TypeScript to build a stopwatch productivity app limits distractions and provides incentives to stay on task.</li>
-                <li>Integrated with Firebase for cloud sync. Kotlin foreground services and Swift Screen Time APIs monitor and blacklist unwanted apps.</li>
-            </ul>
-
-            <p><strong><a href="https://github.com/EYoung21/Predictacare">PredictaCare</a> (April 2024 - June 2024)</strong>:</p>
-            <ul>
-                <li>Trained and built a machine learning model on patient demographics and appointment types data. The use case is optimizing medical scheduling through appointment duration predictions, reducing the wait time to increase the medical institute's operational efficiency.</li>
-                <li>Backed by SkLearn's linear regression, hosted via Docker with a JS server, HTML, and a Flask backend for the model and datasets.</li>
-                <li>Showcased with two peers at Drexel's 11th annual Philly Codefest "Leveraging AI for the Common Good," amongst ~30+ other teams.</li>
-            </ul>
-
-            <p><strong><a href="https://github.com/swat-sccs/swat-swap">Swat Swap</a> (Jan. 2024 - Present)</strong>:</p>
-            <ul>
-                <li>Spearheaded the design and development of a Swarthmore-specific marketplace with Swarthmore College Computer Society (SCCS).</li>
-                <li>Managed technical implementation with Next.js, TypeScript, and containerization, guiding developers in UI and server-side components, Prisma database schema and PostgreSQL, and MinIO storage for secure messaging, advanced search, and user profiles.</li>
-            </ul>
-
-            <p><strong><a href="https://github.com/EYoung21/Hoop-Hunter">Hoop Hunter</a> (Spring 2024)</strong>: Designed a cross-platform app using Google Maps API and Dart (flutter) to provide basketball court information in the vicinity. Currently limited to NYC database with plans to expand functionality.</p>
-
-            <p><strong><a href="https://meridianhealthnc.com/">meredianhealthnc.com</a> SEO (Summer 2023)</strong>: Optimized SEO using Expression Engine for Raleigh, NC acupuncturist and Swarthmore alum Fang Cai, meridianhealthnc.com, improving Google search rank from ~#70 to #6.</p>
-
-            <p><strong><a href="https://sites.google.com/alohaknitting.studio/alohaknitting/home">Lisa Johnson's Knitting Studio Website</a> Redesign (Summer 2023)</strong>: Further updated The Welcome Church associate Lisa Johnson's knitting studio website and social media presence.</p>
-
-            <p><strong><a href="https://www.thewelcomechurch.org">The Welcome Church Website</a> Revamp and <a href="https://sites.google.com/alohaknitting.studio/alohaknitting/home">Church Member Website</a> Creation (Winter 2022)</strong>: Updated Philadelphia's "The Welcome Church" website content and layout, implemented donation button w/ HTML. Created website from scratch for church associate Lisa Johnson's knitting studio.</p>
-
-
-
-            <p><strong><a href="https://arlenespeaks.com/">ArleneSpeaksIt Business Website Revamp</a></strong>: Revamped website for career and business consultant and speaker Arlene Peterson using Wordpress, HTML, and CSS.</p>
-
-
-
-            <p><strong>Revamped Nonprofit Fundraiser Symposium page</strong>: Produced pages for the Nonprofit Alliance's annual <a href="https://npfsymposium.wpenginepowered.com/">Nonprofit Fundraiser's Symposium</a> utilizing WordPress, HTML, CSS, JS, and PHP.</p>
-        </section>
-
-        <section id="activities">
-            <h2>Activities</h2>
-            
-            <p><strong>Swarthmore International Collegiate Programming Contest (ICPC) (Sept 2024 - Present)</strong>:</p>
-            <ul>
-                <li>Solved complex algorithmic problems in high-pressure team environments, enhancing skills for regional and global competitions.</li>
-                <li>Placed 5th at ICPC's 2024 NA South Division 2 competition at Wilkes University, solving algorithmic problems under strict time pressure.</li>
-            </ul>
-
-            <p><strong>Swarthmore College Computer Society (SCCS) (Feb 2024 - Present)</strong>:</p>
-            <ul>
-                <li>Maintained servers and developed software collaborating with ~60 members to support the community. Was Swat Swap project lead.</li>
-            </ul>
-
-            <p><strong>Magic: The Gathering Club - Founder & President (Dec. 2023 - Present)</strong>:</p>
-            <ul>
-                <li>Registered, built, and organized an MTG strategy card game club of ~30+ members who meet to play weekly.</li>
-            </ul>
-
-            <p><strong>Disc Golf Club - Founder & President</strong>:</p>
-            <ul>
-                <li>Founded and organized disc golf activities for Swarthmore students.</li>
-            </ul>
-
-            <p><strong>(Sept. 2022 - Present)</strong>: Joined and founded various clubs and extracurricular activities at Swarthmore, including Chess, Wing Chun Kung Fu, 3v3 IM basketball.</p>
-
-            <p><strong><a href="https://www.swarthmore.edu/new-students/summer-social-justice-institute">Swarthmore Summer Social Justice Institute (SSJI)</a></strong>: Summer Social Justice Institute (SSJI) - explored and shared experiences and capabilities, engaged across differences of perspective, honed ability to address critical concerns in communities, learned the importance of issues of identity, power, privilege and social justice.</p>
-
-            <p><strong><a href="https://swarthmorephoenix.com/2023/09/21/solidarity-at-swarthmore-rallies-for-student-and-staff-wage-increases/">Solidarity at Swat</a></strong>: aided campaign to raise Swarthmore employee conditions and form union, including student workers.</p>
-
-
-
-
-
-
-
-
-        </section>
-
-        <section id="skills">
-            <h2>Skills</h2>
-            <p><strong>Languages:</strong> Python, C++, JavaScript/TypeScript, HTML, CSS, C, Dart, SQL, R, Godot, Bash, PHP, C#, Java</p>
-            <p><strong>Technologies:</strong> React, Unity, Flask, Node.js, React.js, MySQL, Git, Docker, AWS, PyTorch, TensorFlow, SkLearn, Firebase, Flutter, Regex</p>
-            <p><strong>Methodologies:</strong> Agile, OOP, Functional Programming, CI/CD, TDD, Unit Testing, Linux, Powershell</p>
-            <p><strong>Tools:</strong> Adobe Premiere Pro, Adobe Photoshop</p>
-            <p><strong>Spoken Languages:</strong> English (fluent), Spanish (intermediate)</p>
-        </section>
-
-
-
-        <section id="resume">
-            <h2>Resume</h2>
-            <p>My resume!</p>
-            <ul>
-                <li><strong><a href="https://github.com/EYoung21/EYoung21.github.io/raw/main/imgs/Eli%20Young%20CV.pdf" download>Download CV</a></strong></li>
-            </ul>
-        </section>
-
-        <section id="linkedin">
-            <h2>LinkedIn</h2>
-            <p>My LinkedIn!</p>
-            <ul>
-                <li><strong><a href="https://www.linkedin.com/in/eliyoung12/">LinkedIn</a></strong></li>
-            </ul>
-        </section>
-    </main>
+    </div>
     
-    <footer>
-        <p>&copy; 2025 Eli Young</p>
-    </footer>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="logo-text">EY</div>
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <p class="loading-text">Initializing portfolio...</p>
+        </div>
+    </div>
+    
+    <!-- Skip Button -->
+    <a href="portfolio.html" class="skip-btn">
+        <i class="fas fa-forward"></i>
+        <span>Skip Intro</span>
+    </a>
+    
+    <script src="landing.js"></script>
 </body>
 </html>
