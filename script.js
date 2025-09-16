@@ -143,7 +143,7 @@ class PortfolioApp {
                 'seniors': 'Founded Savvy Seniors Tech Institute, teaching technology to 1000+ seniors in Signal Mountain, TN.'
             },
             education: {
-                'swarthmore': 'Computer Science and Mathematics student at Swarthmore College with emphasis in Statistics.',
+                'swarthmore': 'Computer Science student at Swarthmore College with emphasis in Statistics.',
                 'copenhagen': 'Studied abroad in Copenhagen, Denmark in 2025, focusing on game development and AI.',
                 'coursework': 'Relevant courses include Algorithms, Data Structures, Machine Learning, Game Development, and Statistical Methods.'
             },
