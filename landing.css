@@ -243,6 +243,13 @@ body::after {
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative !important;
+        opacity: 1 !important;
+        transform: none !important;
+        height: auto !important;
+        width: 100% !important;
+        top: auto !important;
+        left: auto !important;
     }
     
     .landing-section:first-child {
@@ -735,6 +742,7 @@ body::after {
         padding: 1rem;
         width: 100%;
         max-width: 100%;
+        overflow-x: visible;
     }
     
     .glitch-text {
@@ -746,8 +754,9 @@ body::after {
     }
     
     .preview-grid {
-        display: flex;
-        flex-direction: row;
+        display: flex !important;
+        flex-direction: row !important;
+        grid-template-columns: none !important;
         gap: 1.5rem;
         padding: 1rem 0;
         overflow-x: auto;
@@ -756,6 +765,8 @@ body::after {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
+        max-width: 100%;
+        margin: 0;
     }
     
     .preview-grid::-webkit-scrollbar {
@@ -768,6 +779,9 @@ body::after {
         flex: 0 0 280px;
         scroll-snap-align: center;
         min-width: 280px;
+        max-width: 280px;
+        width: 280px;
+        box-sizing: border-box;
     }
     
     /* Add horizontal scroll indicator */
