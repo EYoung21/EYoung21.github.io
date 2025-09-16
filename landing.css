@@ -414,11 +414,6 @@ body::after {
     margin: 0 auto;
 }
 
-.single-preview {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
 .preview-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -481,16 +476,133 @@ body::after {
     font-weight: 600;
     color: var(--secondary-color);
     font-size: 1.1rem;
+}
+
+/* Feature Showcase - New Individual Section Layout */
+.feature-showcase {
     display: flex;
-    gap: 1rem;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 3rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.feature-card:hover::before {
+    left: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary-color);
+    box-shadow: 0 20px 40px rgba(34, 197, 94, 0.2);
+}
+
+.feature-card .card-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2rem;
+    color: white;
+}
+
+.feature-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+    font-size: 1.1rem;
+}
+
+.feature-card .card-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tech-tags {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
     flex-wrap: wrap;
 }
 
-.card-stats span {
+.tech-tag {
     background: rgba(34, 197, 94, 0.1);
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
     border: 1px solid rgba(34, 197, 94, 0.3);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Card-specific styling */
+.research-card .card-icon {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.development-card .card-icon {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+}
+
+.leadership-card .card-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* Section 3: Tech Constellation */
@@ -724,6 +836,27 @@ body::after {
     
     .preview-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .feature-card {
+        padding: 2rem;
+        margin: 0 1rem;
+    }
+    
+    .feature-card h3 {
+        font-size: 1.5rem;
+    }
+    
+    .feature-card p {
+        font-size: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .card-stats {
         gap: 1rem;
     }
     

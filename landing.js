@@ -2,7 +2,7 @@
 class LandingPage {
     constructor() {
         this.currentSection = 0;
-        this.totalSections = 4;
+        this.totalSections = 6;
         this.isScrolling = false;
         this.init();
     }
