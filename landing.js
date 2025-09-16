@@ -431,11 +431,16 @@ class LandingPage {
 
     // Interactive Elements
     setupInteractiveElements() {
+        // Card navigation
+        this.setupCardNavigation();
+        
         // Preview cards hover effects
         const previewCards = document.querySelectorAll('.preview-card');
         previewCards.forEach(card => {
             card.addEventListener('mouseenter', () => {
-                this.createHoverParticles(card);
+                if (card.classList.contains('active')) {
+                    this.createHoverParticles(card);
+                }
             });
         });
         
@@ -453,6 +458,85 @@ class LandingPage {
             enterBtn.addEventListener('mouseenter', () => {
                 this.createButtonParticles(enterBtn);
             });
+        }
+    }
+    
+    setupCardNavigation() {
+        this.currentCard = 0;
+        this.totalCards = 3;
+        
+        const prevBtn = document.getElementById('prevCard');
+        const nextBtn = document.getElementById('nextCard');
+        const indicators = document.querySelectorAll('.indicator');
+        
+        // Navigation button events
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => this.prevCard());
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.nextCard());
+        }
+        
+        // Indicator events
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => this.goToCard(index));
+        });
+        
+        // Initialize
+        this.updateCardDisplay();
+    }
+    
+    prevCard() {
+        if (this.currentCard > 0) {
+            this.currentCard--;
+            this.updateCardDisplay();
+        }
+    }
+    
+    nextCard() {
+        if (this.currentCard < this.totalCards - 1) {
+            this.currentCard++;
+            this.updateCardDisplay();
+        }
+    }
+    
+    goToCard(index) {
+        this.currentCard = index;
+        this.updateCardDisplay();
+    }
+    
+    updateCardDisplay() {
+        const cards = document.querySelectorAll('.preview-card');
+        const indicators = document.querySelectorAll('.indicator');
+        const prevBtn = document.getElementById('prevCard');
+        const nextBtn = document.getElementById('nextCard');
+        
+        // Update cards
+        cards.forEach((card, index) => {
+            if (index === this.currentCard) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
+        
+        // Update indicators
+        indicators.forEach((indicator, index) => {
+            if (index === this.currentCard) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+        
+        // Update button states
+        if (prevBtn) {
+            prevBtn.disabled = this.currentCard === 0;
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = this.currentCard === this.totalCards - 1;
         }
     }
 

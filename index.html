@@ -63,37 +63,50 @@
                 <div class="section-header">
                     <h2>Innovation Through Code</h2>
                 </div>
-                <div class="preview-grid">
-                    <div class="preview-card" data-category="research">
-                        <div class="card-icon">
-                            <i class="fas fa-microscope"></i>
+                <div class="preview-container">
+                    <button class="nav-btn nav-btn-left" id="prevCard">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="preview-grid">
+                        <div class="preview-card active" data-category="research">
+                            <div class="card-icon">
+                                <i class="fas fa-microscope"></i>
+                            </div>
+                            <h3>Research</h3>
+                            <p>ML & AI applications in agriculture and data science</p>
+                            <div class="card-stats">
+                                <span>98.8% Accuracy</span>
+                            </div>
                         </div>
-                        <h3>Research</h3>
-                        <p>ML & AI applications in agriculture and data science</p>
-                        <div class="card-stats">
-                            <span>98.8% Accuracy</span>
+                        <div class="preview-card" data-category="development">
+                            <div class="card-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3>Development</h3>
+                            <p>Full-stack applications and game development</p>
+                            <div class="card-stats">
+                                <span>15+ Projects</span>
+                            </div>
+                        </div>
+                        <div class="preview-card" data-category="leadership">
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Leadership</h3>
+                            <p>Founding clubs and mentoring communities</p>
+                            <div class="card-stats">
+                                <span>1000+ Impact</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="preview-card" data-category="development">
-                        <div class="card-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3>Development</h3>
-                        <p>Full-stack applications and game development</p>
-                        <div class="card-stats">
-                            <span>15+ Projects</span>
-                        </div>
-                    </div>
-                    <div class="preview-card" data-category="leadership">
-                        <div class="card-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3>Leadership</h3>
-                        <p>Founding clubs and mentoring communities</p>
-                        <div class="card-stats">
-                            <span>1000+ Impact</span>
-                        </div>
-                    </div>
+                    <button class="nav-btn nav-btn-right" id="nextCard">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="card-indicators">
+                    <div class="indicator active" data-card="0"></div>
+                    <div class="indicator" data-card="1"></div>
+                    <div class="indicator" data-card="2"></div>
                 </div>
             </div>
         </section>
