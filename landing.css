@@ -753,42 +753,93 @@ body::after {
         font-size: 2rem;
     }
     
-    .preview-grid {
-        display: flex !important;
-        flex-direction: row !important;
-        grid-template-columns: none !important;
-        gap: 1.5rem;
-        padding: 1rem 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        max-width: 100%;
-        margin: 0;
+    /* Preview container with navigation */
+    .preview-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        position: relative;
     }
     
-    .preview-grid::-webkit-scrollbar {
-        display: none;
+    .preview-grid {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 320px;
+        position: relative;
+        overflow: hidden;
     }
     
     .preview-card {
         min-height: auto;
         padding: 1.5rem;
-        flex: 0 0 280px;
-        scroll-snap-align: center;
-        min-width: 280px;
-        max-width: 280px;
-        width: 280px;
+        width: 100%;
+        max-width: 300px;
         box-sizing: border-box;
+        position: absolute;
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 0.3s ease;
+        pointer-events: none;
     }
     
-    /* Add horizontal scroll indicator */
-    .preview-grid::after {
-        content: '';
-        flex: 0 0 20px;
-        height: 1px;
+    .preview-card.active {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+        position: relative;
+    }
+    
+    /* Navigation buttons */
+    .nav-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .nav-btn:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+    
+    .nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Card indicators */
+    .card-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .indicator.active {
+        background: var(--primary-color);
+        transform: scale(1.2);
     }
     
     
