@@ -239,25 +239,18 @@ class LandingPage {
             }
         });
         
-        // Touch events - only for desktop-like behavior
+        // Touch events
         document.addEventListener('touchstart', (e) => {
-            // Skip if touch is within preview grid (allow horizontal scrolling)
-            if (e.target.closest('.preview-grid')) return;
-            
             touchStartY = e.touches[0].clientY;
         });
         
         document.addEventListener('touchend', (e) => {
             if (this.isScrolling) return;
             
-            // Skip if touch is within preview grid (allow horizontal scrolling)
-            if (e.target.closest('.preview-grid')) return;
-            
             const touchEndY = e.changedTouches[0].clientY;
             const diff = touchStartY - touchEndY;
             
-            // Only trigger section navigation on desktop or for large swipes
-            if (Math.abs(diff) > 50 && window.innerWidth > 768) {
+            if (Math.abs(diff) > 50) {
                 if (diff > 0) {
                     this.nextSection();
                 } else {
@@ -431,16 +424,11 @@ class LandingPage {
 
     // Interactive Elements
     setupInteractiveElements() {
-        // Card navigation
-        this.setupCardNavigation();
-        
         // Preview cards hover effects
         const previewCards = document.querySelectorAll('.preview-card');
         previewCards.forEach(card => {
             card.addEventListener('mouseenter', () => {
-                if (card.classList.contains('active')) {
-                    this.createHoverParticles(card);
-                }
+                this.createHoverParticles(card);
             });
         });
         
@@ -458,85 +446,6 @@ class LandingPage {
             enterBtn.addEventListener('mouseenter', () => {
                 this.createButtonParticles(enterBtn);
             });
-        }
-    }
-    
-    setupCardNavigation() {
-        this.currentCard = 0;
-        this.totalCards = 3;
-        
-        const prevBtn = document.getElementById('prevCard');
-        const nextBtn = document.getElementById('nextCard');
-        const indicators = document.querySelectorAll('.indicator');
-        
-        // Navigation button events
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => this.prevCard());
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => this.nextCard());
-        }
-        
-        // Indicator events
-        indicators.forEach((indicator, index) => {
-            indicator.addEventListener('click', () => this.goToCard(index));
-        });
-        
-        // Initialize
-        this.updateCardDisplay();
-    }
-    
-    prevCard() {
-        if (this.currentCard > 0) {
-            this.currentCard--;
-            this.updateCardDisplay();
-        }
-    }
-    
-    nextCard() {
-        if (this.currentCard < this.totalCards - 1) {
-            this.currentCard++;
-            this.updateCardDisplay();
-        }
-    }
-    
-    goToCard(index) {
-        this.currentCard = index;
-        this.updateCardDisplay();
-    }
-    
-    updateCardDisplay() {
-        const cards = document.querySelectorAll('.preview-card');
-        const indicators = document.querySelectorAll('.indicator');
-        const prevBtn = document.getElementById('prevCard');
-        const nextBtn = document.getElementById('nextCard');
-        
-        // Update cards
-        cards.forEach((card, index) => {
-            if (index === this.currentCard) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-        });
-        
-        // Update indicators
-        indicators.forEach((indicator, index) => {
-            if (index === this.currentCard) {
-                indicator.classList.add('active');
-            } else {
-                indicator.classList.remove('active');
-            }
-        });
-        
-        // Update button states
-        if (prevBtn) {
-            prevBtn.disabled = this.currentCard === 0;
-        }
-        
-        if (nextBtn) {
-            nextBtn.disabled = this.currentCard === this.totalCards - 1;
         }
     }
 
@@ -688,25 +597,11 @@ document.addEventListener('DOMContentLoaded', () => {
     new LandingPage();
 });
 
-// Prevent default scroll behavior only on desktop
+// Prevent default scroll behavior
 document.addEventListener('wheel', (e) => {
-    // Only prevent on desktop, allow on mobile
-    if (window.innerWidth > 768) {
-        e.preventDefault();
-    }
+    e.preventDefault();
 }, { passive: false });
 
 document.addEventListener('touchmove', (e) => {
-    // Allow scrolling within preview grids on mobile
-    const isInPreviewGrid = e.target.closest('.preview-grid');
-    
-    if (window.innerWidth <= 768) {
-        // On mobile, only prevent if NOT in a preview grid
-        if (!isInPreviewGrid) {
-            e.preventDefault();
-        }
-    } else {
-        // On desktop, always prevent
-        e.preventDefault();
-    }
+    e.preventDefault();
 }, { passive: false });
