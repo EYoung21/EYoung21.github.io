@@ -34,6 +34,14 @@ body {
     cursor: none;
 }
 
+/* Enable touch scrolling on mobile */
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 /* Custom Cursor */
 body::after {
     content: '';
@@ -219,6 +227,22 @@ body::after {
     height: 100vh;
     overflow: hidden;
     position: relative;
+}
+
+/* Allow scrolling on mobile */
+@media (max-width: 768px) {
+    .landing-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+    
+    .landing-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 /* Navigation Dots */
@@ -686,6 +710,13 @@ body::after {
 @media (max-width: 768px) {
     .nav-dots {
         right: 1rem;
+        z-index: 1000;
+    }
+    
+    .dot {
+        width: 14px;
+        height: 14px;
+        margin: 0.75rem 0;
     }
     
     .skip-btn {
