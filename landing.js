@@ -239,18 +239,25 @@ class LandingPage {
             }
         });
         
-        // Touch events
+        // Touch events - only for desktop-like behavior
         document.addEventListener('touchstart', (e) => {
+            // Skip if touch is within preview grid (allow horizontal scrolling)
+            if (e.target.closest('.preview-grid')) return;
+            
             touchStartY = e.touches[0].clientY;
         });
         
         document.addEventListener('touchend', (e) => {
             if (this.isScrolling) return;
             
+            // Skip if touch is within preview grid (allow horizontal scrolling)
+            if (e.target.closest('.preview-grid')) return;
+            
             const touchEndY = e.changedTouches[0].clientY;
             const diff = touchStartY - touchEndY;
             
-            if (Math.abs(diff) > 50) {
+            // Only trigger section navigation on desktop or for large swipes
+            if (Math.abs(diff) > 50 && window.innerWidth > 768) {
                 if (diff > 0) {
                     this.nextSection();
                 } else {
@@ -597,11 +604,25 @@ document.addEventListener('DOMContentLoaded', () => {
     new LandingPage();
 });
 
-// Prevent default scroll behavior
+// Prevent default scroll behavior only on desktop
 document.addEventListener('wheel', (e) => {
-    e.preventDefault();
+    // Only prevent on desktop, allow on mobile
+    if (window.innerWidth > 768) {
+        e.preventDefault();
+    }
 }, { passive: false });
 
 document.addEventListener('touchmove', (e) => {
-    e.preventDefault();
+    // Allow scrolling within preview grids on mobile
+    const isInPreviewGrid = e.target.closest('.preview-grid');
+    
+    if (window.innerWidth <= 768) {
+        // On mobile, only prevent if NOT in a preview grid
+        if (!isInPreviewGrid) {
+            e.preventDefault();
+        }
+    } else {
+        // On desktop, always prevent
+        e.preventDefault();
+    }
 }, { passive: false });
