@@ -238,10 +238,15 @@ body::after {
     }
     
     .landing-section {
-        min-height: 100vh;
+        min-height: auto;
+        padding: 2rem 0;
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    
+    .landing-section:first-child {
+        min-height: 100vh;
     }
 }
 
@@ -727,7 +732,9 @@ body::after {
     }
     
     .content-wrapper {
-        padding: 0 1rem;
+        padding: 1rem;
+        width: 100%;
+        max-width: 100%;
     }
     
     .glitch-text {
@@ -740,7 +747,13 @@ body::after {
     
     .preview-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+    
+    .preview-card {
+        min-height: auto;
+        padding: 1.5rem;
     }
     
     .tech-constellation {
