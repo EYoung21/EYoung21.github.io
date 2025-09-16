@@ -34,14 +34,6 @@ body {
     cursor: none;
 }
 
-/* Enable touch scrolling on mobile */
-@media (max-width: 768px) {
-    body {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-
 /* Custom Cursor */
 body::after {
     content: '';
@@ -227,34 +219,6 @@ body::after {
     height: 100vh;
     overflow: hidden;
     position: relative;
-}
-
-/* Allow scrolling on mobile */
-@media (max-width: 768px) {
-    .landing-container {
-        height: auto;
-        min-height: 100vh;
-        overflow: visible;
-    }
-    
-    .landing-section {
-        min-height: auto;
-        padding: 2rem 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative !important;
-        opacity: 1 !important;
-        transform: none !important;
-        height: auto !important;
-        width: 100% !important;
-        top: auto !important;
-        left: auto !important;
-    }
-    
-    .landing-section:first-child {
-        min-height: 100vh;
-    }
 }
 
 /* Navigation Dots */
@@ -450,6 +414,11 @@ body::after {
     margin: 0 auto;
 }
 
+.single-preview {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
 .preview-card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -512,6 +481,16 @@ body::after {
     font-weight: 600;
     color: var(--secondary-color);
     font-size: 1.1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.card-stats span {
+    background: rgba(34, 197, 94, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 /* Section 3: Tech Constellation */
@@ -722,13 +701,6 @@ body::after {
 @media (max-width: 768px) {
     .nav-dots {
         right: 1rem;
-        z-index: 1000;
-    }
-    
-    .dot {
-        width: 14px;
-        height: 14px;
-        margin: 0.75rem 0;
     }
     
     .skip-btn {
@@ -739,10 +711,7 @@ body::after {
     }
     
     .content-wrapper {
-        padding: 1rem;
-        width: 100%;
-        max-width: 100%;
-        overflow-x: visible;
+        padding: 0 1rem;
     }
     
     .glitch-text {
@@ -753,95 +722,10 @@ body::after {
         font-size: 2rem;
     }
     
-    /* Preview container with navigation */
-    .preview-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        position: relative;
-    }
-    
     .preview-grid {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        max-width: 320px;
-        position: relative;
-        overflow: hidden;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
-    
-    .preview-card {
-        min-height: auto;
-        padding: 1.5rem;
-        width: 100%;
-        max-width: 300px;
-        box-sizing: border-box;
-        position: absolute;
-        opacity: 0;
-        transform: translateX(100px);
-        transition: all 0.3s ease;
-        pointer-events: none;
-    }
-    
-    .preview-card.active {
-        opacity: 1;
-        transform: translateX(0);
-        pointer-events: auto;
-        position: relative;
-    }
-    
-    /* Navigation buttons */
-    .nav-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-    
-    .nav-btn:hover {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-        transform: scale(1.1);
-    }
-    
-    .nav-btn:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    /* Card indicators */
-    .card-indicators {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 1.5rem;
-    }
-    
-    .indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .indicator.active {
-        background: var(--primary-color);
-        transform: scale(1.2);
-    }
-    
     
     .tech-constellation {
         width: 300px;
