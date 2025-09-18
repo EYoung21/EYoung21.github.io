@@ -62,8 +62,8 @@ class PortfolioApp {
                     ease: "power2.out",
                     scrollTrigger: {
                         trigger: element,
-                        start: "top 80%",
-                        end: "bottom 20%",
+                        start: "top 95%",
+                        end: "bottom 5%",
                         toggleActions: "play none none reverse"
                     }
                 }
