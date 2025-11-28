@@ -39,54 +39,15 @@ class PortfolioApp {
         });
     }
 
-    // Scroll-triggered animations using GSAP
+    // Scroll animations disabled - elements visible immediately
     setupScrollAnimations() {
-        gsap.registerPlugin(ScrollTrigger);
-
-        // Animate elements on scroll
-        gsap.utils.toArray('.animate-on-scroll').forEach((element, i) => {
-            const delay = element.dataset.delay || 0;
-            
-            gsap.fromTo(element, 
-                {
-                    opacity: 0,
-                    y: 50,
-                    scale: 0.9
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.8,
-                    delay: delay,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: element,
-                        start: "top bottom-=100px",
-                        end: "bottom top",
-                        toggleActions: "play none none reverse"
-                    }
-                }
-            );
-        });
-
-        // Parallax effect for hero section
-        gsap.to('.floating-card', {
-            y: -100,
-            scrollTrigger: {
-                trigger: '.hero-section',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: 1
-            }
-        });
-
-        // Basketball court animation
-        gsap.to('.basketball-hoop', {
-            rotation: 360,
-            duration: 20,
-            repeat: -1,
-            ease: "none"
+        // Make all animated elements visible immediately
+        gsap.utils.toArray('.animate-on-scroll').forEach((element) => {
+            gsap.set(element, {
+                opacity: 1,
+                y: 0,
+                scale: 1
+            });
         });
     }
 

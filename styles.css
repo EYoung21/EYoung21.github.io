@@ -1356,13 +1356,8 @@ footer {
 }
 
 /* Animations */
+/* Scroll animations removed - elements visible immediately */
 .animate-on-scroll {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animate-on-scroll.animated {
     opacity: 1;
     transform: translateY(0);
 }
