@@ -8,7 +8,6 @@ class PortfolioApp {
 
     init() {
         this.setupThemeToggle();
-        this.setupScrollAnimations();
         this.setupMobileMenu();
         this.setupCounterAnimations();
         this.setupSkillsVisualization();
@@ -36,18 +35,6 @@ class PortfolioApp {
             setTimeout(() => {
                 document.body.style.transition = '';
             }, 300);
-        });
-    }
-
-    // Scroll animations disabled - elements visible immediately
-    setupScrollAnimations() {
-        // Make all animated elements visible immediately
-        gsap.utils.toArray('.animate-on-scroll').forEach((element) => {
-            gsap.set(element, {
-                opacity: 1,
-                y: 0,
-                scale: 1
-            });
         });
     }
 

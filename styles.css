@@ -1358,8 +1358,9 @@ footer {
 /* Animations */
 /* Scroll animations removed - elements visible immediately */
 .animate-on-scroll {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
 }
 
 /* Responsive Design */
