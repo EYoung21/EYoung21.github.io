@@ -37,7 +37,7 @@
 
 
 
-    // ── Loader ──
+    // ── Loader (Curtain Reveal) ──
     const loader = document.getElementById('loader');
     const loaderNum = loader?.querySelector('.loader-num');
     const loaderFill = loader?.querySelector('.loader-fill');
@@ -50,9 +50,21 @@
                 loadProgress = 100;
                 clearInterval(interval);
                 setTimeout(() => {
-                    loader?.classList.add('done');
-                    document.getElementById('nav')?.classList.add('visible');
-                    animateHero();
+                    // Idea 1: Curtain Reveal
+                    gsap.to(loader, {
+                        yPercent: -100,
+                        duration: 1.5,
+                        ease: "power4.inOut",
+                        onComplete: () => {
+                            loader?.classList.add('done');
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        document.getElementById('nav')?.classList.add('visible');
+                        animateHero();
+                    }, 500); // start hero animation slightly before curtain is fully gone
+                    
                 }, 300);
             }
             if (loaderNum) loaderNum.textContent = Math.floor(loadProgress);
@@ -351,6 +363,25 @@
         });
     });
 
+    // ── Idea 7: Horizontal Scroll Projects ──
+    const horizontalContainer = document.querySelector('.horizontal-container');
+    const horizontalWrapper = document.querySelector('.horizontal-wrapper');
+    if (horizontalContainer && horizontalWrapper) {
+        let mm = gsap.matchMedia();
+        mm.add("(min-width: 769px)", () => {
+            gsap.to(horizontalContainer, {
+                x: () => -(horizontalContainer.scrollWidth - window.innerWidth + 80),
+                ease: "none",
+                scrollTrigger: {
+                    trigger: horizontalWrapper,
+                    pin: true,
+                    scrub: 1,
+                    end: () => "+=" + horizontalContainer.scrollWidth
+                }
+            });
+        });
+    }
+
     // ── Init ──
     window.addEventListener('load', () => {
         // Small delay to ensure DOM is ready
@@ -433,23 +464,93 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Interactive mouse parallax
-        document.addEventListener('mousemove', (e) => {
-            const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-            gsap.to(hypercubeGroup.position, {
-                x: mouseX * 2,
-                y: mouseY * 2,
-                duration: 2,
-                ease: "power2.out"
+            // Interactive mouse parallax
+            document.addEventListener('mousemove', (e) => {
+                const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+                gsap.to(hypercubeGroup.position, {
+                    x: mouseX * 2,
+                    y: mouseY * 2,
+                    duration: 2,
+                    ease: "power2.out"
+                });
+                gsap.to(hypercubeGroup.rotation, {
+                    x: mouseY * 0.5,
+                    y: mouseX * 0.5,
+                    duration: 2,
+                    ease: "power2.out"
+                });
             });
-            gsap.to(hypercubeGroup.rotation, {
-                x: mouseY * 0.5,
-                y: mouseX * 0.5,
-                duration: 2,
-                ease: "power2.out"
+        }
+    
+        // ── Idea 12B: Text Scramble (Hero) ──
+        const roles = [
+            "Computer Science · Machine Learning · Product", 
+            "Co-Founder @ AlgoArena", 
+            "ML Researcher @ UIUC", 
+            "Full-Stack Engineer", 
+            "Godot Game Developer"
+        ];
+        let roleIndex = 0;
+        const scrambleEl = document.querySelector('.hero-eyebrow');
+        
+        function scrambleText(element, newText, duration = 800) {
+            const chars = '!<>-_\\\\/[]{}—=+*^?#_';
+            const oldText = element.innerText;
+            const length = Math.max(oldText.length, newText.length);
+            let start = Date.now();
+            
+            function update() {
+                let progress = (Date.now() - start) / duration;
+                if (progress > 1) {
+                    element.innerText = newText;
+                    return;
+                }
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    if (i < progress * length) {
+                        result += newText[i] || '';
+                    } else {
+                        result += chars[Math.floor(Math.random() * chars.length)];
+                    }
+                }
+                element.innerText = result;
+                requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+    
+        setInterval(() => {
+            roleIndex = (roleIndex + 1) % roles.length;
+            if(scrambleEl) scrambleText(scrambleEl, roles[roleIndex]);
+        }, 3000);
+    
+        // ── Idea 11: 3D Tilt Cards ──
+        const tiltCards = document.querySelectorAll('.project-card, .about-card, .project-featured-info');
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                const rotateX = (y / (rect.height / 2)) * -5;
+                const rotateY = (x / (rect.width / 2)) * 5;
+                
+                gsap.to(card, {
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    transformPerspective: 1000,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    rotationX: 0,
+                    rotationY: 0,
+                    duration: 0.8,
+                    ease: "elastic.out(1, 0.3)"
+                });
             });
         });
-    }
-
-})();
+    
+    })();
