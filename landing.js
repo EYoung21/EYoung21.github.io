@@ -403,9 +403,9 @@
         const hypercubeGroup = new THREE.Group();
         scene.add(hypercubeGroup);
 
-        const numPlanes = 20;
-        const planeSize = 12;
-        const spacing = 0.8;
+        const numPlanes = 30;
+        const planeSize = 30;
+        const spacing = 1.0;
 
         const planes = [];
         // Create a stack of wireframe planes along the Z axis

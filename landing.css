@@ -270,8 +270,8 @@ img { max-width: 100%; height: auto; display: block; }
         linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
     background-size: 80px 80px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent);
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black, transparent);
+    mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black, transparent);
+    -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black, transparent);
 }
 
 .hero-content {
@@ -484,6 +484,72 @@ img { max-width: 100%; height: auto; display: block; }
     position: relative;
     z-index: 1;
 }
+
+/* Python Class & Gallery */
+.floating-card { margin-bottom: 24px; }
+.code-snippet {
+    background: #1e1e1e;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.code-header {
+    background: #2d2d2d;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.red { background: #ff5f56; }
+.dot.yellow { background: #ffbd2e; }
+.dot.green { background: #27c93f; }
+.filename { margin-left: 10px; color: #aaa; font-size: 11px; }
+.code-content { padding: 16px; line-height: 1.6; color: #d4d4d4; }
+.keyword { color: #569cd6; }
+.class-name { color: #4ec9b0; }
+.function { color: #dcdcaa; }
+.string { color: #ce9178; }
+
+.about-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 60px;
+}
+.image-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: transform 0.4s ease;
+}
+.image-card:hover { transform: translateY(-5px); }
+.image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+}
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.image-card:hover .image-overlay { opacity: 1; }
+.image-overlay h4 { color: #fff; margin-bottom: 5px; font-family: var(--font-display); font-size: 16px; }
+.image-overlay p { color: #ccc; font-size: 12px; }
+
 
 /* ── EXPERIENCE ── */
 .exp-timeline {
@@ -966,6 +1032,7 @@ a.exp-company:hover { opacity: 0.7; }
     .nav-toggle { display: flex; }
 
     .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .about-gallery { grid-template-columns: 1fr; gap: 20px; }
     .exp-item { grid-template-columns: 1fr; gap: 8px; }
     .project-featured { grid-template-columns: 1fr; gap: 30px; }
     .project-featured.reverse .project-featured-media { order: 0; }
