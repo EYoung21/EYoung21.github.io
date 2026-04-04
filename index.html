@@ -3,268 +3,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eli Young - Welcome</title>
+    <title>Eli Young — CS & ML Engineer</title>
+    <meta name="description" content="Eli Young — Computer Science student at Swarthmore College, ML researcher, and co-founder of AlgoArena. Portfolio showcasing research, products, and engineering.">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- GSAP + ScrollTrigger + SplitText -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis smooth scroll -->
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
     <link rel="stylesheet" href="landing.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <body>
-    <!-- Interactive 3D Background -->
-    <canvas id="landing-canvas"></canvas>
-    
-    <!-- Particle System -->
-    <div id="particles"></div>
-    
-    <!-- Main Landing Content -->
-    <div class="landing-container">
-        <!-- Navigation Dots -->
-        <nav class="nav-dots">
-            <div class="dot active" data-section="0"></div>
-            <div class="dot" data-section="1"></div>
-            <div class="dot" data-section="2"></div>
-            <div class="dot" data-section="3"></div>
-            <div class="dot" data-section="4"></div>
-            <div class="dot" data-section="5"></div>
-            </nav>
-        
-        <!-- Section 1: Welcome -->
-        <section class="landing-section active" id="section-0">
-            <div class="content-wrapper">
-                <div class="glitch-container">
-                    <h1 class="glitch-text" data-text="ELI YOUNG">ELI YOUNG</h1>
-                </div>
-                <div class="subtitle-container">
-                    <p class="animated-subtitle">
-                        <span class="word">Computer</span>
-                        <span class="word">Science</span>
-                        <span class="word">•</span>
-                        <span class="word">Machine</span>
-                        <span class="word">Learning</span>
-                        <span class="word">•</span>
-                        <span class="word">Game</span>
-                        <span class="word">Development</span>
-                    </p>
-                </div>
-                <div class="scroll-indicator">
-                    <div class="mouse">
-                        <div class="wheel"></div>
-                    </div>
-                    <p>Scroll to explore</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section 2: Research -->
-        <section class="landing-section" id="section-1">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <h2>Research Excellence</h2>
-                </div>
-                <div class="feature-showcase">
-                    <div class="feature-card research-card">
-                        <div class="card-icon">
-                            <i class="fas fa-microscope"></i>
-                        </div>
-                        <h3>Machine Learning Research</h3>
-                        <p>Applied ML researcher at USDA & Swarthmore College, developing semi-supervised models for agricultural pest management and achieving 98.8% accuracy in chick mortality prediction at UIUC.</p>
-                        <div class="card-stats">
-                            <div class="stat-item">
-                                <span class="stat-number">98.8%</span>
-                                <span class="stat-label">Accuracy</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">690</span>
-                                <span class="stat-label">Samples</span>
-                            </div>
-                        </div>
-                        <div class="tech-tags">
-                            <span class="tech-tag">PyTorch</span>
-                            <span class="tech-tag">TensorFlow</span>
-                            <span class="tech-tag">VNIR Spectroscopy</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 3: Development -->
-        <section class="landing-section" id="section-2">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <h2>Development Mastery</h2>
-                </div>
-                <div class="feature-showcase">
-                    <div class="feature-card development-card">
-                        <div class="card-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3>Full-Stack Development</h3>
-                        <p>Building comprehensive applications from NBA analytics platforms to game development, with expertise in web technologies, mobile apps, and interactive experiences.</p>
-                        <div class="card-stats">
-                            <div class="stat-item">
-                                <span class="stat-number">15+</span>
-                                <span class="stat-label">Projects</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">24</span>
-                                <span class="stat-label">NBA Seasons</span>
-                            </div>
-                        </div>
-                        <div class="tech-tags">
-                            <span class="tech-tag">React</span>
-                            <span class="tech-tag">Node.js</span>
-                            <span class="tech-tag">Unity</span>
-                            <span class="tech-tag">Flutter</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 4: Leadership -->
-        <section class="landing-section" id="section-3">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <h2>Leadership Impact</h2>
-                </div>
-                <div class="feature-showcase">
-                    <div class="feature-card leadership-card">
-                        <div class="card-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3>Community Leadership</h3>
-                        <p>Founded Savvy Seniors Tech Institute serving 1000+ seniors, established Magic: The Gathering and Disc Golf clubs at Swarthmore, and mentored teams in competitive programming.</p>
-                        <div class="card-stats">
-                            <div class="stat-item">
-                                <span class="stat-number">1000+</span>
-                                <span class="stat-label">Seniors Helped</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number">5th</span>
-                                <span class="stat-label">ICPC Place</span>
-                            </div>
-                        </div>
-                        <div class="tech-tags">
-                            <span class="tech-tag">Teaching</span>
-                            <span class="tech-tag">Mentoring</span>
-                            <span class="tech-tag">Community Building</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section 5: Tech Stack Visualization -->
-        <section class="landing-section" id="section-4">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <h2>Technology Arsenal</h2>
-                </div>
-                <div class="tech-constellation">
-                    <div class="tech-orbit orbit-1">
-                        <div class="tech-node" data-tech="Python">
-                            <i class="fab fa-python"></i>
-                            <span>Python</span>
-                        </div>
-                        <div class="tech-node" data-tech="JavaScript">
-                            <i class="fab fa-js"></i>
-                            <span>JavaScript</span>
-                        </div>
-                        <div class="tech-node" data-tech="React">
-                            <i class="fab fa-react"></i>
-                            <span>React</span>
-                        </div>
-                    </div>
-                    <div class="tech-orbit orbit-2">
-                        <div class="tech-node" data-tech="Unity">
-                            <i class="fab fa-unity"></i>
-                            <span>Unity</span>
-                        </div>
-                        <div class="tech-node" data-tech="Docker">
-                            <i class="fab fa-docker"></i>
-                            <span>Docker</span>
-                        </div>
-                        <div class="tech-node" data-tech="Git">
-                            <i class="fab fa-git-alt"></i>
-                            <span>Git</span>
-                        </div>
-                    </div>
-                    <div class="tech-center">
-                        <div class="center-avatar">
-                            <i class="fas fa-user-astronaut"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section 6: Enter Portfolio -->
-        <section class="landing-section" id="section-5">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <h2>Ready to Explore?</h2>
-                    <p>Dive into my complete portfolio and discover the full story</p>
-                </div>
-                <div class="enter-buttons">
-                    <a href="portfolio.html" class="enter-btn primary">
-                        <span class="btn-text">Enter Portfolio</span>
-                        <div class="btn-particles"></div>
-                    </a>
-                    <div class="quick-links">
-                        <a href="portfolio.html#projects" class="quick-link">
-                            <i class="fas fa-rocket"></i>
-                            <span>Projects</span>
-                        </a>
-                        <a href="portfolio.html#experience" class="quick-link">
-                            <i class="fas fa-briefcase"></i>
-                            <span>Experience</span>
-                        </a>
-                        <a href="portfolio.html#contact" class="quick-link">
-                            <i class="fas fa-envelope"></i>
-                            <span>Contact</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="social-preview">
-                    <a href="https://github.com/EYoung21" target="_blank" class="social-link">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank" class="social-link">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                    <a href="mailto:eliyoung4now@gmail.com" class="social-link">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                </div>
-            </div>
-        </section>
+    <!-- Custom Cursor -->
+    <div class="cursor" id="cursor">
+        <div class="cursor-dot"></div>
+        <div class="cursor-circle"></div>
+        <span class="cursor-label"></span>
     </div>
-    
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-content">
-            <div class="loading-logo">
-                <div class="logo-text">EY</div>
-                <div class="loading-spinner"></div>
-            </div>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-            <p class="loading-text">Initializing portfolio...</p>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-counter">
+            <span class="loader-num">0</span>
+            <span class="loader-percent">%</span>
+        </div>
+        <div class="loader-bar">
+            <div class="loader-fill"></div>
         </div>
     </div>
-    
-    <!-- Skip Button -->
-    <a href="portfolio.html" class="skip-btn">
-        <i class="fas fa-forward"></i>
-        <span>Skip Intro</span>
-    </a>
-    
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <a href="#hero" class="nav-logo">EY</a>
+        <div class="nav-links">
+            <a href="#about" class="nav-link" data-cursor="link">About</a>
+            <a href="#experience" class="nav-link" data-cursor="link">Experience</a>
+            <a href="#projects" class="nav-link" data-cursor="link">Projects</a>
+            <a href="#skills" class="nav-link" data-cursor="link">Skills</a>
+            <a href="#contact" class="nav-link" data-cursor="link">Contact</a>
+        </div>
+        <a href="imgs/Eli Young CV.pdf" download class="nav-resume" data-cursor="link">
+            <span>Resume</span>
+            <i class="fas fa-download"></i>
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#experience" class="mobile-link">Experience</a>
+        <a href="#projects" class="mobile-link">Projects</a>
+        <a href="#skills" class="mobile-link">Skills</a>
+        <a href="#contact" class="mobile-link">Contact</a>
+        <a href="imgs/Eli Young CV.pdf" download class="mobile-link">Resume ↓</a>
+    </div>
+
+    <main>
+        <!-- ==================== HERO ==================== -->
+        <section class="section hero" id="hero">
+            <div class="hero-bg">
+                <div class="hero-gradient"></div>
+                <div class="hero-grid"></div>
+            </div>
+            <div class="hero-content">
+                <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
+                <h1 class="hero-title">
+                    <span class="line">Eli</span>
+                    <span class="line">Young</span>
+                </h1>
+                <p class="hero-description">
+                    4th-year CS student at <strong>Swarthmore College</strong>.
+                    Co-founder of <a href="https://algoarena.net" target="_blank" data-cursor="link">AlgoArena</a>.
+                    Building products & publishing research at the intersection of ML and software engineering.
+                </p>
+                <div class="hero-ctas">
+                    <a href="#projects" class="btn btn-primary" data-cursor="link">
+                        <span>View Work</span>
+                        <i class="fas fa-arrow-down"></i>
+                    </a>
+                    <a href="#contact" class="btn btn-ghost" data-cursor="link">
+                        <span>Get in Touch</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-num" data-count="6">0</span>
+                        <span class="hero-stat-label">Professional Roles</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num" data-count="98">0</span>
+                        <span class="hero-stat-label">% Mortality Accuracy</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-num" data-count="5000">0</span>
+                        <span class="hero-stat-label">+ AlgoArena Problems</span>
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-hint">
+                <div class="scroll-line"></div>
+                <span>Scroll</span>
+            </div>
+        </section>
+
+        <!-- ==================== ABOUT ==================== -->
+        <section class="section about" id="about">
+            <div class="container">
+                <div class="section-label">01 / About</div>
+                <div class="about-grid">
+                    <div class="about-text">
+                        <h2 class="section-heading" data-animate="split">A builder at<br>heart.</h2>
+                        <p class="about-description">
+                            I'm driven by a simple idea: technology should solve real problems.
+                            From founding a tech literacy program that's helped <strong>1,000+ seniors</strong> navigate the digital world,
+                            to building <strong>AlgoArena</strong> — a competitive programming platform with 5,000+ problems —
+                            I turn ideas into products people actually use.
+                        </p>
+                        <p class="about-description">
+                            My research at <strong>UIUC</strong> and <strong>USDA ARS</strong> uses machine learning to address
+                            challenges in agriculture: predicting chick viability with 98.8% accuracy and developing interpretable
+                            tools for crop health monitoring.
+                        </p>
+                        <p class="about-description">
+                            I studied abroad in <strong>Copenhagen</strong> (DIS, Spring 2025) and was awarded the <strong>Medici Project Grant</strong> from the 1517 Fund.
+                            Outside of work, you'll find me on the basketball court or automating tedious tasks.
+                        </p>
+                    </div>
+                    <div class="about-visual">
+                        <div class="about-card-stack">
+                            <div class="about-card" data-cursor="drag">
+                                <div class="about-card-icon"><i class="fas fa-microscope"></i></div>
+                                <h3>Researcher</h3>
+                                <p>ML for agriculture — UIUC, USDA ARS, Swarthmore</p>
+                            </div>
+                            <div class="about-card" data-cursor="drag">
+                                <div class="about-card-icon"><i class="fas fa-rocket"></i></div>
+                                <h3>Founder</h3>
+                                <p>AlgoArena · Savvy Seniors · Lock In</p>
+                            </div>
+                            <div class="about-card" data-cursor="drag">
+                                <div class="about-card-icon"><i class="fas fa-trophy"></i></div>
+                                <h3>Competitor</h3>
+                                <p>ICPC 5th place · Hackathon winner · Medici grantee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== EXPERIENCE ==================== -->
+        <section class="section experience" id="experience">
+            <div class="container">
+                <div class="section-label">02 / Experience</div>
+                <h2 class="section-heading" data-animate="split">Where I've<br>worked.</h2>
+
+                <div class="exp-timeline">
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">Sept 2025 — Present</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>Co-Founder & Full-Stack Developer</h3>
+                                <a href="https://algoarena.net" target="_blank" class="exp-company">AlgoArena, LLC <i class="fas fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                            <p>Co-founded real-time 1v1 competitive programming platform (5,000+ problems, ELO matchmaking). Full-stack Next.js 14 / TypeScript / Firebase with Stripe, SendGrid, and Firestore security rules. Integrated OneCompiler API (16 languages) and AI mock interviewer (Deepseek, Cartesia TTS).</p>
+                            <div class="exp-tags">
+                                <span>Next.js</span><span>TypeScript</span><span>Firebase</span><span>AI/TTS</span><span>Stripe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">Sept 2025 — Present</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>Applied ML Researcher</h3>
+                                <span class="exp-company">USDA ARS & Swarthmore College</span>
+                            </div>
+                            <p>Engineered time-series features for EPG analysis (FFT, wavelets, sliding windows). Optuna/SMOTE pipelines achieved 31% F1 gain via novel position-encoding features. Benchmarked MOMENT and AdaBoost with USDA ARS, Auburn, and Harvey Mudd.</p>
+                            <div class="exp-tags">
+                                <span>Time-Series ML</span><span>Signal Processing</span><span>Optuna</span><span>Python</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">June 2025 — Jan 2026</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>Contract Software Engineer</h3>
+                                <span class="exp-company">Calibrr Social</span>
+                            </div>
+                            <p>Reduced API rate limiting with debouncing and cache optimization, cutting API calls by 75%. Built profile likes, smart email notifications, and broken link reporting via EC2, AWS Lambda, and SES. 97+ commits across iOS (Swift), Laravel PHP, and AWS.</p>
+                            <div class="exp-tags">
+                                <span>Swift</span><span>AWS</span><span>Laravel</span><span>DynamoDB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">May 2025 — Aug 2025</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>Research Assistant — REU Fellowship</h3>
+                                <span class="exp-company">Center for Digital Agriculture, UIUC</span>
+                            </div>
+                            <p>ML on 690 eggs' VNIR spectroscopy for chick mortality and sex prediction. Achieved 98.8% mortality and 59.5% sex accuracy (100% on confident predictions). PCA for wavelength selection addressing 6.5B+ annual culls.</p>
+                            <div class="exp-tags">
+                                <span>PyTorch</span><span>Transformers</span><span>Meta-Learning</span><span>Spectroscopy</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">Sept 2024 — Apr 2025</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>Software Engineering Intern</h3>
+                                <span class="exp-company">Torchman I.P.</span>
+                            </div>
+                            <p>Automated USPTO office action processing: OCR (Tesseract), regex, OpenAI API, Selenium/BeautifulSoup. CSV export, summary generation, and PDF retrieval from Google Patents.</p>
+                            <div class="exp-tags">
+                                <span>Python</span><span>OCR</span><span>OpenAI API</span><span>Selenium</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="exp-item" data-cursor="view">
+                        <div class="exp-date">Aug — Sept 2025</div>
+                        <div class="exp-content">
+                            <div class="exp-header">
+                                <h3>SEO Intern</h3>
+                                <span class="exp-company">Haitian Global Health Alliance</span>
+                            </div>
+                            <p>Executed Yoast SEO audit across gheskio.org. Programmatically extracted WordPress/Yoast metadata via REST API. Prioritized updates with Google Keyword Planner and aligned content to global health queries.</p>
+                            <div class="exp-tags">
+                                <span>SEO</span><span>WordPress</span><span>REST API</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PROJECTS ==================== -->
+        <section class="section projects" id="projects">
+            <div class="container">
+                <div class="section-label">03 / Projects</div>
+                <h2 class="section-heading" data-animate="split">Selected<br>work.</h2>
+
+                <!-- Featured: AlgoArena -->
+                <div class="project-featured">
+                    <div class="project-featured-media" data-cursor="view">
+                        <img src="imgs/algoarena.png" alt="AlgoArena competitive programming platform" loading="lazy">
+                        <div class="project-featured-overlay">
+                            <span>View Project <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                    <div class="project-featured-info">
+                        <span class="project-label">Co-Founded Product</span>
+                        <h3>AlgoArena</h3>
+                        <p>The first real-time 1v1 competitive programming platform. 5,000+ problems, ELO matchmaking, Kahoot-style classroom mode for CS educators, and AI-powered mock interviews with streaming TTS.</p>
+                        <div class="project-links">
+                            <a href="https://algoarena.net" target="_blank" data-cursor="link">algoarena.net <i class="fas fa-arrow-up-right-from-square"></i></a>
+                        </div>
+                        <div class="exp-tags">
+                            <span>Next.js 14</span><span>TypeScript</span><span>Firebase</span><span>AI/TTS</span><span>Stripe</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured: Lock In -->
+                <div class="project-featured reverse">
+                    <div class="project-featured-media" data-cursor="view">
+                        <img src="imgs/lockin.png" alt="Lock In productivity app" loading="lazy">
+                        <div class="project-featured-overlay">
+                            <span>View Project <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                    <div class="project-featured-info">
+                        <span class="project-label">Shipped Product · iOS & Android</span>
+                        <h3>Lock In</h3>
+                        <p>Cross-platform productivity app with native Kotlin/Swift app blocking. Gamification with currency, streaks, D3.js dashboards. Firebase cloud sync, Google/Apple Sign-In, AdMob, and in-app purchases.</p>
+                        <div class="project-links">
+                            <a href="https://www.trylockin.com" target="_blank" data-cursor="link">trylockin.com <i class="fas fa-arrow-up-right-from-square"></i></a>
+                            <a href="https://github.com/EYoung21/Lock-In" target="_blank" data-cursor="link">GitHub <i class="fab fa-github"></i></a>
+                        </div>
+                        <div class="exp-tags">
+                            <span>React Native</span><span>Kotlin</span><span>Swift</span><span>Firebase</span><span>D3.js</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured: Research -->
+                <div class="project-featured">
+                    <div class="project-featured-media" data-cursor="view">
+                        <img src="imgs/research.png" alt="Chick egg spectroscopy research" loading="lazy">
+                        <div class="project-featured-overlay">
+                            <span>View Research <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                    <div class="project-featured-info">
+                        <span class="project-label">REU Research · UIUC</span>
+                        <h3>Egg Viability Prediction</h3>
+                        <p>Progressive gender and mortality prediction in chicken eggs using time-series hyperspectral imaging. 98.8% mortality accuracy with transformers, meta-learning (TabPFN), and gradient boosting on VNIR spectroscopy data from 690 eggs.</p>
+                        <div class="exp-tags">
+                            <span>PyTorch</span><span>Meta-Learning</span><span>Computer Vision</span><span>PCA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Smaller Project Cards -->
+                <div class="project-grid">
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-pig"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/EYoung21/AutomaticWeightEstimationAndFeeding" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>Precise Swine & Dine</h4>
+                        <p>YOLO + morphological features for pig weight estimation (<5kg MAE). Won Livestock Monitoring Track, AI Foundry Hackathon.</p>
+                        <div class="exp-tags"><span>YOLO</span><span>MLP</span><span>Random Forest</span></div>
+                    </div>
+
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-basketball"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/EYoung21/FreeThrowVSFatigue" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>Free Throw vs. Fatigue</h4>
+                        <p>Statistical analysis of fatigue on NBA free throw accuracy across 24 seasons and 30 teams with scraping pipelines.</p>
+                        <div class="exp-tags"><span>Python</span><span>Pandas</span><span>Matplotlib</span></div>
+                    </div>
+
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-heartbeat"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/EYoung21/Predictacare" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>PredictaCare</h4>
+                        <p>ML for healthcare scheduling optimization. scikit-learn, Docker, Node/Express. Showcased at Drexel Philly Codefest.</p>
+                        <div class="exp-tags"><span>scikit-learn</span><span>Docker</span><span>Flask</span></div>
+                    </div>
+
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-exchange-alt"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/swat-sccs/swat-swap" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>Swat Swap</h4>
+                        <p>Swarthmore-specific marketplace with advanced search, secure messaging, and MinIO storage. SCCS project lead.</p>
+                        <div class="exp-tags"><span>Next.js</span><span>PostgreSQL</span><span>Prisma</span></div>
+                    </div>
+
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-mountain"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/EYoung21/CaveClimber" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>Cave Climber</h4>
+                        <p>Vertical platformer with dynamic platform generation, adaptive enemy AI, and power-up mechanics in Godot.</p>
+                        <div class="exp-tags"><span>Godot</span><span>GDScript</span><span>Game Design</span></div>
+                    </div>
+
+                    <div class="project-card" data-cursor="view">
+                        <div class="project-card-top">
+                            <i class="fas fa-chess-rook"></i>
+                            <div class="project-card-links">
+                                <a href="https://github.com/EYoung21/AStarDefense" target="_blank"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                        <h4>A* Defense</h4>
+                        <p>Unity tower defense game with real-time A* pathfinding, multi-tier turret upgrades, and wave-based progression.</p>
+                        <div class="exp-tags"><span>Unity</span><span>C#</span><span>A* Algorithm</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SKILLS (Marquee) ==================== -->
+        <section class="section skills-section" id="skills">
+            <div class="container">
+                <div class="section-label">04 / Skills</div>
+                <h2 class="section-heading" data-animate="split">Tech<br>stack.</h2>
+            </div>
+
+            <div class="marquee-wrapper">
+                <div class="marquee">
+                    <div class="marquee-content">
+                        <span class="marquee-item">Python</span>
+                        <span class="marquee-item">C++</span>
+                        <span class="marquee-item">JavaScript</span>
+                        <span class="marquee-item">TypeScript</span>
+                        <span class="marquee-item">Java</span>
+                        <span class="marquee-item">C</span>
+                        <span class="marquee-item">C#</span>
+                        <span class="marquee-item">SQL</span>
+                        <span class="marquee-item">R</span>
+                        <span class="marquee-item">Swift</span>
+                        <span class="marquee-item">OCaml</span>
+                        <span class="marquee-item">Bash</span>
+                    </div>
+                    <div class="marquee-content" aria-hidden="true">
+                        <span class="marquee-item">Python</span>
+                        <span class="marquee-item">C++</span>
+                        <span class="marquee-item">JavaScript</span>
+                        <span class="marquee-item">TypeScript</span>
+                        <span class="marquee-item">Java</span>
+                        <span class="marquee-item">C</span>
+                        <span class="marquee-item">C#</span>
+                        <span class="marquee-item">SQL</span>
+                        <span class="marquee-item">R</span>
+                        <span class="marquee-item">Swift</span>
+                        <span class="marquee-item">OCaml</span>
+                        <span class="marquee-item">Bash</span>
+                    </div>
+                </div>
+                <div class="marquee reverse">
+                    <div class="marquee-content">
+                        <span class="marquee-item outlined">React</span>
+                        <span class="marquee-item outlined">Next.js</span>
+                        <span class="marquee-item outlined">Node.js</span>
+                        <span class="marquee-item outlined">Flask</span>
+                        <span class="marquee-item outlined">Docker</span>
+                        <span class="marquee-item outlined">AWS</span>
+                        <span class="marquee-item outlined">Firebase</span>
+                        <span class="marquee-item outlined">Git</span>
+                        <span class="marquee-item outlined">PyTorch</span>
+                        <span class="marquee-item outlined">TensorFlow</span>
+                        <span class="marquee-item outlined">scikit-learn</span>
+                        <span class="marquee-item outlined">Unity</span>
+                    </div>
+                    <div class="marquee-content" aria-hidden="true">
+                        <span class="marquee-item outlined">React</span>
+                        <span class="marquee-item outlined">Next.js</span>
+                        <span class="marquee-item outlined">Node.js</span>
+                        <span class="marquee-item outlined">Flask</span>
+                        <span class="marquee-item outlined">Docker</span>
+                        <span class="marquee-item outlined">AWS</span>
+                        <span class="marquee-item outlined">Firebase</span>
+                        <span class="marquee-item outlined">Git</span>
+                        <span class="marquee-item outlined">PyTorch</span>
+                        <span class="marquee-item outlined">TensorFlow</span>
+                        <span class="marquee-item outlined">scikit-learn</span>
+                        <span class="marquee-item outlined">Unity</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="skills-grid">
+                    <div class="skill-block">
+                        <h3><i class="fas fa-brain"></i> Machine Learning</h3>
+                        <div class="skill-items">
+                            <span>PyTorch</span><span>TensorFlow</span><span>scikit-learn</span><span>Computer Vision</span><span>NLP</span><span>Time-Series</span><span>Transformers</span>
+                        </div>
+                    </div>
+                    <div class="skill-block">
+                        <h3><i class="fas fa-code"></i> Web & Mobile</h3>
+                        <div class="skill-items">
+                            <span>React / React Native</span><span>Next.js</span><span>Node.js</span><span>Flask</span><span>Firebase</span><span>AWS</span><span>Docker</span>
+                        </div>
+                    </div>
+                    <div class="skill-block">
+                        <h3><i class="fas fa-gamepad"></i> Game Dev</h3>
+                        <div class="skill-items">
+                            <span>Unity / C#</span><span>Godot / GDScript</span><span>Game Design</span><span>3D Modeling</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== LEADERSHIP ==================== -->
+        <section class="section leadership">
+            <div class="container">
+                <div class="section-label">05 / Leadership</div>
+                <h2 class="section-heading" data-animate="split">Beyond<br>code.</h2>
+
+                <div class="leadership-grid">
+                    <div class="leadership-card">
+                        <div class="leadership-icon"><i class="fas fa-laptop-house"></i></div>
+                        <h3>Savvy Seniors Tech Institute</h3>
+                        <p class="leadership-role">Founder · June 2023 – Present</p>
+                        <p>Founded tech literacy program serving 1,000+ seniors. Hired by Ascension Living's Alexian Village for weekly "office hours" sessions.</p>
+                    </div>
+                    <div class="leadership-card">
+                        <div class="leadership-icon"><i class="fas fa-trophy"></i></div>
+                        <h3>ICPC Team Member</h3>
+                        <p class="leadership-role">5th Place · NA South Division 2</p>
+                        <p>Competed at ICPC Mid-Atlantic Regional at Wilkes University, solving complex algorithmic problems under time pressure.</p>
+                    </div>
+                    <div class="leadership-card">
+                        <div class="leadership-icon"><i class="fas fa-users"></i></div>
+                        <h3>SCCS Project Lead</h3>
+                        <p class="leadership-role">Swarthmore College · Feb 2024 – Dec 2025</p>
+                        <p>Led Swat Swap project development and maintained servers with ~60 members in the Computer Society.</p>
+                    </div>
+                    <div class="leadership-card">
+                        <div class="leadership-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <h3>CS Student Mentor</h3>
+                        <p class="leadership-role">Swarthmore · Oct – Dec 2024</p>
+                        <p>Selected to mentor students in CPSC 31 and CPSC 35, promoting academic success and CS department engagement.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CONTACT ==================== -->
+        <section class="section contact" id="contact">
+            <div class="container">
+                <div class="section-label">06 / Contact</div>
+                <h2 class="contact-heading" data-animate="split">Let's<br>connect.</h2>
+                <p class="contact-sub">I'm actively looking for full-time SWE roles and research opportunities. Let's talk.</p>
+
+                <div class="contact-links">
+                    <a href="mailto:eliyoung4now@gmail.com" class="contact-link" data-cursor="link">
+                        <i class="fas fa-envelope"></i>
+                        <span>eliyoung4now@gmail.com</span>
+                    </a>
+                    <a href="tel:6199302573" class="contact-link" data-cursor="link">
+                        <i class="fas fa-phone"></i>
+                        <span>619-930-2573</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank" class="contact-link" data-cursor="link">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://github.com/EYoung21" target="_blank" class="contact-link" data-cursor="link">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span>&copy; 2026 Eli Young</span>
+            <span>Signal Mountain, TN</span>
+            <div class="footer-socials">
+                <a href="https://github.com/EYoung21" target="_blank" data-cursor="link"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/eliyoung12/" target="_blank" data-cursor="link"><i class="fab fa-linkedin"></i></a>
+                <a href="mailto:eliyoung4now@gmail.com" data-cursor="link"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+    </footer>
+
     <script src="landing.js"></script>
 </body>
 </html>
