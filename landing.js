@@ -360,7 +360,7 @@
         }, 500);
     });
 
-    // ── ThreeJS 3D Torus (Theme) ──
+    // ── ThreeJS ML Data Core (Theme) ──
     const canvas = document.getElementById('theme-canvas');
     if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
@@ -370,21 +370,44 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.position.z = 25;
 
-        // Torus knot with wireframe material
-        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        // "Neural Core" representing ML, biology, and data structures
+        const initialGeometry = new THREE.IcosahedronGeometry(10, 4); // High detail wireframe sphere
+        const positionClone = new Float32Array(initialGeometry.attributes.position.array);
+        
         const material = new THREE.MeshBasicMaterial({ 
-            color: 0xff0066, // Dark pink/purple aesthetic from references
+            color: 0x00ff66, // Cyber/Matrix Green
             wireframe: true,
             transparent: true,
-            opacity: 0.15 
+            opacity: 0.25 
         });
-        const torusKnot = new THREE.Mesh(geometry, material);
-        scene.add(torusKnot);
+        const dataCore = new THREE.Mesh(initialGeometry, material);
+        scene.add(dataCore);
 
+        let clock = 0;
         function animate3D() {
             requestAnimationFrame(animate3D);
-            torusKnot.rotation.x += 0.005;
-            torusKnot.rotation.y += 0.005;
+            clock += 0.03;
+            
+            // Animate vertices for a "living" data respiration effect
+            const posAttribute = dataCore.geometry.attributes.position;
+            const vertexCount = posAttribute.count;
+
+            for (let i = 0; i < vertexCount; i++) {
+                // Get original position
+                const ox = positionClone[i * 3];
+                const oy = positionClone[i * 3 + 1];
+                const oz = positionClone[i * 3 + 2];
+                
+                // Calculate dynamic displacement using sine waves based on original coords
+                const noise = Math.sin(ox * 0.5 + clock) + Math.cos(oy * 0.5 + clock * 0.8) + Math.sin(oz * 0.5 + clock * 1.2);
+                const scale = 1 + noise * 0.08; // Pulse amplitude
+
+                posAttribute.setXYZ(i, ox * scale, oy * scale, oz * scale);
+            }
+            posAttribute.needsUpdate = true;
+
+            dataCore.rotation.x += 0.002;
+            dataCore.rotation.y += 0.003;
             renderer.render(scene, camera);
         }
         animate3D();
@@ -395,11 +418,17 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Mouse interaction for the 3D Torus
+        // Interactive mouse parallax
         document.addEventListener('mousemove', (e) => {
             const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
             const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-            gsap.to(torusKnot.rotation, {
+            gsap.to(dataCore.position, {
+                x: mouseX * 2,
+                y: mouseY * 2,
+                duration: 2,
+                ease: "power2.out"
+            });
+            gsap.to(dataCore.rotation, {
                 x: mouseY * 0.5,
                 y: mouseX * 0.5,
                 duration: 2,
