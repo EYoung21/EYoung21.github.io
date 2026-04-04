@@ -14,16 +14,26 @@
         smoothWheel: true,
     });
 
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
     // Lenis + ScrollTrigger sync
     lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+    });
     gsap.ticker.lagSmoothing(0);
+
+    // ── Magnetic Buttons (Idea 14) ──
+    const magneticElements = document.querySelectorAll('.btn, .nav-resume');
+    magneticElements.forEach((el) => {
+        el.addEventListener('mousemove', (e) => {
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            gsap.to(el, { x: x * 0.4, y: y * 0.4, duration: 0.3, ease: 'power2.out' });
+        });
+        el.addEventListener('mouseleave', () => {
+            gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+        });
+    });
 
 
 
@@ -349,5 +359,53 @@
             setupScrollAnimations();
         }, 500);
     });
+
+    // ── ThreeJS 3D Torus (Theme) ──
+    const canvas = document.getElementById('theme-canvas');
+    if (canvas && typeof THREE !== 'undefined') {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.position.z = 25;
+
+        // Torus knot with wireframe material
+        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xff0066, // Dark pink/purple aesthetic from references
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15 
+        });
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            torusKnot.rotation.x += 0.005;
+            torusKnot.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        animate3D();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Mouse interaction for the 3D Torus
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            gsap.to(torusKnot.rotation, {
+                x: mouseY * 0.5,
+                y: mouseX * 0.5,
+                duration: 2,
+                ease: "power2.out"
+            });
+        });
+    }
 
 })();

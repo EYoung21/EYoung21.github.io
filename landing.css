@@ -985,3 +985,57 @@ a.exp-company:hover { opacity: 0.7; }
     .hero-ctas { flex-direction: column; }
     .btn { width: 100%; justify-content: center; }
 }
+
+/* ── Theme: Lava Blobs ── */
+.blob-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -3;
+    overflow: hidden;
+    background: #000;
+    pointer-events: none;
+}
+.blob {
+    position: absolute;
+    filter: blur(80px);
+    opacity: 0.5;
+    border-radius: 50%;
+    animation: floatBlob 20s infinite alternate ease-in-out;
+}
+.blob-1 {
+    width: 40vw; height: 40vw;
+    background: rgba(0, 255, 102, 0.15);
+    top: -10%; left: -10%;
+    animation-delay: 0s;
+}
+.blob-2 {
+    width: 35vw; height: 35vw;
+    background: rgba(102, 0, 255, 0.1);
+    bottom: -10%; right: -10%;
+    animation-delay: -5s;
+    animation-duration: 25s;
+}
+.blob-3 {
+    width: 30vw; height: 30vw;
+    background: rgba(0, 102, 255, 0.1);
+    top: 40%; left: 30%;
+    animation-delay: -10s;
+    animation-duration: 22s;
+}
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(10vw, -10vh) scale(1.1); }
+    100% { transform: translate(-5vw, 15vh) scale(0.9); }
+}
+
+/* ── Theme: 3D Canvas ── */
+.theme-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.6;
+}

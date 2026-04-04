@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eli Young — CS & ML Engineer</title>
+    <link rel="icon" href="https://fav.farm/⚡" />
     <meta name="description" content="Eli Young — Computer Science student at Swarthmore College, ML researcher, and co-founder of AlgoArena. Portfolio showcasing research, products, and engineering.">
 
     <!-- Open Graph -->
@@ -30,9 +31,20 @@
     <!-- Lenis smooth scroll -->
     <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 
+    <!-- ThreeJS (Theme) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <link rel="stylesheet" href="landing.css">
 </head>
 <body>
+    <!-- 3D Theme Canvas & Lava Blobs -->
+    <canvas id="theme-canvas" class="theme-canvas"></canvas>
+    
+    <div class="blob-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
 
     <!-- Loader -->
@@ -114,6 +126,11 @@
                     <div class="hero-stat">
                         <span class="hero-stat-num" data-count="5000">0</span>
                         <span class="hero-stat-label">+ AlgoArena Problems</span>
+                    </div>
+                    </div>
+                    <!-- GitHub Heatmap (Idea 15) -->
+                    <div class="hero-stat desktop-only">
+                        <img src="https://ghchart.rshah.org/00FF66/EYoung21" alt="Eli's GitHub Contributions" style="width: 100%; max-width: 300px; filter: hue-rotate(0deg); opacity: 0.8;" />
                     </div>
                 </div>
             </div>
@@ -271,12 +288,12 @@
 
                 <!-- Featured: AlgoArena -->
                 <div class="project-featured">
-                    <div class="project-featured-media" data-cursor="view">
+                    <a href="https://algoarena.net" target="_blank" class="project-featured-media" data-cursor="link">
                         <img src="imgs/projects/algoarena-assessment.png" alt="AlgoArena online assessment IDE with AI agent" loading="lazy">
                         <div class="project-featured-overlay">
-                            <span>View Project <i class="fas fa-arrow-right"></i></span>
+                            <span>Visit AlgoArena <i class="fas fa-arrow-right"></i></span>
                         </div>
-                    </div>
+                    </a>
                     <div class="project-featured-info">
                         <span class="project-label">Co-Founded Product</span>
                         <h3>AlgoArena</h3>
@@ -292,12 +309,12 @@
 
                 <!-- Featured: Lock In -->
                 <div class="project-featured reverse">
-                    <div class="project-featured-media" data-cursor="view">
+                    <a href="https://www.trylockin.com" target="_blank" class="project-featured-media" data-cursor="link">
                         <img src="imgs/projects/lockin-banner.png" alt="Lock In — Eliminate distractions, build focus" loading="lazy">
                         <div class="project-featured-overlay">
-                            <span>View Project <i class="fas fa-arrow-right"></i></span>
+                            <span>Visit Lock In <i class="fas fa-arrow-right"></i></span>
                         </div>
-                    </div>
+                    </a>
                     <div class="project-featured-info">
                         <span class="project-label">Shipped Product · iOS & Android</span>
                         <h3>Lock In</h3>
@@ -314,12 +331,12 @@
 
                 <!-- Featured: Research -->
                 <div class="project-featured">
-                    <div class="project-featured-media" data-cursor="view">
+                    <a href="https://github.com/EYoung21" target="_blank" class="project-featured-media" data-cursor="link">
                         <img src="imgs/projects/egg-pca-variance.png" alt="PCA Variance Explained — Egg HSI Spectral Data" loading="lazy">
                         <div class="project-featured-overlay">
                             <span>View Research <i class="fas fa-arrow-right"></i></span>
                         </div>
-                    </div>
+                    </a>
                     <div class="project-featured-info">
                         <span class="project-label">REU Research · UIUC</span>
                         <h3>Egg Viability Prediction</h3>
