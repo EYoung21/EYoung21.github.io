@@ -25,37 +25,7 @@
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // ── Custom Cursor ──
-    const cursor = document.getElementById('cursor');
-    const cursorLabel = cursor?.querySelector('.cursor-label');
-    let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
 
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-
-    function updateCursor() {
-        cursorX += (mouseX - cursorX) * 0.12;
-        cursorY += (mouseY - cursorY) * 0.12;
-        if (cursor) cursor.style.transform = `translate(${cursorX}px, ${cursorY}px)`;
-        requestAnimationFrame(updateCursor);
-    }
-    updateCursor();
-
-    // Cursor states
-    document.querySelectorAll('[data-cursor]').forEach(el => {
-        const type = el.getAttribute('data-cursor');
-        el.addEventListener('mouseenter', () => {
-            document.body.classList.add(`cursor-${type}`);
-            if (cursorLabel && (type === 'view' || type === 'drag')) {
-                cursorLabel.textContent = type === 'view' ? 'View' : 'Drag';
-            }
-        });
-        el.addEventListener('mouseleave', () => {
-            document.body.classList.remove(`cursor-${type}`);
-        });
-    });
 
     // ── Loader ──
     const loader = document.getElementById('loader');
