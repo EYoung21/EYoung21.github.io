@@ -370,44 +370,59 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.position.z = 25;
 
-        // "Neural Core" representing ML, biology, and data structures
-        const initialGeometry = new THREE.IcosahedronGeometry(10, 4); // High detail wireframe sphere
-        const positionClone = new Float32Array(initialGeometry.attributes.position.array);
-        
-        const material = new THREE.MeshBasicMaterial({ 
-            color: 0x00ff66, // Cyber/Matrix Green
-            wireframe: true,
-            transparent: true,
-            opacity: 0.25 
-        });
-        const dataCore = new THREE.Mesh(initialGeometry, material);
-        scene.add(dataCore);
+        // "Hyperspectral Hypercube" representing spectral wavelength image bands
+        const hypercubeGroup = new THREE.Group();
+        scene.add(hypercubeGroup);
+
+        const numPlanes = 20;
+        const planeSize = 12;
+        const spacing = 0.8;
+
+        const planes = [];
+        // Create a stack of wireframe planes along the Z axis
+        for (let i = 0; i < numPlanes; i++) {
+            const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 8, 8);
+            // shift color slightly to represent different wavelengths (green to blue spectrum)
+            const hue = 0.4 + (i / numPlanes) * 0.2; 
+            const color = new THREE.Color().setHSL(hue, 1.0, 0.5);
+            
+            const material = new THREE.MeshBasicMaterial({ 
+                color: color, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15 + (i===0 || i===numPlanes-1 ? 0.2 : 0) // highlight outer bounds
+            });
+            
+            const plane = new THREE.Mesh(geometry, material);
+            // Center the stack around 0
+            plane.position.z = (i - numPlanes / 2) * spacing;
+            
+            hypercubeGroup.add(plane);
+            planes.push(plane);
+        }
+
+        // Add bounding box lines to complete the "cube" look
+        const boxGeometry = new THREE.BoxGeometry(planeSize, planeSize, numPlanes * spacing);
+        const edges = new THREE.EdgesGeometry(boxGeometry);
+        const boxMaterial = new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.3 });
+        const boundingBox = new THREE.LineSegments(edges, boxMaterial);
+        hypercubeGroup.add(boundingBox);
 
         let clock = 0;
         function animate3D() {
             requestAnimationFrame(animate3D);
-            clock += 0.03;
+            clock += 0.02;
             
-            // Animate vertices for a "living" data respiration effect
-            const posAttribute = dataCore.geometry.attributes.position;
-            const vertexCount = posAttribute.count;
+            // Animate planes to simulate scanning through wavelengths
+            planes.forEach((plane, index) => {
+                // Wave effect passing through the spectral bands
+                const wave = Math.sin(clock * 2 + index * 0.5);
+                plane.scale.setScalar(1 + wave * 0.05);
+                plane.rotation.z = Math.sin(clock * 0.5) * 0.1 * (index / numPlanes);
+            });
 
-            for (let i = 0; i < vertexCount; i++) {
-                // Get original position
-                const ox = positionClone[i * 3];
-                const oy = positionClone[i * 3 + 1];
-                const oz = positionClone[i * 3 + 2];
-                
-                // Calculate dynamic displacement using sine waves based on original coords
-                const noise = Math.sin(ox * 0.5 + clock) + Math.cos(oy * 0.5 + clock * 0.8) + Math.sin(oz * 0.5 + clock * 1.2);
-                const scale = 1 + noise * 0.08; // Pulse amplitude
-
-                posAttribute.setXYZ(i, ox * scale, oy * scale, oz * scale);
-            }
-            posAttribute.needsUpdate = true;
-
-            dataCore.rotation.x += 0.002;
-            dataCore.rotation.y += 0.003;
+            hypercubeGroup.rotation.x += 0.002;
+            hypercubeGroup.rotation.y += 0.003;
             renderer.render(scene, camera);
         }
         animate3D();
@@ -422,13 +437,13 @@
         document.addEventListener('mousemove', (e) => {
             const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
             const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-            gsap.to(dataCore.position, {
+            gsap.to(hypercubeGroup.position, {
                 x: mouseX * 2,
                 y: mouseY * 2,
                 duration: 2,
                 ease: "power2.out"
             });
-            gsap.to(dataCore.rotation, {
+            gsap.to(hypercubeGroup.rotation, {
                 x: mouseY * 0.5,
                 y: mouseX * 0.5,
                 duration: 2,
