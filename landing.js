@@ -35,44 +35,94 @@
 
 
 
-    // ── Loader (Curtain Reveal) ──
-    const loader = document.getElementById('loader');
-    const loaderNum = loader?.querySelector('.loader-num');
-    const loaderFill = loader?.querySelector('.loader-fill');
-    let loadProgress = 0;
+    // ── CLI Boot Sequence (Idea 3) ──
+    const terminalLoader = document.getElementById('terminalLoader');
+    const terminalBody = document.getElementById('terminalBody');
+    
+    const bootLines = [
+        "[OK] Initializing boot sequence...",
+        "[OK] Loading environment weights...",
+        "[WARN] Sub-optimal dimensions detected. Re-calibrating...",
+        "[OK] Establishing uplink to EYoung21 portfolio payload...",
+        "[OK] Neural Network topology established.",
+        "[OK] Allocating 5000 AlgoArena nodes...",
+        "Decrypting source files... [████████████████████] 100%",
+        "ACCESS GRANTED."
+    ];
 
-    function animateLoader() {
-        const interval = setInterval(() => {
-            loadProgress += Math.random() * 12 + 3;
-            if (loadProgress >= 100) {
-                loadProgress = 100;
-                clearInterval(interval);
+    function runBootSequence() {
+        if (!terminalLoader || !terminalBody) return;
+        
+        let i = 0;
+        const cursorHTML = '<span class="cursor">_</span>';
+        
+        function typeLine() {
+            if (i >= bootLines.length) {
+                // Done booting
                 setTimeout(() => {
-                    // Idea 1: Curtain Reveal
-                    gsap.to(loader, {
-                        yPercent: -100,
-                        duration: 1.5,
-                        ease: "power4.inOut",
+                    // GSAP 3D Shatter/Flip out
+                    gsap.to("#terminalWindow", {
+                        rotationX: 45,
+                        rotationY: -20,
+                        z: -500,
+                        scale: 0.8,
+                        opacity: 0,
+                        duration: 1.2,
+                        ease: "power3.in",
                         onComplete: () => {
-                            loader?.classList.add('done');
+                            terminalLoader.remove();
+                            // TRIGGER WEBGL METAMORPHOSIS!
+                            window.dispatchEvent(new Event('terminalBootComplete'));
+                            document.getElementById('nav')?.classList.add('visible');
+                            animateHero();
                         }
                     });
-                    
-                    setTimeout(() => {
-                        document.getElementById('nav')?.classList.add('visible');
-                        animateHero();
-                    }, 500); // start hero animation slightly before curtain is fully gone
-                    
-                }, 300);
+                }, 400);
+                return;
             }
-            if (loaderNum) loaderNum.textContent = Math.floor(loadProgress);
-            if (loaderFill) loaderFill.style.width = loadProgress + '%';
-        }, 80);
+
+            const currentLine = bootLines[i];
+            const div = document.createElement('div');
+            div.className = 'terminal-line';
+            
+            // formatting based on [STATUS]
+            let formattedLine = currentLine;
+            if (currentLine.startsWith('[OK]')) {
+                formattedLine = `<span class="status">[OK]</span> ${currentLine.substring(4)}`;
+            } else if (currentLine.startsWith('[WARN]')) {
+                formattedLine = `<span class="status" style="color:#ffbd2e">[WARN]</span> ${currentLine.substring(6)}`;
+            } else if (currentLine === "ACCESS GRANTED.") {
+                formattedLine = `<span class="highlight">${currentLine}</span>`;
+            }
+
+            // Remove old cursor
+            const oldCursor = terminalBody.querySelector('.cursor');
+            if (oldCursor) oldCursor.remove();
+
+            div.innerHTML = formattedLine + (i === bootLines.length - 1 ? cursorHTML : '');
+            terminalBody.appendChild(div);
+
+            // Re-add cursor if not last line
+            if (i < bootLines.length - 1) {
+                const curDiv = document.createElement('div');
+                curDiv.className = 'terminal-line cursor-line';
+                curDiv.innerHTML = cursorHTML;
+                terminalBody.appendChild(curDiv);
+            }
+
+            // Scroll to bottom
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+
+            i++;
+            // Variable typing speed
+            const nextDelay = currentLine === "ACCESS GRANTED." ? 100 : Math.random() * 150 + 50;
+            setTimeout(typeLine, nextDelay);
+        }
+
+        setTimeout(typeLine, 300); // Start after brief delay
     }
 
-    window.addEventListener('load', () => {
-        setTimeout(animateLoader, 200);
-    });
+    window.addEventListener('load', runBootSequence);
 
     // ── Hero Animation ──
     function animateHero() {
@@ -389,69 +439,198 @@
         }, 500);
     });
 
-    // ── ThreeJS ML Data Core (Theme) ──
+    // ── ThreeJS WebGL Metamorphosis: Data to Structure (Idea 1 - acko.net style) ──
     const canvas = document.getElementById('theme-canvas');
     if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.position.z = 25;
+        camera.position.z = 150;
 
-        // "Hyperspectral Hypercube" representing spectral wavelength image bands
-        const hypercubeGroup = new THREE.Group();
-        scene.add(hypercubeGroup);
+        // 1. Generate Target Coordinates from Offscreen Canvas (Text)
+        const textCanvas = document.createElement('canvas');
+        textCanvas.width = 1000;
+        textCanvas.height = 300;
+        const ctx = textCanvas.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, textCanvas.width, textCanvas.height);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 160px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('EYOUNG', textCanvas.width / 2, textCanvas.height / 2);
 
-        const numPlanes = 30;
-        const planeSize = 30;
-        const spacing = 1.0;
-
-        const planes = [];
-        // Create a stack of wireframe planes along the Z axis
-        for (let i = 0; i < numPlanes; i++) {
-            const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 8, 8);
-            // shift color slightly to represent different wavelengths (green to blue spectrum)
-            const hue = 0.4 + (i / numPlanes) * 0.2; 
-            const color = new THREE.Color().setHSL(hue, 1.0, 0.5);
-            
-            const material = new THREE.MeshBasicMaterial({ 
-                color: color, 
-                wireframe: true,
-                transparent: true,
-                opacity: 0.15 + (i===0 || i===numPlanes-1 ? 0.2 : 0) // highlight outer bounds
-            });
-            
-            const plane = new THREE.Mesh(geometry, material);
-            // Center the stack around 0
-            plane.position.z = (i - numPlanes / 2) * spacing;
-            
-            hypercubeGroup.add(plane);
-            planes.push(plane);
+        const imgData = ctx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
+        const textPoints = [];
+        
+        // Sample every 4th pixel to limit point count
+        for (let y = 0; y < textCanvas.height; y += 4) {
+            for (let x = 0; x < textCanvas.width; x += 4) {
+                const index = (y * textCanvas.width + x) * 4;
+                const r = imgData[index];
+                if (r > 128) {
+                    // Map from canvas space (0,0 top-left) to Three.js space (0,0 center)
+                    const pX = (x - textCanvas.width / 2) * 0.3;
+                    const pY = (textCanvas.height / 2 - y) * 0.3;
+                    textPoints.push(new THREE.Vector3(pX, pY, (Math.random() - 0.5) * 5));
+                }
+            }
         }
 
-        // Add bounding box lines to complete the "cube" look
-        const boxGeometry = new THREE.BoxGeometry(planeSize, planeSize, numPlanes * spacing);
-        const edges = new THREE.EdgesGeometry(boxGeometry);
-        const boxMaterial = new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.3 });
-        const boundingBox = new THREE.LineSegments(edges, boxMaterial);
-        hypercubeGroup.add(boundingBox);
+        const numParticles = Math.max(textPoints.length, 3000); // Ensure a good density
+        const positions = new Float32Array(numParticles * 3);
+        
+        // We will animate positions array via JS, so we keep track of states
+        const chaosPositions = [];
+        const targetPositions = [];
+        const currentPositions = [];
+        const velocities = [];
 
-        let clock = 0;
+        for (let i = 0; i < numParticles; i++) {
+            // Chaos: random points distributed in a wide sphere
+            const r = 100 + Math.random() * 80;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            
+            const cX = r * Math.sin(phi) * Math.cos(theta);
+            const cY = r * Math.sin(phi) * Math.sin(theta);
+            const cZ = r * Math.cos(phi);
+            chaosPositions.push(new THREE.Vector3(cX, cY, cZ));
+
+            // Target Text: pull from generated text points or map randomly to existing ones
+            let tX, tY, tZ;
+            if (i < textPoints.length) {
+                tX = textPoints[i].x; tY = textPoints[i].y; tZ = textPoints[i].z;
+            } else {
+                // If we need more points than the text, just cluster them densely around it
+                const randomTextPt = textPoints[Math.floor(Math.random() * textPoints.length)];
+                tX = randomTextPt.x + (Math.random() - 0.5) * 3;
+                tY = randomTextPt.y + (Math.random() - 0.5) * 3;
+                tZ = randomTextPt.z + (Math.random() - 0.5) * 10;
+            }
+            targetPositions.push(new THREE.Vector3(tX, tY, tZ));
+
+            // Initial state is chaos
+            currentPositions.push(new THREE.Vector3(cX, cY, cZ));
+            velocities.push(new THREE.Vector3(0, 0, 0));
+            
+            positions[i * 3] = cX;
+            positions[i * 3 + 1] = cY;
+            positions[i * 3 + 2] = cZ;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        // Let's create a custom shader material for glowing points
+        const particleMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                color: { value: new THREE.Color(0x00ff66) },
+                time: { value: 0 }
+            },
+            vertexShader: `
+                uniform float time;
+                void main() {
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    gl_PointSize = (150.0 / -mvPosition.z); 
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 color;
+                void main() {
+                    float d = distance(gl_PointCoord, vec2(0.5));
+                    if (d > 0.5) discard;
+                    float alpha = max(0.0, 1.0 - (d * 2.0));
+                    gl_FragColor = vec4(color, alpha * 0.8);
+                }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        const particleSystem = new THREE.Points(geometry, particleMaterial);
+        scene.add(particleSystem);
+
+        // Interaction State
+        let mouse = new THREE.Vector3(0, 0, 0);
+        let targetStateMode = 'CHAOS'; // CHAOS or TEXT
+        let time = 0;
+
+        // Transition from Chaos to Text triggered precisely when Boot Sequence finishes
+        window.addEventListener('terminalBootComplete', () => {
+            targetStateMode = 'TEXT';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 2 - 1;
+            const y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            // Unproject to get rough 3D mouse mapping
+            const vector = new THREE.Vector3(x, y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            mouse = camera.position.clone().add(dir.multiplyScalar(distance));
+        });
+
         function animate3D() {
             requestAnimationFrame(animate3D);
-            clock += 0.02;
-            
-            // Animate planes to simulate scanning through wavelengths
-            planes.forEach((plane, index) => {
-                // Wave effect passing through the spectral bands
-                const wave = Math.sin(clock * 2 + index * 0.5);
-                plane.scale.setScalar(1 + wave * 0.05);
-                plane.rotation.z = Math.sin(clock * 0.5) * 0.1 * (index / numPlanes);
-            });
+            time += 0.01;
+            particleMaterial.uniforms.time.value = time;
 
-            hypercubeGroup.rotation.x += 0.002;
-            hypercubeGroup.rotation.y += 0.003;
+            const posAttribute = geometry.attributes.position;
+            const lerpSpeed = targetStateMode === 'TEXT' ? 0.02 : 0.05;
+
+            for (let i = 0; i < numParticles; i++) {
+                const target = targetStateMode === 'TEXT' ? targetPositions[i] : chaosPositions[i];
+                const current = currentPositions[i];
+                const velocity = velocities[i];
+
+                // Mouse Repulsion
+                const distToMouse = current.distanceTo(mouse);
+                if (distToMouse < 30) {
+                    const force = new THREE.Vector3().subVectors(current, mouse).normalize();
+                    force.multiplyScalar((30 - distToMouse) * 0.1);
+                    velocity.add(force);
+                }
+
+                // Spring physics towards target
+                const springForce = new THREE.Vector3().subVectors(target, current).multiplyScalar(lerpSpeed);
+                velocity.add(springForce);
+                velocity.multiplyScalar(0.85); // friction/damping
+                
+                // Add tiny organic float when in TEXT mode
+                if (targetStateMode === 'TEXT') {
+                    velocity.x += Math.sin(time * 2 + i) * 0.05;
+                    velocity.y += Math.cos(time * 2 + i) * 0.05;
+                } else {
+                    // Slowly rotate chaos positions
+                    chaosPositions[i].applyAxisAngle(new THREE.Vector3(0,1,0), 0.005);
+                    chaosPositions[i].applyAxisAngle(new THREE.Vector3(1,0,0), 0.002);
+                }
+
+                current.add(velocity);
+
+                posAttribute.array[i * 3] = current.x;
+                posAttribute.array[i * 3 + 1] = current.y;
+                posAttribute.array[i * 3 + 2] = current.z;
+            }
+            posAttribute.needsUpdate = true;
+
+            // Camera slightly moves with actual mouse for parallax
+            gsap.to(camera.position, {
+                x: (mouse.x * 0.1),
+                y: (mouse.y * 0.1),
+                ease: 'power2.out',
+                duration: 1
+            });
+            camera.lookAt(scene.position);
+
             renderer.render(scene, camera);
         }
         animate3D();
@@ -461,25 +640,7 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-            // Interactive mouse parallax
-            document.addEventListener('mousemove', (e) => {
-                const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-                const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-                gsap.to(hypercubeGroup.position, {
-                    x: mouseX * 2,
-                    y: mouseY * 2,
-                    duration: 2,
-                    ease: "power2.out"
-                });
-                gsap.to(hypercubeGroup.rotation, {
-                    x: mouseY * 0.5,
-                    y: mouseX * 0.5,
-                    duration: 2,
-                    ease: "power2.out"
-                });
-            });
-        }
+    }
     
         // ── Idea 12B: Text Scramble (Hero) ──
         const roles = [
