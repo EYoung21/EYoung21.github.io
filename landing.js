@@ -5,6 +5,18 @@
 
 (() => {
     'use strict';
+    // ── Theme Toggle ──
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const newTheme = theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
 
     // ── Lenis smooth scroll ──
     const lenis = new Lenis({
