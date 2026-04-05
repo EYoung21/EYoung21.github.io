@@ -312,11 +312,32 @@
                 y: 0, z: 0, duration: 2.5, ease: 'power3.out', delay: 0.3,
                 onComplete: () => {
                     ribbonsFormed = true;
-                    // Show play button after ribbons form
+                    // Show masthead elements after ribbons form (cascading reveal)
                     if (playBtn) {
                         gsap.fromTo(playBtn, 
                             { opacity: 0, scale: 0.5 },
                             { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
+                        );
+                    }
+                    const mastheadTitle = document.querySelector('.masthead-title');
+                    const mastheadAuthor = document.querySelector('.masthead-author');
+                    const ackoArrow = document.getElementById('acko-arrow');
+                    if (mastheadTitle) {
+                        gsap.fromTo(mastheadTitle, 
+                            { opacity: 0, y: 15 },
+                            { opacity: 1, y: 0, duration: 0.7, delay: 0.3, ease: 'power2.out' }
+                        );
+                    }
+                    if (mastheadAuthor) {
+                        gsap.fromTo(mastheadAuthor, 
+                            { opacity: 0, y: 10 },
+                            { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: 'power2.out' }
+                        );
+                    }
+                    if (ackoArrow) {
+                        gsap.fromTo(ackoArrow, 
+                            { opacity: 0 },
+                            { opacity: 1, duration: 0.8, delay: 0.6, ease: 'power2.out' }
                         );
                     }
                 }
@@ -561,10 +582,10 @@
             });
         }
 
-        const styleSelect = document.querySelector('.settings-menu select');
+        const styleSelect = document.getElementById('style-select');
         if (styleSelect) {
             styleSelect.addEventListener('change', (e) => {
-                const isWireframe = e.target.value === 'Wireframe';
+                const isWireframe = e.target.value === 'wireframe';
                 ribbonsGroup.children.forEach(mesh => {
                     if (mesh.material) mesh.material.wireframe = isWireframe;
                 });

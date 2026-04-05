@@ -1378,11 +1378,43 @@ a.exp-company:hover { opacity: 0.7; }
     color: rgba(0, 0, 0, 0.35);
 }
 
-/* Play Button — center-right, circular, acko-style */
-.play-btn-acko {
+/* ── Acko Masthead — grouped play + title block (lower right area) ── */
+.acko-masthead {
     position: absolute;
-    bottom: 30%;
-    right: 30%;
+    bottom: 18%;
+    right: 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+/* Down Arrow — to the left of masthead */
+.acko-arrow {
+    position: absolute;
+    left: -80px;
+    top: 20px;
+    width: 40px;
+    height: 50px;
+    color: rgba(255, 255, 255, 0.4);
+    animation: arrowBounce 2s ease-in-out infinite;
+    cursor: pointer;
+    opacity: 0; /* starts hidden */
+}
+.acko-arrow svg {
+    width: 100%;
+    height: 100%;
+}
+@keyframes arrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+/* Play Button — circular, acko-style, inside masthead */
+.play-btn-acko {
+    position: relative;
     width: 72px;
     height: 72px;
     border-radius: 50%;
@@ -1396,7 +1428,6 @@ a.exp-company:hover { opacity: 0.7; }
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    z-index: 10;
     opacity: 0; /* Hidden initially, revealed by swirl-in JS */
 }
 .play-btn-acko svg {
@@ -1413,6 +1444,69 @@ a.exp-company:hover { opacity: 0.7; }
 }
 .play-btn-acko:hover svg {
     transform: scale(1.1);
+}
+
+/* Masthead Title — like acko's "Hackery, Math & Design" */
+.masthead-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin: 0;
+    white-space: nowrap;
+    opacity: 0; /* starts hidden */
+}
+.masthead-title span {
+    font-style: italic;
+    color: rgba(0, 255, 102, 0.6);
+}
+[data-theme="light"] .masthead-title {
+    color: rgba(0, 0, 0, 0.55);
+}
+[data-theme="light"] .masthead-title span {
+    color: rgba(0, 120, 60, 0.7);
+}
+
+/* Masthead Author — like acko's "Steven Wittens (i)" */
+.masthead-author {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+    text-align: center;
+    opacity: 0; /* starts hidden */
+}
+.masthead-author a {
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+.masthead-author a:hover {
+    color: rgba(0, 255, 102, 0.8);
+}
+[data-theme="light"] .masthead-author a {
+    color: rgba(0, 0, 0, 0.4);
+}
+.masthead-bubble {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+[data-theme="light"] .masthead-bubble {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* ── Scroll-to-stop Message — upper right dark pill (like acko) ── */

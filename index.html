@@ -41,19 +41,32 @@
     <canvas id="acko-canvas" class="acko-canvas"></canvas>
 
     <div class="intro-overlay" id="intro-overlay">
-        <!-- Help text -->
+        <!-- Help text (top left) -->
         <div class="intro-prompt">
             <p>Forming Data Structure...</p>
             <p style="font-size: 10px; margin-top: 5px; opacity: 0.6;">(Click and move mouse around)</p>
         </div>
-        <!-- Play Button (Acko.net style - bottom right) -->
-        <button class="play-btn-acko" id="play-btn-acko" aria-label="Play Experience">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-            </svg>
-        </button>
 
-        <!-- Song Indicator (Acko.net style - near play button) -->
+        <!-- Masthead: grouped play + title like acko.net -->
+        <div class="acko-masthead" id="acko-masthead">
+            <!-- Down arrow (to the left of masthead) -->
+            <div class="acko-arrow" id="acko-arrow">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <!-- Play Button -->
+            <button class="play-btn-acko" id="play-btn-acko" aria-label="Play Experience">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                </svg>
+            </button>
+            <!-- Title text below play button -->
+            <h1 class="masthead-title">CS <span>&</span> ML Engineer</h1>
+            <h2 class="masthead-author"><a href="#about">Eli Young <span class="masthead-bubble">i</span></a></h2>
+        </div>
+
+        <!-- Song Indicator (upper right, appears on play) -->
          <div class="song-popup-acko" id="song-popup-acko">
             <div class="song-icon">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,16 +85,15 @@
             <p>Scroll down to stop</p>
         </div>
 
-        <!-- Settings Dropdown (Top Right) -->
+        <!-- Settings (Top Right, like acko .config) -->
         <div class="acko-settings" id="acko-settings">
             <button class="settings-btn" id="settings-btn"><i class="fas fa-cog"></i></button>
             <div class="settings-menu" id="settings-menu">
-                <label><input type="checkbox" checked> <span class="custom-chk"></span> MSAA x4</label>
                 <label>
                     Style 
-                    <select>
-                        <option>Normal</option>
-                        <option>Wireframe</option>
+                    <select id="style-select">
+                        <option value="normal">Normal</option>
+                        <option value="wireframe">Wireframe</option>
                     </select>
                 </label>
                 <label><input type="checkbox" id="mute-cb"> <span class="custom-chk"></span> Mute Sound</label>
