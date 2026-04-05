@@ -47,26 +47,63 @@
     const songLinkEl = document.getElementById('song-link');
 
     // ── Acko.net Style Intro Experience ──
+    // Inspired by Steven Wittens' procedural ribbon technique:
+    // Single BufferGeometry, camera traces letter paths, duration = song length
+    
+    let ackoScene = null; // Global ref for theme updates
+
     const initAckoIntro = () => {
         const canvas = document.getElementById('acko-canvas');
         if (!canvas || typeof THREE === 'undefined') return;
 
+        // Detect current theme
+        const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
+        const isDark = () => getTheme() === 'dark';
+
+        // Theme-aware colors
+        const themeColors = {
+            dark: {
+                bg: 0x050505,
+                stripe1: '#0a0a0a', stripe2: '#111111',
+                palette: [0x00ff66, 0x00cc55, 0x22c55e, 0x44ffaa, 0xffffff],
+                ambient: 0x222222, ambientIntensity: 0.4,
+                pointLight: 0x00ff66, pointIntensity: 3.5,
+                ribbonRoughness: 0.3, ribbonMetalness: 0.5,
+            },
+            light: {
+                bg: 0xf5f5f7,
+                stripe1: '#ffffff', stripe2: '#f0f3f6',
+                palette: [0x00ff66, 0x111111, 0x000000, 0x888888, 0xffffff],
+                ambient: 0xffffff, ambientIntensity: 1.0,
+                pointLight: 0x00ff66, pointIntensity: 2.5,
+                ribbonRoughness: 0.5, ribbonMetalness: 0.1,
+            }
+        };
+
         // Init Audio Setup (Resilient for GitHub Pages)
+        let songDuration = 180; // Default 3 minutes for fallback
         try {
             const randomSong = PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)];
-            // Use relative path for deployment; tell user to upload music to /music/ folder
             currentAudio = new Audio(`./music/${randomSong.file}`);
-            currentAudio.loop = true;
+            currentAudio.loop = false; // Don't loop — animation ends with song
+            
+            // Get actual song duration when metadata loads
+            currentAudio.addEventListener('loadedmetadata', () => {
+                songDuration = currentAudio.duration;
+                console.log(`Song duration: ${songDuration.toFixed(1)}s — animation will match`);
+            });
             
             if (songNameEl) songNameEl.textContent = randomSong.title;
             if (songArtistEl) songArtistEl.textContent = randomSong.artist;
             if (songLinkEl) songLinkEl.href = randomSong.url;
         } catch (e) {
-            console.warn("Audio initialization failed. Check if /music/ exists and contains the files.", e);
+            console.warn("Audio initialization failed.", e);
         }
 
+        const tc = isDark() ? themeColors.dark : themeColors.light;
+
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f7); // Site light surface
+        scene.background = new THREE.Color(tc.bg);
 
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 4000);
         camera.position.set(0, 0, 180);
@@ -76,44 +113,54 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        const ambientLight = new THREE.AmbientLight(tc.ambient, tc.ambientIntensity);
         scene.add(ambientLight);
         
-        const mouseLight = new THREE.PointLight(0x00ff66, 2.5, 600); // Site Accent Green
+        const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 600);
         mouseLight.position.set(0, 0, 100);
         scene.add(mouseLight);
 
-        // Acko Background - subtle diagonal stripes
-        const stripeCanvas = document.createElement('canvas');
-        stripeCanvas.width = 128; stripeCanvas.height = 128;
-        const ctx = stripeCanvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, 128, 128);
-        ctx.strokeStyle = '#f0f3f6';
-        ctx.lineWidth = 12;
-        ctx.beginPath();
-        ctx.moveTo(-64, 64); ctx.lineTo(64, -64);
-        ctx.moveTo(0, 128); ctx.lineTo(128, 0);
-        ctx.moveTo(64, 192); ctx.lineTo(192, 64);
-        ctx.stroke();
+        // Acko Background - subtle diagonal stripes (theme-aware)
+        const buildStripeBg = () => {
+            const stripeCanvas = document.createElement('canvas');
+            stripeCanvas.width = 128; stripeCanvas.height = 128;
+            const ctx = stripeCanvas.getContext('2d');
+            const colors = isDark() ? themeColors.dark : themeColors.light;
+            ctx.fillStyle = colors.stripe1;
+            ctx.fillRect(0, 0, 128, 128);
+            ctx.strokeStyle = colors.stripe2;
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.moveTo(-64, 64); ctx.lineTo(64, -64);
+            ctx.moveTo(0, 128); ctx.lineTo(128, 0);
+            ctx.moveTo(64, 192); ctx.lineTo(192, 64);
+            ctx.stroke();
+            return new THREE.CanvasTexture(stripeCanvas);
+        };
 
-        const stripeTex = new THREE.CanvasTexture(stripeCanvas);
+        let stripeTex = buildStripeBg();
         stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
         stripeTex.repeat.set(60, 60);
 
-        const bgPlane = new THREE.Mesh(
-            new THREE.PlaneGeometry(5000, 5000),
-            new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 1 })
-        );
+        const bgMaterial = new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 1 });
+        const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), bgMaterial);
         bgPlane.position.z = -200;
         scene.add(bgPlane);
-
-        // Palette (Eli Site Specific)
-        const PALETTE = [0x00ff66, 0x111111, 0x000000, 0x888888, 0xffffff]; // Green, Darks, Grey, White
 
         // Group to hold our text tubes
         const ribbonsGroup = new THREE.Group();
         scene.add(ribbonsGroup);
+
+        let tubesList = [];
+        let allLetterPaths = []; // Store ALL curve paths for camera traversal
+        let masterCameraPath = null; // The continuous path the camera follows
+        let targetHover = 0; 
+        let currentHover = 0;
+        let introPlaying = false;
+        let mouseX = 0, mouseY = 0;
+        let rotationX = 0, rotationY = 0;
+        let isDragging = false;
+        let startX = 0, startY = 0;
 
         const loader = new THREE.FontLoader();
         loader.load('https://unpkg.com/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
@@ -125,19 +172,42 @@
             const xOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
             const yOffset = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
 
+            const cameraWaypoints = []; // Collect all 3D points for camera path
+            const currentPalette = isDark() ? themeColors.dark.palette : themeColors.light.palette;
+
             shapes.forEach((shape, sIdx) => {
-                shape.curves.forEach((curve, i) => {
+                // Process main shape curves
+                const allCurves = [...shape.curves];
+                // Also process holes for letters like 'o', 'e', 'Y' etc.
+                if (shape.holes) {
+                    shape.holes.forEach(hole => {
+                        allCurves.push(...hole.curves);
+                    });
+                }
+
+                allCurves.forEach((curve, i) => {
                     const points = curve.getPoints(64);
-                    // Deeper Z variation but thinner for high readability
-                    const path = new THREE.CatmullRomCurve3(points.map((p, idx) => 
-                        new THREE.Vector3(p.x + xOffset, p.y + yOffset, Math.sin(idx * 0.12 + sIdx) * 12)
-                    ));
-                    
-                    const tubeGeo = new THREE.TubeGeometry(path, 128, 0.4, 4, false); // Thin, clean ribbons
+                    const path3DPoints = points.map((p, idx) => 
+                        new THREE.Vector3(
+                            p.x + xOffset, 
+                            p.y + yOffset, 
+                            Math.sin(idx * 0.12 + sIdx) * 12
+                        )
+                    );
+
+                    // Store for camera path
+                    allLetterPaths.push(path3DPoints);
+                    // Add every Nth point as a camera waypoint (to sample the full letter)
+                    path3DPoints.forEach((pt, idx) => {
+                        if (idx % 4 === 0) cameraWaypoints.push(pt.clone());
+                    });
+
+                    const path = new THREE.CatmullRomCurve3(path3DPoints);
+                    const tubeGeo = new THREE.TubeGeometry(path, 128, 0.4, 4, false);
                     const material = new THREE.MeshStandardMaterial({
-                        color: PALETTE[(sIdx + i) % PALETTE.length],
-                        roughness: 0.5,
-                        metalness: 0.1
+                        color: currentPalette[(sIdx + i) % currentPalette.length],
+                        roughness: isDark() ? themeColors.dark.ribbonRoughness : themeColors.light.ribbonRoughness,
+                        metalness: isDark() ? themeColors.dark.ribbonMetalness : themeColors.light.ribbonMetalness,
                     });
 
                     const tubeMesh = new THREE.Mesh(tubeGeo, material);
@@ -146,16 +216,17 @@
                     ribbonsGroup.add(tubeMesh);
                 });
             });
-        });
 
-        let tubesList = [];
-        let targetHover = 0; 
-        let currentHover = 0;
-        let introPlaying = false;
-        let mouseX = 0, mouseY = 0;
-        let rotationX = 0, rotationY = 0;
-        let isDragging = false;
-        let startX = 0, startY = 0;
+            // Build the master camera path from ALL letter waypoints
+            if (cameraWaypoints.length > 2) {
+                // Add cinematic offset: camera sits slightly above and in front of the path
+                const cinematicWaypoints = cameraWaypoints.map(wp => 
+                    new THREE.Vector3(wp.x, wp.y + 3, wp.z + 25)
+                );
+                masterCameraPath = new THREE.CatmullRomCurve3(cinematicWaypoints, false, 'centripetal', 0.5);
+                console.log(`Camera path built with ${cinematicWaypoints.length} waypoints tracing all letters`);
+            }
+        });
 
         // Interaction: Click and Drag
         window.addEventListener('mousedown', (e) => {
@@ -193,44 +264,107 @@
                 introPlaying = true;
                 
                 // Start audio
-                if(currentAudio) currentAudio.play();
-                // GSAP Cinematic Path - Aggressive Dive & Explosion
+                if (currentAudio) currentAudio.play().catch(() => {});
+
+                // Show song popup
+                if (songPopup) songPopup.classList.add('active');
+
+                // Show scroll-stop message
+                const scrollStopMsg = document.getElementById('scroll-stop-msg');
+                if (scrollStopMsg) {
+                    scrollStopMsg.style.opacity = '1';
+                    setTimeout(() => { scrollStopMsg.style.opacity = '0'; }, 4000);
+                }
+
                 const tl = gsap.timeline();
                 const prompt = introOverlay ? introOverlay.querySelector('.intro-prompt') : null;
                 
-                tl.to({}, { 
-                    duration: 5.5,
+                // Hide UI immediately
+                if (playBtn && prompt) {
+                    gsap.to([playBtn, prompt], { opacity: 0, duration: 0.6, pointerEvents: 'none' });
+                }
+
+                // Phase 1: Quick dramatic zoom-in (2 seconds)
+                tl.to({}, {
+                    duration: 2,
                     onUpdate: function() {
                         const p = this.progress();
-                        targetHover = -4.5 * p; // Extreme blast outward
-                        
-                        // Cinematic Dive: Camera dashes through the structure
-                        const startZ = 180;
-                        const endZ = -120;
-                        camera.position.z = startZ - (startZ - endZ) * p;
-                        
-                        // Dramatic Spiral & Tilt
-                        camera.position.x = Math.sin(p * 8) * 80 * p;
-                        camera.position.y = Math.cos(p * 8) * 40 * p * (1 - p); // Settle Y as we end
+                        // Zoom camera into the structure
+                        camera.position.z = 180 - p * 140; // 180 -> 40
+                        camera.position.x = Math.sin(p * 3) * 20 * p;
                         camera.lookAt(0, 0, 0);
-                        camera.rotation.z = p * 1.5; 
+                    },
+                    ease: "power2.inOut"
+                });
 
-                        // Dynamically fade out overlay as we dive through
-                        if (p > 0.45 && introOverlay.style.opacity !== '0') {
-                            const fadeP = (p - 0.45) / 0.55;
-                            introOverlay.style.opacity = (1 - fadeP).toString();
+                // Phase 2: Camera traces every letter path (song duration)
+                tl.to({}, {
+                    duration: Math.max(songDuration - 6, 30), // Reserve 4s for exit
+                    onUpdate: function() {
+                        const p = this.progress();
+                        
+                        if (masterCameraPath) {
+                            // Camera follows the master path through every letter
+                            const point = masterCameraPath.getPointAt(p);
+                            const tangent = masterCameraPath.getTangentAt(p);
+                            
+                            camera.position.copy(point);
+                            
+                            // Look slightly ahead along the path
+                            const lookAheadP = Math.min(p + 0.01, 1);
+                            const lookTarget = masterCameraPath.getPointAt(lookAheadP);
+                            camera.lookAt(lookTarget);
+                            
+                            // Subtle camera roll for cinematic feel
+                            camera.rotation.z = Math.sin(p * 20) * 0.08;
+                        }
+                        
+                        // Subtle ribbon breathing during traversal
+                        targetHover = Math.sin(p * 10) * 0.15;
+                    },
+                    ease: "none" // Linear traversal matches music tempo
+                });
+
+                // Phase 3: Dramatic exit explosion (4 seconds)
+                tl.to({}, {
+                    duration: 4,
+                    onUpdate: function() {
+                        const p = this.progress();
+                        targetHover = -4.5 * p; // Explosion
+                        
+                        // Pull camera way back
+                        camera.position.z = 40 + p * 300;
+                        camera.position.x = Math.sin(p * 6) * 60 * p;
+                        camera.position.y = Math.cos(p * 6) * 30 * p;
+                        camera.lookAt(0, 0, 0);
+                        camera.rotation.z = p * 1.5;
+
+                        // Fade out overlay
+                        if (p > 0.3) {
+                            const fadeP = (p - 0.3) / 0.7;
+                            if (introOverlay) introOverlay.style.opacity = (1 - fadeP).toString();
                         }
                     },
-                    ease: "power2.inOut",
+                    ease: "power2.in",
                     onComplete: () => {
-                        // Cleanup
                         gsap.set([canvas, introOverlay], { display: 'none', pointerEvents: 'none' });
+                        if (currentAudio) {
+                            gsap.to({ vol: currentAudio.volume }, {
+                                vol: 0, duration: 2,
+                                onUpdate: function() { if (currentAudio) currentAudio.volume = this.targets()[0].vol; },
+                                onComplete: () => { if (currentAudio) currentAudio.pause(); }
+                            });
+                        }
                     }
                 });
 
-                // Hide UI immediately on click
-                if (playBtn && prompt) {
-                    gsap.to([playBtn, prompt], { opacity: 0, duration: 0.6, pointerEvents: 'none' });
+                // Also end on song finish if song is shorter
+                if (currentAudio) {
+                    currentAudio.addEventListener('ended', () => {
+                        if (introPlaying) {
+                            tl.progress(0.95); // Jump to exit phase
+                        }
+                    });
                 }
             });
         }
@@ -251,19 +385,19 @@
                 end: '1200px top',
                 onUpdate: (self) => {
                     const p = self.progress;
-                    if (currentAudio) currentAudio.volume = Math.max(0, 1 - p);
+                    if (currentAudio && !introPlaying) currentAudio.volume = Math.max(0, 1 - p);
                     
-                    if (canvas) {
+                    if (canvas && !introPlaying) {
                         canvas.style.opacity = 1 - p;
                         canvas.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
                         
                         // Physical transition: Recession into space
-                        ribbonsGroup.position.z = -p * 1200; // Recede far
+                        ribbonsGroup.position.z = -p * 1200;
                         bgPlane.position.z = -200 - (p * 500);
-                        ribbonsGroup.rotation.x = p * 0.6; // Tilt away
+                        ribbonsGroup.rotation.x = p * 0.6;
                         ribbonsGroup.rotation.y = rotationY + (p * 0.3);
                     }
-                    if (introOverlay) {
+                    if (introOverlay && !introPlaying) {
                         introOverlay.style.opacity = 1 - p;
                         introOverlay.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
                     }
@@ -297,14 +431,12 @@
             const delta = clock.getDelta();
             const time = clock.getElapsedTime();
 
-            currentHover += (targetHover - currentHover) * (targetHover === -2 ? 0.08 : 0.05);
+            currentHover += (targetHover - currentHover) * 0.05;
 
             // True Acko convergence: Pull towards play button point
             const aspect = window.innerWidth / window.innerHeight;
             const viewHeight = 2 * 150 * Math.tan((50 * 0.5 * Math.PI) / 180);
             const viewWidth = viewHeight * aspect;
-            
-            // Aim for roughly bottom-right of viewport for play target
             const playTarget = new THREE.Vector3(viewWidth * 0.38, -viewHeight * 0.35, 20);
 
             ribbonsGroup.children.forEach((mesh, idx) => {
@@ -323,19 +455,19 @@
                         const ny = oy + Math.cos(time * 1.5 + idx * 0.2) * 2;
                         const nz = oz + Math.sin(time * 3 + idx) * 4;
 
-                        if (currentHover > 0) {
+                        if (currentHover > 0.01) {
                             // "Sucking" into button effect (nonlinear lerp)
                             const intensity = Math.pow(currentHover, 1.5);
                             const bx = nx + (playTarget.x - nx) * intensity;
                             const by = ny + (playTarget.y - ny) * intensity;
                             const bz = nz + (playTarget.z - nz) * intensity;
                             pos.setXYZ(i, bx, by, bz);
-                        } else if (currentHover < 0) {
+                        } else if (currentHover < -0.01) {
                             // Violent Explosion sequence
                             const push = Math.abs(currentHover);
                             const ex = nx + (nx * push * 1.5);
                             const ey = ny + (ny * push * 1.5);
-                            const ez = nz + push * 400; // Fly past camera towards viewer
+                            const ez = nz + push * 400;
                             pos.setXYZ(i, ex, ey, ez);
                         } else {
                             pos.setXYZ(i, nx, ny, nz);
@@ -345,9 +477,11 @@
                 }
             });
 
-            // Smoothing rotation
-            ribbonsGroup.rotation.y += (rotationY - ribbonsGroup.rotation.y) * 0.05;
-            ribbonsGroup.rotation.x += (rotationX - ribbonsGroup.rotation.x) * 0.05;
+            // Smoothing rotation (only when not in cinematic mode)
+            if (!introPlaying) {
+                ribbonsGroup.rotation.y += (rotationY - ribbonsGroup.rotation.y) * 0.05;
+                ribbonsGroup.rotation.x += (rotationX - ribbonsGroup.rotation.x) * 0.05;
+            }
 
             renderer.render(scene, camera);
         };
@@ -359,7 +493,12 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        
+
+        // Store scene reference for theme updates
+        ackoScene = { 
+            scene, renderer, camera, ribbonsGroup, bgPlane, bgMaterial,
+            ambientLight, mouseLight, themeColors, buildStripeBg, stripeTex
+        };
     };
 
     initAckoIntro();
@@ -373,9 +512,63 @@
             themeToggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
         };
 
+        // Apply theme to 3D scenes
+        const applyThemeTo3D = (theme) => {
+            const isDark = theme === 'dark';
+
+            // Update Acko intro scene
+            if (ackoScene) {
+                const tc = isDark ? ackoScene.themeColors.dark : ackoScene.themeColors.light;
+                
+                // Background
+                ackoScene.scene.background = new THREE.Color(tc.bg);
+                
+                // Stripe texture
+                const newTex = ackoScene.buildStripeBg();
+                newTex.wrapS = newTex.wrapT = THREE.RepeatWrapping;
+                newTex.repeat.set(60, 60);
+                ackoScene.bgMaterial.map = newTex;
+                ackoScene.bgMaterial.needsUpdate = true;
+
+                // Lighting
+                ackoScene.ambientLight.color.set(tc.ambient);
+                ackoScene.ambientLight.intensity = tc.ambientIntensity;
+                ackoScene.mouseLight.color.set(tc.pointLight);
+                ackoScene.mouseLight.intensity = tc.pointIntensity;
+
+                // Ribbon colors
+                ackoScene.ribbonsGroup.children.forEach((mesh, idx) => {
+                    mesh.material.color.set(tc.palette[idx % tc.palette.length]);
+                    mesh.material.roughness = tc.ribbonRoughness;
+                    mesh.material.metalness = tc.ribbonMetalness;
+                    mesh.material.needsUpdate = true;
+                });
+            }
+
+            // Update Hypercube scene
+            if (typeof hypercubeScene !== 'undefined' && hypercubeScene) {
+                const hueBase = isDark ? 0.4 : 0.3;
+                hypercubeScene.planes.forEach((p, i) => {
+                    const hue = hueBase + (i / hypercubeScene.planes.length) * 0.2;
+                    p.mesh.material.color.setHSL(hue, isDark ? 1.0 : 0.7, isDark ? 0.5 : 0.4);
+                    p.mesh.material.opacity = isDark ? (0.1 + (i === 0 || i === hypercubeScene.planes.length - 1 ? 0.15 : 0)) : 0.06;
+                });
+                if (hypercubeScene.boundingBox) {
+                    hypercubeScene.boundingBox.material.color.set(isDark ? 0x00ff66 : 0x22c55e);
+                    hypercubeScene.boundingBox.material.opacity = isDark ? 0.3 : 0.15;
+                }
+                if (hypercubeScene.coreParticles) {
+                    hypercubeScene.coreParticles.material.color.set(isDark ? 0x00ff66 : 0x22c55e);
+                    hypercubeScene.coreParticles.material.opacity = isDark ? 0.8 : 0.4;
+                }
+            }
+        };
+
         const currentTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateThemeUI(currentTheme);
+        // Apply theme to 3D on initial load (after a small delay for scenes to init)
+        setTimeout(() => applyThemeTo3D(currentTheme), 500);
 
         themeToggle.addEventListener('click', () => {
             const theme = document.documentElement.getAttribute('data-theme');
@@ -383,6 +576,7 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeUI(newTheme);
+            applyThemeTo3D(newTheme);
         });
     }
 
@@ -843,6 +1037,7 @@
     });
 
     // ── ThreeJS Interactive Hypercube Theme ──
+    let hypercubeScene = null;
     const canvas = document.getElementById('theme-canvas');
     if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
@@ -1002,6 +1197,9 @@
                 gsap.to(canvas, { y: -self.scroll() * 0.2, duration: 0.1 });
             }
         });
+
+        // Store reference for theme toggle
+        hypercubeScene = { planes, boundingBox, coreParticles };
     }
     
         // ── Idea 12B: Text Scramble (Hero) ──
