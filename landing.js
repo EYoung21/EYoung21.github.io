@@ -5,16 +5,371 @@
 
 (() => {
     'use strict';
+    // ── Music & Intro Experience ──
+    const PLAYLIST = [
+        { title: "You Wish", artist: "Nightmares on Wax", file: "Nightmares On Wax - You Wish.mp3", url: "https://nightmaresonwax.warp.net/?lang=en_GB" },
+        { title: "Les Nuits", artist: "Nightmares on Wax", file: "Nightmares on Wax - Les Nuits.mp3", url: "https://nightmaresonwax.warp.net/?lang=en_GB" },
+        { title: "Tadow", artist: "Masego + FKJ", file: "Masego + FKJ   - Tadow.mp3", url: "https://tommisch.com/" },
+        { title: "Apricots", artist: "Bicep", file: "BICEP ｜ APRICOTS (Official Video).mp3", url: "https://www.feelmybicep.com/" },
+        { title: "Everything In Its Right Place", artist: "Radiohead", file: "Everything In Its Right Place.mp3", url: "https://www.radiohead.com/" },
+        { title: "Losing My Way", artist: "Tom Misch & FKJ", file: "Tom Misch & FKJ - Losing My Way.mp3", url: "https://tommisch.com/" },
+        { title: "Levitate", artist: "twenty one pilots", file: "twenty one pilots - Levitate (Official Video).mp3", url: "https://www.twentyonepilots.com/" },
+        { title: "Lovely Day", artist: "Bill Withers", file: "Bill Withers - Lovely Day (Official Audio).mp3", url: "https://billwithers.com/" },
+        { title: "Me Gustas Tu", artist: "Manu Chao", file: "Manu Chao - Me Gustas Tu (Official Audio).mp3", url: "https://www.manuchao.net/" },
+        { title: "DLZ", artist: "TV on the Radio", file: "DLZ.mp3", url: "https://tvontheradio.com/" },
+        { title: "Lead Me Home", artist: "Jamie N Commons", file: "Jamie N Commons - Lead Me Home (The Walking Dead).mp3", url: "https://www.jamiencommons.com/" },
+        { title: "Sirius", artist: "The Alan Parsons Project", file: "The Alan Parsons Project - Sirius (Official Audio).mp3", url: "https://www.littlebarrie.com/" },
+        { title: "Middle City Troops", artist: "Little Barrie", file: "Middle City Troops.mp3", url: "https://www.littlebarrie.com/" },
+        { title: "Morning Dew", artist: "Krisu", file: "Krisu - Morning Dew (Remastered).mp3", url: "https://leach.band/" },
+        { title: "Beach Day", artist: "RemK", file: "RemK - Beach Day.mp3", url: "https://leach.band/" },
+        { title: "Want To Love", artist: "Aloboi", file: "Aloboi - Want To Love (Just Raw).mp3", url: "https://leach.band/" },
+        { title: "resonance", artist: "jacal", file: "resonance (midwest emo version).mp3", url: "https://leach.band/" },
+        { title: "Apricots", artist: "Bicep", file: "BICEP ｜ APRICOTS (Official Video).mp3", url: "https://www.feelmybicep.com/" },
+        { title: "Space Remix", artist: "Forde Ward", file: "Bennett Foddy Space Remix 'I'm Going Down The Road Felling Bad' - Forde ward.mp3", url: "https://foddy.net/" },
+        { title: "Courtesy", artist: "Chipzel", file: "Chipzel - Courtesy - Super Hexagon.mp3", url: "https://foddy.net/" },
+        { title: "Harvest Dawn", artist: "Jeremy Soule", file: "Harvest Dawn.mp3", url: "https://foddy.net/" },
+        { title: "From Past to Present", artist: "Jeremy Soule", file: "From Past to Present.mp3", url: "https://foddy.net/" },
+        { title: "VIBR8", artist: "Marshmello", file: "Marshmello - VIBR8.mp3", url: "https://foddy.net/" },
+        { title: "All For Nothing", artist: "Zachariehs", file: "All For Nothing.mp3", url: "https://foddy.net/" },
+        { title: "Idea 22", artist: "Gibran Alcocer", file: "Idea 22.mp3", url: "https://foddy.net/" },
+        { title: "Ethereal", artist: "Txmy", file: "Ethereal.mp3", url: "https://foddy.net/" },
+        { title: "Vengeance", artist: "iwilldiehere", file: "Vengeance.mp3", url: "https://foddy.net/" },
+        { title: "Stars", artist: "Gacabe & Jecabe", file: "Stars.mp3", url: "https://foddy.net/" },
+        { title: "Little Taste of Heaven", artist: "Leach", file: "Little Taste of Heaven.mp3", url: "https://leach.band/" }
+    ];
+
+    let currentAudio = null;
+    const introOverlay = document.getElementById('intro-overlay');
+    const playBtn = document.getElementById('play-btn-acko');
+    const songPopup = document.getElementById('song-popup-acko');
+    const songNameEl = document.getElementById('song-name');
+    const songArtistEl = document.getElementById('song-artist');
+    const songLinkEl = document.getElementById('song-link');
+
+    // ── Acko.net Style Intro Experience ──
+    const initAckoIntro = () => {
+        const canvas = document.getElementById('acko-canvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        // Init Audio Setup
+        const randomSong = PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)];
+        currentAudio = new Audio(`/Users/eliyoung/yt_mp4_or_mp3_downloader/output/${randomSong.file}`);
+        currentAudio.loop = true;
+        
+        if (songNameEl) songNameEl.textContent = randomSong.title;
+        if (songArtistEl) songArtistEl.textContent = randomSong.artist;
+        if (songLinkEl) songLinkEl.href = randomSong.url;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f7); // Site light surface
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 4000);
+        camera.position.set(0, 0, 180);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        scene.add(ambientLight);
+        
+        const mouseLight = new THREE.PointLight(0x00ff66, 2.5, 600); // Site Accent Green
+        mouseLight.position.set(0, 0, 100);
+        scene.add(mouseLight);
+
+        // Acko Background - subtle diagonal stripes
+        const stripeCanvas = document.createElement('canvas');
+        stripeCanvas.width = 128; stripeCanvas.height = 128;
+        const ctx = stripeCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 128, 128);
+        ctx.strokeStyle = '#f0f3f6';
+        ctx.lineWidth = 12;
+        ctx.beginPath();
+        ctx.moveTo(-64, 64); ctx.lineTo(64, -64);
+        ctx.moveTo(0, 128); ctx.lineTo(128, 0);
+        ctx.moveTo(64, 192); ctx.lineTo(192, 64);
+        ctx.stroke();
+
+        const stripeTex = new THREE.CanvasTexture(stripeCanvas);
+        stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
+        stripeTex.repeat.set(60, 60);
+
+        const bgPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(5000, 5000),
+            new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 1 })
+        );
+        bgPlane.position.z = -200;
+        scene.add(bgPlane);
+
+        // Palette (Eli Site Specific)
+        const PALETTE = [0x00ff66, 0x111111, 0x000000, 0x888888, 0xffffff]; // Green, Darks, Grey, White
+
+        // Group to hold our text tubes
+        const ribbonsGroup = new THREE.Group();
+        scene.add(ribbonsGroup);
+
+        const loader = new THREE.FontLoader();
+        loader.load('https://unpkg.com/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+            const message = "Eli Young";
+            const shapes = font.generateShapes(message, 18);
+            
+            const geometry = new THREE.ShapeGeometry(shapes);
+            geometry.computeBoundingBox();
+            const xOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+            const yOffset = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+
+            shapes.forEach((shape, sIdx) => {
+                shape.curves.forEach((curve, i) => {
+                    const points = curve.getPoints(64);
+                    // Deeper Z variation but thinner for high readability
+                    const path = new THREE.CatmullRomCurve3(points.map((p, idx) => 
+                        new THREE.Vector3(p.x + xOffset, p.y + yOffset, Math.sin(idx * 0.12 + sIdx) * 12)
+                    ));
+                    
+                    const tubeGeo = new THREE.TubeGeometry(path, 128, 0.4, 4, false); // Thin, clean ribbons
+                    const material = new THREE.MeshStandardMaterial({
+                        color: PALETTE[(sIdx + i) % PALETTE.length],
+                        roughness: 0.5,
+                        metalness: 0.1
+                    });
+
+                    const tubeMesh = new THREE.Mesh(tubeGeo, material);
+                    tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
+                    tubesList.push(tubeMesh);
+                    ribbonsGroup.add(tubeMesh);
+                });
+            });
+        });
+
+        let tubesList = [];
+        let targetHover = 0; 
+        let currentHover = 0;
+        let introPlaying = false;
+        let mouseX = 0, mouseY = 0;
+        let rotationX = 0, rotationY = 0;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+
+        // Interaction: Click and Drag
+        window.addEventListener('mousedown', (e) => {
+            if (e.target.closest('#intro-overlay')) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        window.addEventListener('mousemove', (e) => {
+            const mx = (e.clientX / window.innerWidth - 0.5);
+            const my = (e.clientY / window.innerHeight - 0.5);
+            mouseX = mx * 200;
+            mouseY = -my * 200;
+            mouseLight.position.set(mouseX, mouseY, 120);
+
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                rotationY += deltaX * 0.005;
+                rotationX += deltaY * 0.005;
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        });
+
+        if (playBtn) {
+            playBtn.addEventListener('mouseenter', () => targetHover = 0.8);
+            playBtn.addEventListener('mouseleave', () => targetHover = 0);
+
+            playBtn.addEventListener('click', () => {
+                if (introPlaying) return;
+                introPlaying = true;
+                
+                // Start audio
+                if(currentAudio) currentAudio.play();
+                // GSAP Cinematic Path - Following ribbons
+                const tl = gsap.timeline();
+                const prompt = introOverlay ? introOverlay.querySelector('.intro-prompt') : null;
+                
+                tl.to({}, { 
+                    duration: 4.5, 
+                    onUpdate: function() {
+                        const p = this.progress();
+                        targetHover = -3.2 * p; // Explosion / Fly-past
+                        
+                        // Spiral movement following the "building blocks" of depth
+                        camera.position.z -= p * 12;
+                        camera.position.x += Math.sin(p * 5) * 50 * p;
+                        camera.position.y += Math.cos(p * 5) * 25 * p;
+                        camera.lookAt(0, 0, 0);
+                    }
+                });
+
+                // Hide UI
+                gsap.to([playBtn, prompt], { opacity: 0, duration: 1.2, pointerEvents: 'none' });
+                
+                // Keep it active but faded so scroll-up works
+                setTimeout(() => {
+                    if (window.scrollY < 100) {
+                        gsap.to([canvas, introOverlay], { 
+                            opacity: 0, 
+                            duration: 2.5
+                        });
+                    }
+                }, 5000);
+            });
+        }
+
+        // Fade loading text after initial load
+        setTimeout(() => {
+            const prompt = document.querySelector('.intro-prompt');
+            if (prompt && !introPlaying) {
+                gsap.to(prompt, { opacity: 0, duration: 2, delay: 1.5 });
+            }
+        }, 1000);
+
+        // Scroll trigger: Acko recession (Z-depth + Opacity)
+        if (typeof ScrollTrigger !== 'undefined') {
+            ScrollTrigger.create({
+                trigger: 'body',
+                start: 'top top',
+                end: '1200px top',
+                onUpdate: (self) => {
+                    const p = self.progress;
+                    if (currentAudio) currentAudio.volume = Math.max(0, 1 - p);
+                    
+                    if (canvas) {
+                        canvas.style.opacity = 1 - p;
+                        canvas.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
+                        
+                        // Physical transition: Recession into space
+                        ribbonsGroup.position.z = -p * 1200; // Recede far
+                        bgPlane.position.z = -200 - (p * 500);
+                        ribbonsGroup.rotation.x = p * 0.6; // Tilt away
+                        ribbonsGroup.rotation.y = rotationY + (p * 0.3);
+                    }
+                    if (introOverlay) {
+                        introOverlay.style.opacity = 1 - p;
+                        introOverlay.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
+                    }
+                }
+            });
+        }
+
+        // Settings - Mute logic
+        const muteCb = document.getElementById('mute-cb');
+        if (muteCb) {
+            muteCb.addEventListener('change', (e) => {
+                if (currentAudio) currentAudio.muted = e.target.checked;
+            });
+        }
+
+        // Settings - Wireframe logic
+        const styleSelect = document.querySelector('.settings-menu select');
+        if (styleSelect) {
+            styleSelect.addEventListener('change', (e) => {
+                const isWireframe = e.target.value === 'Wireframe';
+                ribbonsGroup.children.forEach(mesh => {
+                    mesh.material.wireframe = isWireframe;
+                });
+            });
+        }
+
+        const clock = new THREE.Clock();
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            currentHover += (targetHover - currentHover) * (targetHover === -2 ? 0.08 : 0.05);
+
+            // True Acko convergence: Pull towards play button point
+            const aspect = window.innerWidth / window.innerHeight;
+            const viewHeight = 2 * 150 * Math.tan((50 * 0.5 * Math.PI) / 180);
+            const viewWidth = viewHeight * aspect;
+            
+            // Aim for roughly bottom-right of viewport for play target
+            const playTarget = new THREE.Vector3(viewWidth * 0.38, -viewHeight * 0.35, 20);
+
+            ribbonsGroup.children.forEach((mesh, idx) => {
+                const geo = mesh.geometry;
+                const pos = geo.attributes.position;
+                const orig = geo.userData.origPositions;
+
+                if (pos && orig) {
+                    for (let i = 0; i < pos.count; i++) {
+                        const ox = orig[i * 3];
+                        const oy = orig[i * 3 + 1];
+                        const oz = orig[i * 3 + 2];
+
+                        // Elastic noise
+                        const nx = ox + Math.sin(time * 1.5 + idx * 0.2) * 2;
+                        const ny = oy + Math.cos(time * 1.5 + idx * 0.2) * 2;
+                        const nz = oz + Math.sin(time * 3 + idx) * 4;
+
+                        if (currentHover > 0) {
+                            // "Sucking" into button effect (nonlinear lerp)
+                            const intensity = Math.pow(currentHover, 1.5);
+                            const bx = nx + (playTarget.x - nx) * intensity;
+                            const by = ny + (playTarget.y - ny) * intensity;
+                            const bz = nz + (playTarget.z - nz) * intensity;
+                            pos.setXYZ(i, bx, by, bz);
+                        } else if (currentHover < 0) {
+                            // Explosion sequence
+                            const push = Math.abs(currentHover);
+                            const ex = nx + (nx * push * 0.8);
+                            const ey = ny + (ny * push * 0.8);
+                            const ez = nz + push * 250; 
+                            pos.setXYZ(i, ex, ey, ez);
+                        } else {
+                            pos.setXYZ(i, nx, ny, nz);
+                        }
+                    }
+                    pos.needsUpdate = true;
+                }
+            });
+
+            // Smoothing rotation
+            ribbonsGroup.rotation.y += (rotationY - ribbonsGroup.rotation.y) * 0.05;
+            ribbonsGroup.rotation.x += (rotationX - ribbonsGroup.rotation.x) * 0.05;
+
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+    };
+
+    initAckoIntro();
+
     // ── Theme Toggle ──
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
+        const updateThemeUI = (theme) => {
+            const isDark = theme === 'dark';
+            themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            themeToggle.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        };
+
         const currentTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeUI(currentTheme);
+
         themeToggle.addEventListener('click', () => {
             const theme = document.documentElement.getAttribute('data-theme');
             const newTheme = theme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
         });
     }
 
@@ -161,11 +516,32 @@
             ease: 'power4.out',
         }, 0.1);
 
+        // Fade music on scroll
+        ScrollTrigger.create({
+            trigger: 'body',
+            start: 'top top',
+            end: '500px top',
+            onUpdate: (self) => {
+                const progress = self.progress;
+                if (currentAudio) {
+                    currentAudio.volume = Math.max(0, 1 - progress);
+                    if (progress > 0.8) {
+                        introOverlay.classList.add('hidden');
+                        songPopup.classList.remove('active');
+                    } else {
+                        introOverlay.classList.remove('hidden');
+                    }
+                }
+            }
+        });
+
         tl.to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8 }, 0.4);
         tl.to('.hero-description', { opacity: 1, y: 0, duration: 0.8 }, 0.6);
         tl.to('.hero-ctas', { opacity: 1, y: 0, duration: 0.8 }, 0.7);
-        tl.to('.hero-stats', { opacity: 1, y: 0, duration: 0.8 }, 0.8);
-        tl.to('.scroll-hint', { opacity: 0.6, duration: 1 }, 1.2);
+        tl.to('.hero-footer', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, 0.8);
+        tl.to('.hero-stat', { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 }, 1.0);
+        tl.to('.github-chart-wrapper', { opacity: 1, scale: 1, duration: 1, ease: 'back.out(1.7)' }, 1.2);
+        tl.to('.scroll-hint', { opacity: 0.8, y: 0, duration: 1 }, 1.5);
 
         // Counter animation
         document.querySelectorAll('[data-count]').forEach(el => {
@@ -455,13 +831,20 @@
     const canvas = document.getElementById('theme-canvas');
     if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
-        // Set camera closer to emphasize the cube
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 35;
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 40;
 
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // OrbitControls for interactive drag
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableZoom = false; // Keep it focused on the structure
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
 
         const hypercubeGroup = new THREE.Group();
         scene.add(hypercubeGroup);
@@ -529,8 +912,6 @@
         // Interaction State
         let mouseX = 0;
         let mouseY = 0;
-        let targetRotationX = 0;
-        let targetRotationY = 0;
         let time = 0;
 
         document.addEventListener('mousemove', (e) => {
@@ -538,22 +919,10 @@
             mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
         });
 
-        function animate3D() {
-            requestAnimationFrame(animate3D);
+        function animate() {
+            requestAnimationFrame(animate);
             time += 0.015;
-
-            // Interactive rotation with easing (inertia)
-            targetRotationX = mouseY * 0.5;
-            targetRotationY = mouseX * 0.8;
             
-            hypercubeGroup.rotation.x += (targetRotationX - hypercubeGroup.rotation.x) * 0.05;
-            hypercubeGroup.rotation.y += (targetRotationY - hypercubeGroup.rotation.y) * 0.05;
-            
-            // Inherent spin
-            hypercubeGroup.rotation.x += 0.002;
-            hypercubeGroup.rotation.y += 0.003;
-            hypercubeGroup.rotation.z = Math.sin(time * 0.5) * 0.1;
-
             // Animate internal planes: organic breathing effect and interactive spacing
             const mouseDist = Math.sqrt(mouseX*mouseX + mouseY*mouseY);
             const expansion = 1 + mouseDist * 0.5; // Expands when mouse is further from center
@@ -594,19 +963,29 @@
             }
             coreParticles.geometry.attributes.position.needsUpdate = true;
 
-            // Mouse parallax for camera
-            camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
-            camera.position.y += (mouseY * 5 - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-
+            controls.update();
             renderer.render(scene, camera);
         }
-        animate3D();
+        animate();
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Scroll-driven camera movement
+        ScrollTrigger.create({
+            trigger: 'body',
+            start: 'top top',
+            end: 'bottom bottom',
+            onUpdate: (self) => {
+                const zPos = 40 + (self.progress * 60); // Move camera away on scroll
+                gsap.to(camera.position, { z: zPos, duration: 0.5 });
+                
+                // Move entire visual out of frame slowly
+                gsap.to(canvas, { y: -self.scroll() * 0.2, duration: 0.1 });
+            }
         });
     }
     
