@@ -160,21 +160,17 @@
         scene.add(bgPlane);
 
         // ═══════════════════════════════════════════════
-        // FLAT RIBBON CREATION — wide, thick tape strips  
+        // RIBBON CREATION — solid TubeGeometry with proper scale
         // ═══════════════════════════════════════════════
         const ribbonsGroup = new THREE.Group();
         scene.add(ribbonsGroup);
 
-        // Creates a wide, flat ribbon using TubeGeometry with scale flattening
-        // TubeGeometry handles normals correctly, producing solid visible geometry
-        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments) {
+        // Creates a solid ribbon tube along a curve path
+        function createFlatRibbon(curvePath, ribbonRadius, unused, color, roughness, metalness, segments) {
             segments = segments || 200;
-            ribbonWidth = ribbonWidth || 3.0;
+            ribbonRadius = ribbonRadius || 0.6;
 
-            // Use TubeGeometry with a large radius for thick, solid tubes
-            const radius = ribbonWidth;
-            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, radius, 8, false);
-            
+            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, ribbonRadius, 8, false);
             tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
 
             const mat = new THREE.MeshStandardMaterial({
@@ -184,8 +180,7 @@
                 side: THREE.DoubleSide,
             });
 
-            const mesh = new THREE.Mesh(tubeGeo, mat);
-            return mesh;
+            return new THREE.Mesh(tubeGeo, mat);
         }
 
         let letterRibbons = [];
@@ -199,6 +194,7 @@
         let mouseX = 0, mouseY = 0;
         let rotationX = 0, rotationY = 0;
         let isDragging = false;
+        let ribbonsFormed = false; // tracks whether swirl-in is complete
         let startX = 0, startY = 0;
         let playBtnHovering = false;
 
@@ -247,8 +243,8 @@
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        3.0 + Math.random() * 3.0,  // radius 3–6 for thick solid tubes
-                        0, // unused now
+                        0.5 + Math.random() * 0.5,  // radius 0.5–1.0 (visible but not overwhelming)
+                        0,
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
                         tc.ribbonMetalness,
@@ -260,20 +256,19 @@
             });
 
             // ── Build CHAOTIC background ribbons (dense, interlocking) ──
-            const chaosCount = 40;
+            const chaosCount = 30;
             for (let c = 0; c < chaosCount; c++) {
-                const numPts = 6 + Math.floor(Math.random() * 10);
+                const numPts = 5 + Math.floor(Math.random() * 8);
                 const chaosPts = [];
-                // Start near the letters but wander far out — fills the frame
-                const cx = (Math.random() - 0.5) * 250;
-                const cy = (Math.random() - 0.5) * 120;
-                const cz = (Math.random() - 0.5) * 200;
+                const cx = (Math.random() - 0.5) * 160;
+                const cy = (Math.random() - 0.5) * 80;
+                const cz = (Math.random() - 0.5) * 80;
 
                 for (let j = 0; j < numPts; j++) {
                     chaosPts.push(new THREE.Vector3(
-                        cx + (Math.random() - 0.5) * 180,
-                        cy + (Math.random() - 0.5) * 100,
-                        cz + (Math.random() - 0.5) * 140 + Math.sin(j * 1.5) * 40
+                        cx + (Math.random() - 0.5) * 120,
+                        cy + (Math.random() - 0.5) * 60,
+                        cz + (Math.random() - 0.5) * 60 + Math.sin(j * 1.5) * 20
                     ));
                 }
 
@@ -281,12 +276,12 @@
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    4.0 + Math.random() * 8.0,   // Width: 4–12 (wide like letter ribbons)
-                    0.3 + Math.random() * 0.8,
+                    0.3 + Math.random() * 0.5,   // radius 0.3–0.8
+                    0,
                     chaosColor,
                     tc.ribbonRoughness + Math.random() * 0.15,
                     tc.ribbonMetalness + Math.random() * 0.2,
-                    140
+                    100
                 );
                 chaosRibbons.push(chaosRibbon);
                 ribbonsGroup.add(chaosRibbon);
@@ -296,13 +291,36 @@
 
             // ── Build the master camera path ──
             if (cameraWaypoints.length > 2) {
-                // Camera sits close to the ribbon surface — tight, like riding on it
                 const cinematicWaypoints = cameraWaypoints.map(wp => 
-                    new THREE.Vector3(wp.x * 1.1, wp.y * 1.1 + 2, wp.z + 8)
+                    new THREE.Vector3(wp.x * 1.05, wp.y * 1.05 + 2, wp.z + 15)
                 );
                 masterCameraPath = new THREE.CatmullRomCurve3(cinematicWaypoints, false, 'centripetal', 0.5);
-                console.log(`Camera path: ${cinematicWaypoints.length} waypoints through all letters`);
+                console.log(`Camera path built with ${cinematicWaypoints.length} waypoints tracing all letters`);
             }
+
+            // ── SWIRL-IN ANIMATION: ribbons fly in from the left ──
+            // Start all ribbons far to the left
+            ribbonsGroup.position.x = -300;
+            ribbonsGroup.rotation.y = -0.8;
+            ribbonsGroup.rotation.z = 0.3;
+
+            // Animate them into position
+            gsap.to(ribbonsGroup.position, {
+                x: 0, duration: 2.5, ease: 'power3.out', delay: 0.3
+            });
+            gsap.to(ribbonsGroup.rotation, {
+                y: 0, z: 0, duration: 2.5, ease: 'power3.out', delay: 0.3,
+                onComplete: () => {
+                    ribbonsFormed = true;
+                    // Show play button after ribbons form
+                    if (playBtn) {
+                        gsap.fromTo(playBtn, 
+                            { opacity: 0, scale: 0.5 },
+                            { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
+                        );
+                    }
+                }
+            });
         });
 
         // ═══════════════════════════════════════════════
@@ -390,12 +408,12 @@
                     duration: 3,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Zoom from overview into tight ribbon-level
-                        camera.position.z = 120 - p * 110; // 120 -> 10
-                        camera.position.x = Math.sin(p * Math.PI) * 30 * p;
-                        camera.position.y = Math.cos(p * 2) * 10 * p;
+                        // Zoom from overview to closer — but NOT inside the ribbons
+                        camera.position.z = 120 - p * 80; // 120 -> 40
+                        camera.position.x = Math.sin(p * Math.PI) * 20 * p;
+                        camera.position.y = Math.cos(p * 2) * 8 * p;
                         camera.lookAt(0, 0, 0);
-                        camera.fov = 60 + p * 15; // Widen FOV for immersion
+                        camera.fov = 60 + p * 10;
                         camera.updateProjectionMatrix();
                     },
                     ease: "power2.inOut"
@@ -434,7 +452,7 @@
                         const p = this.progress();
                         targetHover = -3.0 * p;
                         
-                        camera.position.z = 10 + p * 300;
+                        camera.position.z = 40 + p * 300;
                         camera.position.x = Math.sin(p * 4) * 50 * p;
                         camera.position.y = Math.cos(p * 4) * 25 * p;
                         camera.lookAt(0, 0, 0);
@@ -479,7 +497,7 @@
         }, 1000);
 
         // ═══════════════════════════════════════════════
-        // SCROLL — instant music stop, 3D recession
+        // SCROLL — ribbons slide to side like acko.net
         // ═══════════════════════════════════════════════
         if (typeof ScrollTrigger !== 'undefined') {
             ScrollTrigger.create({
@@ -503,13 +521,17 @@
                     }
                     
                     if (canvas) {
-                        canvas.style.opacity = Math.max(0, 1 - p * 1.5);
+                        canvas.style.opacity = Math.max(0, 1 - p * 1.8);
                         canvas.style.pointerEvents = (p > 0.5) ? 'none' : 'auto';
                         
-                        // Recession: "Eli Young" stays visible but rotates back
-                        ribbonsGroup.position.z = -p * 800;
-                        bgPlane.position.z = -300 - (p * 400);
-                        ribbonsGroup.rotation.x = p * 0.4;
+                        // ACKO BEHAVIOR: ribbons slide UP and to the LEFT on scroll
+                        ribbonsGroup.position.x = -p * 120;
+                        ribbonsGroup.position.y = p * 60;
+                        ribbonsGroup.position.z = -p * 100;
+                        bgPlane.position.z = -300 - (p * 200);
+                        // Slight rotation as it slides away
+                        ribbonsGroup.rotation.x = p * 0.15;
+                        ribbonsGroup.rotation.y = -p * 0.3;
                     }
                     if (introOverlay) {
                         introOverlay.style.opacity = Math.max(0, 1 - p * 2);
