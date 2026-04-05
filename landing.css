@@ -802,8 +802,8 @@ a.exp-company:hover { opacity: 0.7; }
 .project-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 40px;
+    gap: 32px 24px;
+    padding-top: 16px;
 }
 .project-card {
     padding: 28px;
