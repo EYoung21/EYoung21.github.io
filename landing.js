@@ -556,6 +556,38 @@
         const particleSystem = new THREE.Points(geometry, particleMaterial);
         scene.add(particleSystem);
 
+        // --- Hypercube Background ---
+        const hypercubeGroup = new THREE.Group();
+        scene.add(hypercubeGroup);
+
+        const numPlanes = 20;
+        const planeSize = 60;
+        const spacing = 4.0;
+
+        const planes = [];
+        for (let i = 0; i < numPlanes; i++) {
+            const geom = new THREE.PlaneGeometry(planeSize, planeSize, 8, 8);
+            const hue = 0.4 + (i / numPlanes) * 0.2; 
+            const color = new THREE.Color().setHSL(hue, 1.0, 0.5);
+            
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: color, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15 + (i===0 || i!==numPlanes-1 ? 0.05 : 0)
+            });
+            const plane = new THREE.Mesh(geom, mat);
+            plane.position.z = (i - numPlanes / 2) * spacing;
+            hypercubeGroup.add(plane);
+            planes.push(plane);
+        }
+
+        const boxGeom = new THREE.BoxGeometry(planeSize, planeSize, numPlanes * spacing);
+        const edges = new THREE.EdgesGeometry(boxGeom);
+        const boxMat = new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.2 });
+        const boundingBox = new THREE.LineSegments(edges, boxMat);
+        hypercubeGroup.add(boundingBox);
+
         // Interaction State
         let mouse = new THREE.Vector3(0, 0, 0);
         let targetStateMode = 'CHAOS'; // CHAOS or TEXT
@@ -576,12 +608,35 @@
             const dir = vector.sub(camera.position).normalize();
             const distance = -camera.position.z / dir.z;
             mouse = camera.position.clone().add(dir.multiplyScalar(distance));
+
+            // Parallax for Hypercube
+            gsap.to(hypercubeGroup.position, {
+                x: x * 15,
+                y: y * 15,
+                duration: 2,
+                ease: "power2.out"
+            });
+            gsap.to(hypercubeGroup.rotation, {
+                x: y * 0.3,
+                y: x * 0.3,
+                duration: 2,
+                ease: "power2.out"
+            });
         });
 
         function animate3D() {
             requestAnimationFrame(animate3D);
             time += 0.01;
             particleMaterial.uniforms.time.value = time;
+
+            // Animate local hypercube planes
+            planes.forEach((plane, index) => {
+                const wave = Math.sin(time * 2 + index * 0.5);
+                plane.scale.setScalar(1 + wave * 0.05);
+                plane.rotation.z = Math.sin(time * 0.5) * 0.1 * (index / numPlanes);
+            });
+            hypercubeGroup.rotation.x += 0.002;
+            hypercubeGroup.rotation.y += 0.003;
 
             const posAttribute = geometry.attributes.position;
             const lerpSpeed = targetStateMode === 'TEXT' ? 0.02 : 0.05;
