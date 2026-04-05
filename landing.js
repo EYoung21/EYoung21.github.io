@@ -439,132 +439,27 @@
         }, 500);
     });
 
-    // ── ThreeJS WebGL Metamorphosis: Data to Structure (Idea 1 - acko.net style) ──
+    // ── ThreeJS Interactive Hypercube Theme ──
     const canvas = document.getElementById('theme-canvas');
     if (canvas && typeof THREE !== 'undefined') {
         const scene = new THREE.Scene();
+        // Set camera closer to emphasize the cube
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 35;
+
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.position.z = 150;
 
-        // 1. Generate Target Coordinates from Offscreen Canvas (Text)
-        const textCanvas = document.createElement('canvas');
-        textCanvas.width = 1000;
-        textCanvas.height = 300;
-        const ctx = textCanvas.getContext('2d');
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, textCanvas.width, textCanvas.height);
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 160px "Space Grotesk", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('EYOUNG', textCanvas.width / 2, textCanvas.height / 2);
-
-        const imgData = ctx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
-        const textPoints = [];
-        
-        // Sample every 4th pixel to limit point count
-        for (let y = 0; y < textCanvas.height; y += 4) {
-            for (let x = 0; x < textCanvas.width; x += 4) {
-                const index = (y * textCanvas.width + x) * 4;
-                const r = imgData[index];
-                if (r > 128) {
-                    // Map from canvas space (0,0 top-left) to Three.js space (0,0 center)
-                    const pX = (x - textCanvas.width / 2) * 0.3;
-                    const pY = (textCanvas.height / 2 - y) * 0.3;
-                    textPoints.push(new THREE.Vector3(pX, pY, (Math.random() - 0.5) * 5));
-                }
-            }
-        }
-
-        const numParticles = Math.max(textPoints.length, 3000); // Ensure a good density
-        const positions = new Float32Array(numParticles * 3);
-        
-        // We will animate positions array via JS, so we keep track of states
-        const chaosPositions = [];
-        const targetPositions = [];
-        const currentPositions = [];
-        const velocities = [];
-
-        for (let i = 0; i < numParticles; i++) {
-            // Chaos: random points distributed in a wide sphere
-            const r = 100 + Math.random() * 80;
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos((Math.random() * 2) - 1);
-            
-            const cX = r * Math.sin(phi) * Math.cos(theta);
-            const cY = r * Math.sin(phi) * Math.sin(theta);
-            const cZ = r * Math.cos(phi);
-            chaosPositions.push(new THREE.Vector3(cX, cY, cZ));
-
-            // Target Text: pull from generated text points or map randomly to existing ones
-            let tX, tY, tZ;
-            if (i < textPoints.length) {
-                tX = textPoints[i].x; tY = textPoints[i].y; tZ = textPoints[i].z;
-            } else {
-                // If we need more points than the text, just cluster them densely around it
-                const randomTextPt = textPoints[Math.floor(Math.random() * textPoints.length)];
-                tX = randomTextPt.x + (Math.random() - 0.5) * 3;
-                tY = randomTextPt.y + (Math.random() - 0.5) * 3;
-                tZ = randomTextPt.z + (Math.random() - 0.5) * 10;
-            }
-            targetPositions.push(new THREE.Vector3(tX, tY, tZ));
-
-            // Initial state is chaos
-            currentPositions.push(new THREE.Vector3(cX, cY, cZ));
-            velocities.push(new THREE.Vector3(0, 0, 0));
-            
-            positions[i * 3] = cX;
-            positions[i * 3 + 1] = cY;
-            positions[i * 3 + 2] = cZ;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-        // Let's create a custom shader material for glowing points
-        const particleMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                color: { value: new THREE.Color(0x00ff66) },
-                time: { value: 0 }
-            },
-            vertexShader: `
-                uniform float time;
-                void main() {
-                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                    gl_PointSize = (150.0 / -mvPosition.z); 
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                uniform vec3 color;
-                void main() {
-                    float d = distance(gl_PointCoord, vec2(0.5));
-                    if (d > 0.5) discard;
-                    float alpha = max(0.0, 1.0 - (d * 2.0));
-                    gl_FragColor = vec4(color, alpha * 0.8);
-                }
-            `,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-
-        const particleSystem = new THREE.Points(geometry, particleMaterial);
-        scene.add(particleSystem);
-
-        // --- Hypercube Background ---
         const hypercubeGroup = new THREE.Group();
         scene.add(hypercubeGroup);
 
-        const numPlanes = 20;
-        const planeSize = 60;
-        const spacing = 4.0;
+        const numPlanes = 24;
+        const planeSize = 16;
+        const spacing = 1.0;
 
         const planes = [];
+        // Inner vibrating planes
         for (let i = 0; i < numPlanes; i++) {
             const geom = new THREE.PlaneGeometry(planeSize, planeSize, 8, 8);
             const hue = 0.4 + (i / numPlanes) * 0.2; 
@@ -574,116 +469,122 @@
                 color: color, 
                 wireframe: true,
                 transparent: true,
-                opacity: 0.15 + (i===0 || i!==numPlanes-1 ? 0.05 : 0)
+                opacity: 0.1 + (i===0 || i===numPlanes-1 ? 0.15 : 0)
             });
             const plane = new THREE.Mesh(geom, mat);
             plane.position.z = (i - numPlanes / 2) * spacing;
             hypercubeGroup.add(plane);
-            planes.push(plane);
+            planes.push({ mesh: plane, index: i, baseZ: plane.position.z });
         }
 
+        // Bounding box
         const boxGeom = new THREE.BoxGeometry(planeSize, planeSize, numPlanes * spacing);
         const edges = new THREE.EdgesGeometry(boxGeom);
-        const boxMat = new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.2 });
+        const boxMat = new THREE.LineBasicMaterial({ color: 0x00ff66, transparent: true, opacity: 0.3 });
         const boundingBox = new THREE.LineSegments(edges, boxMat);
         hypercubeGroup.add(boundingBox);
 
+        // Core energy particles inside the hypercube
+        const particleGeom = new THREE.BufferGeometry();
+        const pCount = 200;
+        const pPos = new Float32Array(pCount * 3);
+        const pVel = [];
+        for (let i=0; i<pCount; i++) {
+            pPos[i*3] = (Math.random() - 0.5) * planeSize;
+            pPos[i*3+1] = (Math.random() - 0.5) * planeSize;
+            pPos[i*3+2] = (Math.random() - 0.5) * (numPlanes * spacing);
+            pVel.push(new THREE.Vector3((Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1, (Math.random()-0.5)*0.1));
+        }
+        particleGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({ color: 0x00ff66, size: 0.2, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const coreParticles = new THREE.Points(particleGeom, pMat);
+        hypercubeGroup.add(coreParticles);
+
+        // Outer ambient grid to prevent "cut off" feeling
+        const outerGroup = new THREE.Group();
+        scene.add(outerGroup);
+        const outerPlanes = [];
+        const outerNum = 12;
+        for (let i = 0; i < outerNum; i++) {
+            const geom = new THREE.PlaneGeometry(100, 100, 10, 10);
+            const mat = new THREE.MeshBasicMaterial({ color: 0x00aa44, wireframe: true, transparent: true, opacity: 0.03 });
+            const plane = new THREE.Mesh(geom, mat);
+            plane.position.z = (i - outerNum/2) * 5;
+            outerGroup.add(plane);
+            outerPlanes.push(plane);
+        }
+
         // Interaction State
-        let mouse = new THREE.Vector3(0, 0, 0);
-        let targetStateMode = 'CHAOS'; // CHAOS or TEXT
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
         let time = 0;
 
-        // Transition from Chaos to Text triggered precisely when Boot Sequence finishes
-        window.addEventListener('terminalBootComplete', () => {
-            targetStateMode = 'TEXT';
-        });
-
         document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth) * 2 - 1;
-            const y = -(e.clientY / window.innerHeight) * 2 + 1;
-            
-            // Unproject to get rough 3D mouse mapping
-            const vector = new THREE.Vector3(x, y, 0.5);
-            vector.unproject(camera);
-            const dir = vector.sub(camera.position).normalize();
-            const distance = -camera.position.z / dir.z;
-            mouse = camera.position.clone().add(dir.multiplyScalar(distance));
-
-            // Parallax for Hypercube
-            gsap.to(hypercubeGroup.position, {
-                x: x * 15,
-                y: y * 15,
-                duration: 2,
-                ease: "power2.out"
-            });
-            gsap.to(hypercubeGroup.rotation, {
-                x: y * 0.3,
-                y: x * 0.3,
-                duration: 2,
-                ease: "power2.out"
-            });
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
         });
 
         function animate3D() {
             requestAnimationFrame(animate3D);
-            time += 0.01;
-            particleMaterial.uniforms.time.value = time;
+            time += 0.015;
 
-            // Animate local hypercube planes
-            planes.forEach((plane, index) => {
-                const wave = Math.sin(time * 2 + index * 0.5);
-                plane.scale.setScalar(1 + wave * 0.05);
-                plane.rotation.z = Math.sin(time * 0.5) * 0.1 * (index / numPlanes);
-            });
+            // Interactive rotation with easing (inertia)
+            targetRotationX = mouseY * 0.5;
+            targetRotationY = mouseX * 0.8;
+            
+            hypercubeGroup.rotation.x += (targetRotationX - hypercubeGroup.rotation.x) * 0.05;
+            hypercubeGroup.rotation.y += (targetRotationY - hypercubeGroup.rotation.y) * 0.05;
+            
+            // Inherent spin
             hypercubeGroup.rotation.x += 0.002;
             hypercubeGroup.rotation.y += 0.003;
+            hypercubeGroup.rotation.z = Math.sin(time * 0.5) * 0.1;
 
-            const posAttribute = geometry.attributes.position;
-            const lerpSpeed = targetStateMode === 'TEXT' ? 0.02 : 0.05;
+            // Animate internal planes: organic breathing effect and interactive spacing
+            const mouseDist = Math.sqrt(mouseX*mouseX + mouseY*mouseY);
+            const expansion = 1 + mouseDist * 0.5; // Expands when mouse is further from center
 
-            for (let i = 0; i < numParticles; i++) {
-                const target = targetStateMode === 'TEXT' ? targetPositions[i] : chaosPositions[i];
-                const current = currentPositions[i];
-                const velocity = velocities[i];
-
-                // Mouse Repulsion
-                const distToMouse = current.distanceTo(mouse);
-                if (distToMouse < 30) {
-                    const force = new THREE.Vector3().subVectors(current, mouse).normalize();
-                    force.multiplyScalar((30 - distToMouse) * 0.1);
-                    velocity.add(force);
-                }
-
-                // Spring physics towards target
-                const springForce = new THREE.Vector3().subVectors(target, current).multiplyScalar(lerpSpeed);
-                velocity.add(springForce);
-                velocity.multiplyScalar(0.85); // friction/damping
-                
-                // Add tiny organic float when in TEXT mode
-                if (targetStateMode === 'TEXT') {
-                    velocity.x += Math.sin(time * 2 + i) * 0.05;
-                    velocity.y += Math.cos(time * 2 + i) * 0.05;
-                } else {
-                    // Slowly rotate chaos positions
-                    chaosPositions[i].applyAxisAngle(new THREE.Vector3(0,1,0), 0.005);
-                    chaosPositions[i].applyAxisAngle(new THREE.Vector3(1,0,0), 0.002);
-                }
-
-                current.add(velocity);
-
-                posAttribute.array[i * 3] = current.x;
-                posAttribute.array[i * 3 + 1] = current.y;
-                posAttribute.array[i * 3 + 2] = current.z;
-            }
-            posAttribute.needsUpdate = true;
-
-            // Camera slightly moves with actual mouse for parallax
-            gsap.to(camera.position, {
-                x: (mouse.x * 0.1),
-                y: (mouse.y * 0.1),
-                ease: 'power2.out',
-                duration: 1
+            planes.forEach(p => {
+                const wave = Math.sin(time * 3 + p.index * 0.3);
+                // Pulse size
+                p.mesh.scale.setScalar(1 + wave * 0.03 * expansion);
+                // Expand spacing dynamically
+                p.mesh.position.z = p.baseZ * (0.8 + 0.2 * expansion) + wave * 0.2;
+                // Twist internally
+                p.mesh.rotation.z = Math.sin(time) * 0.1 * (p.index / numPlanes) * expansion;
             });
+
+            // Animate outer ambient grid
+            outerGroup.rotation.x = hypercubeGroup.rotation.x * 0.3;
+            outerGroup.rotation.y = hypercubeGroup.rotation.y * 0.3;
+            outerPlanes.forEach((plane, i) => {
+                plane.position.z += 0.05;
+                if (plane.position.z > (outerNum/2) * 5) {
+                    plane.position.z -= outerNum * 5;
+                }
+            });
+
+            // Animate internal energy particles
+            const positions = coreParticles.geometry.attributes.position.array;
+            for(let i=0; i<pCount; i++) {
+                positions[i*3] += pVel[i].x;
+                positions[i*3+1] += pVel[i].y;
+                positions[i*3+2] += pVel[i].z;
+
+                // Bounce off bounds
+                const halfSize = planeSize/2;
+                const halfDepth = (numPlanes * spacing)/2;
+                if(Math.abs(positions[i*3]) > halfSize) pVel[i].x *= -1;
+                if(Math.abs(positions[i*3+1]) > halfSize) pVel[i].y *= -1;
+                if(Math.abs(positions[i*3+2]) > halfDepth) pVel[i].z *= -1;
+            }
+            coreParticles.geometry.attributes.position.needsUpdate = true;
+
+            // Mouse parallax for camera
+            camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+            camera.position.y += (mouseY * 5 - camera.position.y) * 0.05;
             camera.lookAt(scene.position);
 
             renderer.render(scene, camera);
