@@ -1190,6 +1190,8 @@ a.exp-company:hover { opacity: 0.7; }
     overflow: hidden;
     width: 100vw;
     padding-left: clamp(20px, 4vw, 60px);
+    padding-top: 40px;
+    padding-bottom: 40px;
 }
 .horizontal-container {
     display: flex;
