@@ -51,14 +51,19 @@
         const canvas = document.getElementById('acko-canvas');
         if (!canvas || typeof THREE === 'undefined') return;
 
-        // Init Audio Setup
-        const randomSong = PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)];
-        currentAudio = new Audio(`/Users/eliyoung/yt_mp4_or_mp3_downloader/output/${randomSong.file}`);
-        currentAudio.loop = true;
-        
-        if (songNameEl) songNameEl.textContent = randomSong.title;
-        if (songArtistEl) songArtistEl.textContent = randomSong.artist;
-        if (songLinkEl) songLinkEl.href = randomSong.url;
+        // Init Audio Setup (Resilient for GitHub Pages)
+        try {
+            const randomSong = PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)];
+            // Use relative path for deployment; tell user to upload music to /music/ folder
+            currentAudio = new Audio(`./music/${randomSong.file}`);
+            currentAudio.loop = true;
+            
+            if (songNameEl) songNameEl.textContent = randomSong.title;
+            if (songArtistEl) songArtistEl.textContent = randomSong.artist;
+            if (songLinkEl) songLinkEl.href = randomSong.url;
+        } catch (e) {
+            console.warn("Audio initialization failed. Check if /music/ exists and contains the files.", e);
+        }
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf5f5f7); // Site light surface
@@ -199,7 +204,6 @@
                         const p = this.progress();
                         targetHover = -3.2 * p; // Explosion / Fly-past
                         
-                        // Spiral movement following the "building blocks" of depth
                         camera.position.z -= p * 12;
                         camera.position.x += Math.sin(p * 5) * 50 * p;
                         camera.position.y += Math.cos(p * 5) * 25 * p;
@@ -208,7 +212,9 @@
                 });
 
                 // Hide UI
-                gsap.to([playBtn, prompt], { opacity: 0, duration: 1.2, pointerEvents: 'none' });
+                if (playBtn && prompt) {
+                    gsap.to([playBtn, prompt], { opacity: 0, duration: 1.2, pointerEvents: 'none' });
+                }
                 
                 // Keep it active but faded so scroll-up works
                 setTimeout(() => {
@@ -581,17 +587,19 @@
             });
 
             const inners = heading.querySelectorAll('.line > span');
-            gsap.to(inners, {
-                y: 0,
-                duration: 1,
-                stagger: 0.12,
-                ease: 'power4.out',
-                scrollTrigger: {
-                    trigger: heading,
-                    start: 'top 80%',
-                    toggleActions: 'play none none none',
-                }
-            });
+            if (inners.length > 0) {
+                gsap.to(inners, {
+                    y: 0,
+                    duration: 1,
+                    stagger: 0.12,
+                    ease: 'power4.out',
+                    scrollTrigger: {
+                        trigger: heading,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none',
+                    }
+                });
+            }
         });
     }
 
