@@ -194,37 +194,44 @@
                 
                 // Start audio
                 if(currentAudio) currentAudio.play();
-                // GSAP Cinematic Path - Following ribbons
+                // GSAP Cinematic Path - Aggressive Dive & Explosion
                 const tl = gsap.timeline();
                 const prompt = introOverlay ? introOverlay.querySelector('.intro-prompt') : null;
                 
                 tl.to({}, { 
-                    duration: 4.5, 
+                    duration: 5.5,
                     onUpdate: function() {
                         const p = this.progress();
-                        targetHover = -3.2 * p; // Explosion / Fly-past
+                        targetHover = -4.5 * p; // Extreme blast outward
                         
-                        camera.position.z -= p * 12;
-                        camera.position.x += Math.sin(p * 5) * 50 * p;
-                        camera.position.y += Math.cos(p * 5) * 25 * p;
+                        // Cinematic Dive: Camera dashes through the structure
+                        const startZ = 180;
+                        const endZ = -120;
+                        camera.position.z = startZ - (startZ - endZ) * p;
+                        
+                        // Dramatic Spiral & Tilt
+                        camera.position.x = Math.sin(p * 8) * 80 * p;
+                        camera.position.y = Math.cos(p * 8) * 40 * p * (1 - p); // Settle Y as we end
                         camera.lookAt(0, 0, 0);
+                        camera.rotation.z = p * 1.5; 
+
+                        // Dynamically fade out overlay as we dive through
+                        if (p > 0.45 && introOverlay.style.opacity !== '0') {
+                            const fadeP = (p - 0.45) / 0.55;
+                            introOverlay.style.opacity = (1 - fadeP).toString();
+                        }
+                    },
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        // Cleanup
+                        gsap.set([canvas, introOverlay], { display: 'none', pointerEvents: 'none' });
                     }
                 });
 
-                // Hide UI
+                // Hide UI immediately on click
                 if (playBtn && prompt) {
-                    gsap.to([playBtn, prompt], { opacity: 0, duration: 1.2, pointerEvents: 'none' });
+                    gsap.to([playBtn, prompt], { opacity: 0, duration: 0.6, pointerEvents: 'none' });
                 }
-                
-                // Keep it active but faded so scroll-up works
-                setTimeout(() => {
-                    if (window.scrollY < 100) {
-                        gsap.to([canvas, introOverlay], { 
-                            opacity: 0, 
-                            duration: 2.5
-                        });
-                    }
-                }, 5000);
             });
         }
 
@@ -324,11 +331,11 @@
                             const bz = nz + (playTarget.z - nz) * intensity;
                             pos.setXYZ(i, bx, by, bz);
                         } else if (currentHover < 0) {
-                            // Explosion sequence
+                            // Violent Explosion sequence
                             const push = Math.abs(currentHover);
-                            const ex = nx + (nx * push * 0.8);
-                            const ey = ny + (ny * push * 0.8);
-                            const ez = nz + push * 250; 
+                            const ex = nx + (nx * push * 1.5);
+                            const ey = ny + (ny * push * 1.5);
+                            const ez = nz + push * 400; // Fly past camera towards viewer
                             pos.setXYZ(i, ex, ey, ez);
                         } else {
                             pos.setXYZ(i, nx, ny, nz);
