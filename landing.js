@@ -48,7 +48,7 @@
 
     // ── Acko.net Style Intro Experience ──
     // Inspired by Steven Wittens' procedural ribbon technique:
-    // Single BufferGeometry, camera traces letter paths, duration = song length
+    // Wide flat ribbons, dense chaotic scene, tight camera traversal
     
     let ackoScene = null; // Global ref for theme updates
 
@@ -60,23 +60,26 @@
         const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
         const isDark = () => getTheme() === 'dark';
 
-        // Theme-aware colors
+        // Theme-aware colors — USER'S GREEN PALETTE, not acko's orange/teal
         const themeColors = {
             dark: {
                 bg: 0x050505,
                 stripe1: '#0a0a0a', stripe2: '#111111',
-                palette: [0x00ff66, 0x00cc55, 0x22c55e, 0x44ffaa, 0xffffff],
-                ambient: 0x222222, ambientIntensity: 0.4,
+                // Bright greens, whites, cyans — all visible on dark bg
+                palette: [0x00ff66, 0x00cc55, 0x22c55e, 0x44ffaa, 0x88ffcc, 0x33ddaa, 0xffffff, 0x00e85c, 0x66ffbb, 0xaaffdd],
+                ambient: 0x222222, ambientIntensity: 0.6,
+                dirLight: 0xffffff, dirIntensity: 0.8,
                 pointLight: 0x00ff66, pointIntensity: 3.5,
-                ribbonRoughness: 0.3, ribbonMetalness: 0.5,
+                ribbonRoughness: 0.25, ribbonMetalness: 0.4,
             },
             light: {
-                bg: 0xf5f5f7,
-                stripe1: '#ffffff', stripe2: '#f0f3f6',
-                palette: [0x00ff66, 0x111111, 0x000000, 0x888888, 0xffffff],
+                bg: 0xf0f3f6,
+                stripe1: '#ffffff', stripe2: '#e8ecf0',
+                palette: [0x00cc55, 0x222222, 0x333344, 0x888888, 0xffffff, 0x22c55e, 0x44ffaa, 0x555555, 0x00aa44, 0xbbbbbb],
                 ambient: 0xffffff, ambientIntensity: 1.0,
+                dirLight: 0xffffff, dirIntensity: 0.6,
                 pointLight: 0x00ff66, pointIntensity: 2.5,
-                ribbonRoughness: 0.5, ribbonMetalness: 0.1,
+                ribbonRoughness: 0.4, ribbonMetalness: 0.15,
             }
         };
 
@@ -85,9 +88,8 @@
         try {
             const randomSong = PLAYLIST[Math.floor(Math.random() * PLAYLIST.length)];
             currentAudio = new Audio(`./music/${randomSong.file}`);
-            currentAudio.loop = false; // Don't loop — animation ends with song
+            currentAudio.loop = false;
             
-            // Get actual song duration when metadata loads
             currentAudio.addEventListener('loadedmetadata', () => {
                 songDuration = currentAudio.duration;
                 console.log(`Song duration: ${songDuration.toFixed(1)}s — animation will match`);
@@ -105,22 +107,31 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(tc.bg);
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 4000);
-        camera.position.set(0, 0, 180);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+        camera.position.set(0, 0, 120);
 
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = false;
 
-        // Lighting
+        // Lighting — richer setup for flat ribbons
         const ambientLight = new THREE.AmbientLight(tc.ambient, tc.ambientIntensity);
         scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(tc.dirLight, tc.dirIntensity);
+        dirLight.position.set(50, 80, 100);
+        scene.add(dirLight);
+
+        const dirLight2 = new THREE.DirectionalLight(0x00ff66, 0.3);
+        dirLight2.position.set(-50, -40, 60);
+        scene.add(dirLight2);
         
         const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 600);
         mouseLight.position.set(0, 0, 100);
         scene.add(mouseLight);
 
-        // Acko Background - subtle diagonal stripes (theme-aware)
+        // Acko Background — subtle diagonal stripes
         const buildStripeBg = () => {
             const stripeCanvas = document.createElement('canvas');
             stripeCanvas.width = 128; stripeCanvas.height = 128;
@@ -129,108 +140,190 @@
             ctx.fillStyle = colors.stripe1;
             ctx.fillRect(0, 0, 128, 128);
             ctx.strokeStyle = colors.stripe2;
-            ctx.lineWidth = 12;
+            ctx.lineWidth = 14;
             ctx.beginPath();
-            ctx.moveTo(-64, 64); ctx.lineTo(64, -64);
-            ctx.moveTo(0, 128); ctx.lineTo(128, 0);
-            ctx.moveTo(64, 192); ctx.lineTo(192, 64);
+            for (let j = -2; j < 4; j++) {
+                ctx.moveTo(-64 + j * 64, 64 + j * 64);
+                ctx.lineTo(64 + j * 64, -64 + j * 64);
+            }
             ctx.stroke();
             return new THREE.CanvasTexture(stripeCanvas);
         };
 
         let stripeTex = buildStripeBg();
         stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
-        stripeTex.repeat.set(60, 60);
+        stripeTex.repeat.set(80, 80);
 
-        const bgMaterial = new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 1 });
-        const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), bgMaterial);
-        bgPlane.position.z = -200;
+        const bgMaterial = new THREE.MeshBasicMaterial({ map: stripeTex });
+        const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), bgMaterial);
+        bgPlane.position.z = -300;
         scene.add(bgPlane);
 
-        // Group to hold our text tubes
+        // ═══════════════════════════════════════════════
+        // FLAT RIBBON CREATION — wide, thick tape strips  
+        // ═══════════════════════════════════════════════
         const ribbonsGroup = new THREE.Group();
         scene.add(ribbonsGroup);
 
-        let tubesList = [];
-        let allLetterPaths = []; // Store ALL curve paths for camera traversal
-        let masterCameraPath = null; // The continuous path the camera follows
+        // Creates a wide, flat ribbon using TubeGeometry with scale flattening
+        // TubeGeometry handles normals correctly, producing solid visible geometry
+        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments) {
+            segments = segments || 200;
+            ribbonWidth = ribbonWidth || 3.0;
+
+            // Use TubeGeometry with a large radius for thick, solid tubes
+            const radius = ribbonWidth;
+            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, radius, 8, false);
+            
+            tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: roughness,
+                metalness: metalness,
+                side: THREE.DoubleSide,
+            });
+
+            const mesh = new THREE.Mesh(tubeGeo, mat);
+            return mesh;
+        }
+
+        let letterRibbons = [];
+        let chaosRibbons = [];
+        let allRibbons = [];
+        let masterCameraPath = null;
         let targetHover = 0; 
         let currentHover = 0;
         let introPlaying = false;
+        let introTimeline = null;
         let mouseX = 0, mouseY = 0;
         let rotationX = 0, rotationY = 0;
         let isDragging = false;
         let startX = 0, startY = 0;
+        let playBtnHovering = false;
 
         const loader = new THREE.FontLoader();
         loader.load('https://unpkg.com/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
             const message = "Eli Young";
-            const shapes = font.generateShapes(message, 18);
+            const shapes = font.generateShapes(message, 20);
             
             const geometry = new THREE.ShapeGeometry(shapes);
             geometry.computeBoundingBox();
             const xOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
             const yOffset = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
 
-            const cameraWaypoints = []; // Collect all 3D points for camera path
+            const cameraWaypoints = [];
             const currentPalette = isDark() ? themeColors.dark.palette : themeColors.light.palette;
 
+            // ── Build letter ribbons: ONE ribbon per shape outline (not per curve) ──
             shapes.forEach((shape, sIdx) => {
-                // Process main shape curves
                 const allCurves = [...shape.curves];
-                // Also process holes for letters like 'o', 'e', 'Y' etc.
                 if (shape.holes) {
-                    shape.holes.forEach(hole => {
-                        allCurves.push(...hole.curves);
-                    });
+                    shape.holes.forEach(hole => allCurves.push(...hole.curves));
                 }
 
-                allCurves.forEach((curve, i) => {
-                    const points = curve.getPoints(64);
-                    const path3DPoints = points.map((p, idx) => 
-                        new THREE.Vector3(
-                            p.x + xOffset, 
-                            p.y + yOffset, 
-                            Math.sin(idx * 0.12 + sIdx) * 12
-                        )
-                    );
-
-                    // Store for camera path
-                    allLetterPaths.push(path3DPoints);
-                    // Add every Nth point as a camera waypoint (to sample the full letter)
-                    path3DPoints.forEach((pt, idx) => {
-                        if (idx % 4 === 0) cameraWaypoints.push(pt.clone());
+                // Concatenate all curve points into one continuous 3D path
+                const allShapePoints = [];
+                allCurves.forEach((curve, ci) => {
+                    const pts = curve.getPoints(40);
+                    pts.forEach((p, idx) => {
+                        // Skip duplicate start points (curves join end-to-start)
+                        if (ci > 0 && idx === 0) return;
+                        allShapePoints.push(new THREE.Vector3(
+                            p.x + xOffset,
+                            p.y + yOffset,
+                            Math.sin(allShapePoints.length * 0.05 + sIdx * 2.0) * 18 + Math.cos(allShapePoints.length * 0.02) * 10
+                        ));
                     });
-
-                    const path = new THREE.CatmullRomCurve3(path3DPoints);
-                    const tubeGeo = new THREE.TubeGeometry(path, 128, 0.4, 4, false);
-                    const material = new THREE.MeshStandardMaterial({
-                        color: currentPalette[(sIdx + i) % currentPalette.length],
-                        roughness: isDark() ? themeColors.dark.ribbonRoughness : themeColors.light.ribbonRoughness,
-                        metalness: isDark() ? themeColors.dark.ribbonMetalness : themeColors.light.ribbonMetalness,
-                    });
-
-                    const tubeMesh = new THREE.Mesh(tubeGeo, material);
-                    tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
-                    tubesList.push(tubeMesh);
-                    ribbonsGroup.add(tubeMesh);
                 });
+
+                // Camera waypoints
+                allShapePoints.forEach((pt, idx) => {
+                    if (idx % 5 === 0) cameraWaypoints.push(pt.clone());
+                });
+
+                if (allShapePoints.length >= 3) {
+                    const curvePath = new THREE.CatmullRomCurve3(allShapePoints);
+                    const colorIdx = sIdx % currentPalette.length;
+                    const ribbon = createFlatRibbon(
+                        curvePath, 
+                        3.0 + Math.random() * 3.0,  // radius 3–6 for thick solid tubes
+                        0, // unused now
+                        currentPalette[colorIdx],
+                        tc.ribbonRoughness,
+                        tc.ribbonMetalness,
+                        Math.min(allShapePoints.length * 2, 300)
+                    );
+                    letterRibbons.push(ribbon);
+                    ribbonsGroup.add(ribbon);
+                }
             });
 
-            // Build the master camera path from ALL letter waypoints
+            // ── Build CHAOTIC background ribbons (dense, interlocking) ──
+            const chaosCount = 40;
+            for (let c = 0; c < chaosCount; c++) {
+                const numPts = 6 + Math.floor(Math.random() * 10);
+                const chaosPts = [];
+                // Start near the letters but wander far out — fills the frame
+                const cx = (Math.random() - 0.5) * 250;
+                const cy = (Math.random() - 0.5) * 120;
+                const cz = (Math.random() - 0.5) * 200;
+
+                for (let j = 0; j < numPts; j++) {
+                    chaosPts.push(new THREE.Vector3(
+                        cx + (Math.random() - 0.5) * 180,
+                        cy + (Math.random() - 0.5) * 100,
+                        cz + (Math.random() - 0.5) * 140 + Math.sin(j * 1.5) * 40
+                    ));
+                }
+
+                const chaosCurve = new THREE.CatmullRomCurve3(chaosPts);
+                const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
+                const chaosRibbon = createFlatRibbon(
+                    chaosCurve,
+                    4.0 + Math.random() * 8.0,   // Width: 4–12 (wide like letter ribbons)
+                    0.3 + Math.random() * 0.8,
+                    chaosColor,
+                    tc.ribbonRoughness + Math.random() * 0.15,
+                    tc.ribbonMetalness + Math.random() * 0.2,
+                    140
+                );
+                chaosRibbons.push(chaosRibbon);
+                ribbonsGroup.add(chaosRibbon);
+            }
+
+            allRibbons = [...letterRibbons, ...chaosRibbons];
+
+            // ── Build the master camera path ──
             if (cameraWaypoints.length > 2) {
-                // Add cinematic offset: camera sits slightly above and in front of the path
+                // Camera sits close to the ribbon surface — tight, like riding on it
                 const cinematicWaypoints = cameraWaypoints.map(wp => 
-                    new THREE.Vector3(wp.x, wp.y + 3, wp.z + 25)
+                    new THREE.Vector3(wp.x * 1.1, wp.y * 1.1 + 2, wp.z + 8)
                 );
                 masterCameraPath = new THREE.CatmullRomCurve3(cinematicWaypoints, false, 'centripetal', 0.5);
-                console.log(`Camera path built with ${cinematicWaypoints.length} waypoints tracing all letters`);
+                console.log(`Camera path: ${cinematicWaypoints.length} waypoints through all letters`);
             }
         });
 
-        // Interaction: Click and Drag
+        // ═══════════════════════════════════════════════
+        // INTERACTION — play button hover "sucking" effect 
+        // ═══════════════════════════════════════════════
+        
+        // Compute play button world-space target for the "suck" effect
+        const getPlayBtnTarget = () => {
+            if (!playBtn) return new THREE.Vector3(60, -50, 20);
+            const rect = playBtn.getBoundingClientRect();
+            const ndcX = ((rect.left + rect.width / 2) / window.innerWidth) * 2 - 1;
+            const ndcY = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
+            const target = new THREE.Vector3(ndcX, ndcY, 0.5);
+            target.unproject(camera);
+            // Push it forward a bit
+            const dir = target.sub(camera.position).normalize();
+            return camera.position.clone().add(dir.multiplyScalar(80));
+        };
+
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#intro-overlay')) {
+            if (e.target.closest('#intro-overlay') && !introPlaying) {
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
@@ -245,7 +338,7 @@
             mouseY = -my * 200;
             mouseLight.position.set(mouseX, mouseY, 120);
 
-            if (isDragging) {
+            if (isDragging && !introPlaying) {
                 const deltaX = e.clientX - startX;
                 const deltaY = e.clientY - startY;
                 rotationY += deltaX * 0.005;
@@ -256,93 +349,103 @@
         });
 
         if (playBtn) {
-            playBtn.addEventListener('mouseenter', () => targetHover = 0.8);
-            playBtn.addEventListener('mouseleave', () => targetHover = 0);
+            playBtn.addEventListener('mouseenter', () => { 
+                targetHover = 0.85;
+                playBtnHovering = true;
+            });
+            playBtn.addEventListener('mouseleave', () => { 
+                targetHover = 0;
+                playBtnHovering = false;
+            });
 
             playBtn.addEventListener('click', () => {
                 if (introPlaying) return;
                 introPlaying = true;
+                targetHover = 0;
+                playBtnHovering = false;
                 
                 // Start audio
                 if (currentAudio) currentAudio.play().catch(() => {});
 
-                // Show song popup
+                // Show song popup (upper right)
                 if (songPopup) songPopup.classList.add('active');
 
-                // Show scroll-stop message
+                // Show scroll-stop message (upper right)
                 const scrollStopMsg = document.getElementById('scroll-stop-msg');
-                if (scrollStopMsg) {
-                    scrollStopMsg.style.opacity = '1';
-                    setTimeout(() => { scrollStopMsg.style.opacity = '0'; }, 4000);
-                }
+                if (scrollStopMsg) scrollStopMsg.classList.add('active');
+
+                // Add playing class to overlay
+                if (introOverlay) introOverlay.classList.add('playing');
 
                 const tl = gsap.timeline();
+                introTimeline = tl;
                 const prompt = introOverlay ? introOverlay.querySelector('.intro-prompt') : null;
                 
-                // Hide UI immediately
-                if (playBtn && prompt) {
-                    gsap.to([playBtn, prompt], { opacity: 0, duration: 0.6, pointerEvents: 'none' });
-                }
+                // Hide play button + prompt immediately
+                if (playBtn) gsap.to(playBtn, { opacity: 0, scale: 0.3, duration: 0.5, pointerEvents: 'none' });
+                if (prompt) gsap.to(prompt, { opacity: 0, duration: 0.4 });
 
-                // Phase 1: Quick dramatic zoom-in (2 seconds)
+                // Phase 1: Dramatic zoom INTO the ribbon structure (3 seconds)
                 tl.to({}, {
-                    duration: 2,
+                    duration: 3,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Zoom camera into the structure
-                        camera.position.z = 180 - p * 140; // 180 -> 40
-                        camera.position.x = Math.sin(p * 3) * 20 * p;
+                        // Zoom from overview into tight ribbon-level
+                        camera.position.z = 120 - p * 110; // 120 -> 10
+                        camera.position.x = Math.sin(p * Math.PI) * 30 * p;
+                        camera.position.y = Math.cos(p * 2) * 10 * p;
                         camera.lookAt(0, 0, 0);
+                        camera.fov = 60 + p * 15; // Widen FOV for immersion
+                        camera.updateProjectionMatrix();
                     },
                     ease: "power2.inOut"
                 });
 
-                // Phase 2: Camera traces every letter path (song duration)
+                // Phase 2: Camera traces the letter paths (song duration)
                 tl.to({}, {
-                    duration: Math.max(songDuration - 6, 30), // Reserve 4s for exit
+                    duration: Math.max(songDuration - 8, 30),
                     onUpdate: function() {
                         const p = this.progress();
                         
                         if (masterCameraPath) {
-                            // Camera follows the master path through every letter
                             const point = masterCameraPath.getPointAt(p);
-                            const tangent = masterCameraPath.getTangentAt(p);
-                            
                             camera.position.copy(point);
                             
-                            // Look slightly ahead along the path
-                            const lookAheadP = Math.min(p + 0.01, 1);
-                            const lookTarget = masterCameraPath.getPointAt(lookAheadP);
+                            // Look ahead along the path
+                            const lookP = Math.min(p + 0.008, 1);
+                            const lookTarget = masterCameraPath.getPointAt(lookP);
                             camera.lookAt(lookTarget);
                             
-                            // Subtle camera roll for cinematic feel
-                            camera.rotation.z = Math.sin(p * 20) * 0.08;
+                            // Cinematic camera roll
+                            camera.rotation.z = Math.sin(p * 25) * 0.12;
+                            
+                            // Slowly modulate FOV for variety
+                            camera.fov = 65 + Math.sin(p * 8) * 10;
+                            camera.updateProjectionMatrix();
                         }
-                        
-                        // Subtle ribbon breathing during traversal
-                        targetHover = Math.sin(p * 10) * 0.15;
                     },
-                    ease: "none" // Linear traversal matches music tempo
+                    ease: "none"
                 });
 
-                // Phase 3: Dramatic exit explosion (4 seconds)
+                // Phase 3: Pull back and exit (5 seconds)
                 tl.to({}, {
-                    duration: 4,
+                    duration: 5,
                     onUpdate: function() {
                         const p = this.progress();
-                        targetHover = -4.5 * p; // Explosion
+                        targetHover = -3.0 * p;
                         
-                        // Pull camera way back
-                        camera.position.z = 40 + p * 300;
-                        camera.position.x = Math.sin(p * 6) * 60 * p;
-                        camera.position.y = Math.cos(p * 6) * 30 * p;
+                        camera.position.z = 10 + p * 300;
+                        camera.position.x = Math.sin(p * 4) * 50 * p;
+                        camera.position.y = Math.cos(p * 4) * 25 * p;
                         camera.lookAt(0, 0, 0);
-                        camera.rotation.z = p * 1.5;
+                        camera.rotation.z = p * 1.2;
+                        camera.fov = 75 - p * 20;
+                        camera.updateProjectionMatrix();
 
-                        // Fade out overlay
                         if (p > 0.3) {
                             const fadeP = (p - 0.3) / 0.7;
                             if (introOverlay) introOverlay.style.opacity = (1 - fadeP).toString();
+                            if (canvas) canvas.style.opacity = (1 - fadeP).toString();
                         }
                     },
                     ease: "power2.in",
@@ -358,12 +461,10 @@
                     }
                 });
 
-                // Also end on song finish if song is shorter
+                // End on song finish
                 if (currentAudio) {
                     currentAudio.addEventListener('ended', () => {
-                        if (introPlaying) {
-                            tl.progress(0.95); // Jump to exit phase
-                        }
+                        if (introPlaying && tl) tl.progress(0.92);
                     });
                 }
             });
@@ -377,7 +478,9 @@
             }
         }, 1000);
 
-        // Scroll trigger: Acko recession (Z-depth + Opacity)
+        // ═══════════════════════════════════════════════
+        // SCROLL — instant music stop, 3D recession
+        // ═══════════════════════════════════════════════
         if (typeof ScrollTrigger !== 'undefined') {
             ScrollTrigger.create({
                 trigger: 'body',
@@ -385,27 +488,50 @@
                 end: '1200px top',
                 onUpdate: (self) => {
                     const p = self.progress;
-                    if (currentAudio && !introPlaying) currentAudio.volume = Math.max(0, 1 - p);
                     
-                    if (canvas && !introPlaying) {
-                        canvas.style.opacity = 1 - p;
-                        canvas.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
-                        
-                        // Physical transition: Recession into space
-                        ribbonsGroup.position.z = -p * 1200;
-                        bgPlane.position.z = -200 - (p * 500);
-                        ribbonsGroup.rotation.x = p * 0.6;
-                        ribbonsGroup.rotation.y = rotationY + (p * 0.3);
+                    // INSTANT music stop on any scroll
+                    if (p > 0.01 && currentAudio && !currentAudio.paused) {
+                        currentAudio.pause();
+                        currentAudio.currentTime = 0;
                     }
-                    if (introOverlay && !introPlaying) {
-                        introOverlay.style.opacity = 1 - p;
-                        introOverlay.style.pointerEvents = (p > 0.8) ? 'none' : 'auto';
+
+                    // Kill the intro timeline if running
+                    if (p > 0.01 && introTimeline) {
+                        introTimeline.kill();
+                        introTimeline = null;
+                        introPlaying = false;
+                    }
+                    
+                    if (canvas) {
+                        canvas.style.opacity = Math.max(0, 1 - p * 1.5);
+                        canvas.style.pointerEvents = (p > 0.5) ? 'none' : 'auto';
+                        
+                        // Recession: "Eli Young" stays visible but rotates back
+                        ribbonsGroup.position.z = -p * 800;
+                        bgPlane.position.z = -300 - (p * 400);
+                        ribbonsGroup.rotation.x = p * 0.4;
+                    }
+                    if (introOverlay) {
+                        introOverlay.style.opacity = Math.max(0, 1 - p * 2);
+                        introOverlay.style.pointerEvents = (p > 0.3) ? 'none' : 'auto';
                     }
                 }
             });
         }
 
-        // Settings - Mute logic
+        // ═══════════════════════════════════════════════
+        // SETTINGS — gear toggle, mute, wireframe
+        // ═══════════════════════════════════════════════
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        if (settingsBtn && settingsMenu) {
+            settingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsMenu.classList.toggle('open');
+            });
+            document.addEventListener('click', () => settingsMenu.classList.remove('open'));
+        }
+
         const muteCb = document.getElementById('mute-cb');
         if (muteCb) {
             muteCb.addEventListener('change', (e) => {
@@ -413,17 +539,19 @@
             });
         }
 
-        // Settings - Wireframe logic
         const styleSelect = document.querySelector('.settings-menu select');
         if (styleSelect) {
             styleSelect.addEventListener('change', (e) => {
                 const isWireframe = e.target.value === 'Wireframe';
                 ribbonsGroup.children.forEach(mesh => {
-                    mesh.material.wireframe = isWireframe;
+                    if (mesh.material) mesh.material.wireframe = isWireframe;
                 });
             });
         }
 
+        // ═══════════════════════════════════════════════
+        // ANIMATION LOOP
+        // ═══════════════════════════════════════════════
         const clock = new THREE.Clock();
 
         const animate = () => {
@@ -431,44 +559,54 @@
             const delta = clock.getDelta();
             const time = clock.getElapsedTime();
 
-            currentHover += (targetHover - currentHover) * 0.05;
+            currentHover += (targetHover - currentHover) * 0.04;
 
-            // True Acko convergence: Pull towards play button point
-            const aspect = window.innerWidth / window.innerHeight;
-            const viewHeight = 2 * 150 * Math.tan((50 * 0.5 * Math.PI) / 180);
-            const viewWidth = viewHeight * aspect;
-            const playTarget = new THREE.Vector3(viewWidth * 0.38, -viewHeight * 0.35, 20);
+            // Compute play button world target for sucking effect
+            const playTarget = getPlayBtnTarget();
 
+            // Animate ALL ribbons (letter + chaos)
             ribbonsGroup.children.forEach((mesh, idx) => {
                 const geo = mesh.geometry;
                 const pos = geo.attributes.position;
                 const orig = geo.userData.origPositions;
 
                 if (pos && orig) {
+                    const isLetter = idx < letterRibbons.length;
+                    const noiseScale = isLetter ? 1.0 : 1.8;
+                    const noiseSpeed = isLetter ? 1.2 : 0.8;
+
                     for (let i = 0; i < pos.count; i++) {
                         const ox = orig[i * 3];
                         const oy = orig[i * 3 + 1];
                         const oz = orig[i * 3 + 2];
 
-                        // Elastic noise
-                        const nx = ox + Math.sin(time * 1.5 + idx * 0.2) * 2;
-                        const ny = oy + Math.cos(time * 1.5 + idx * 0.2) * 2;
-                        const nz = oz + Math.sin(time * 3 + idx) * 4;
+                        // Organic breathing / floating noise
+                        const nx = ox + Math.sin(time * noiseSpeed + idx * 0.15 + i * 0.002) * noiseScale * 2;
+                        const ny = oy + Math.cos(time * noiseSpeed + idx * 0.15 + i * 0.003) * noiseScale * 2;
+                        const nz = oz + Math.sin(time * noiseSpeed * 2 + idx * 0.5 + i * 0.001) * noiseScale * 4;
 
-                        if (currentHover > 0.01) {
-                            // "Sucking" into button effect (nonlinear lerp)
-                            const intensity = Math.pow(currentHover, 1.5);
-                            const bx = nx + (playTarget.x - nx) * intensity;
-                            const by = ny + (playTarget.y - ny) * intensity;
-                            const bz = nz + (playTarget.z - nz) * intensity;
-                            pos.setXYZ(i, bx, by, bz);
+                        if (currentHover > 0.01 && !introPlaying) {
+                            // "SUCKING" into play button — gravitational pull
+                            const intensity = Math.pow(currentHover, 1.8);
+                            const dx = playTarget.x - nx;
+                            const dy = playTarget.y - ny;
+                            const dz = playTarget.z - nz;
+                            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                            const falloff = Math.min(1, 200 / (dist + 1)); // Closer = stronger pull
+                            const pull = intensity * falloff;
+                            pos.setXYZ(i, 
+                                nx + dx * pull * 0.6, 
+                                ny + dy * pull * 0.6, 
+                                nz + dz * pull * 0.3
+                            );
                         } else if (currentHover < -0.01) {
-                            // Violent Explosion sequence
+                            // Explosion outward
                             const push = Math.abs(currentHover);
-                            const ex = nx + (nx * push * 1.5);
-                            const ey = ny + (ny * push * 1.5);
-                            const ez = nz + push * 400;
-                            pos.setXYZ(i, ex, ey, ez);
+                            pos.setXYZ(i,
+                                nx + nx * push * 1.2,
+                                ny + ny * push * 1.2,
+                                nz + push * 300
+                            );
                         } else {
                             pos.setXYZ(i, nx, ny, nz);
                         }
@@ -477,7 +615,7 @@
                 }
             });
 
-            // Smoothing rotation (only when not in cinematic mode)
+            // Smooth rotation (only when not in cinematic mode)
             if (!introPlaying) {
                 ribbonsGroup.rotation.y += (rotationY - ribbonsGroup.rotation.y) * 0.05;
                 ribbonsGroup.rotation.x += (rotationX - ribbonsGroup.rotation.x) * 0.05;
@@ -497,7 +635,8 @@
         // Store scene reference for theme updates
         ackoScene = { 
             scene, renderer, camera, ribbonsGroup, bgPlane, bgMaterial,
-            ambientLight, mouseLight, themeColors, buildStripeBg, stripeTex
+            ambientLight, mouseLight, dirLight, dirLight2, themeColors, 
+            buildStripeBg, stripeTex, letterRibbons, chaosRibbons
         };
     };
 
@@ -526,7 +665,7 @@
                 // Stripe texture
                 const newTex = ackoScene.buildStripeBg();
                 newTex.wrapS = newTex.wrapT = THREE.RepeatWrapping;
-                newTex.repeat.set(60, 60);
+                newTex.repeat.set(80, 80);
                 ackoScene.bgMaterial.map = newTex;
                 ackoScene.bgMaterial.needsUpdate = true;
 
@@ -535,13 +674,19 @@
                 ackoScene.ambientLight.intensity = tc.ambientIntensity;
                 ackoScene.mouseLight.color.set(tc.pointLight);
                 ackoScene.mouseLight.intensity = tc.pointIntensity;
+                if (ackoScene.dirLight) {
+                    ackoScene.dirLight.color.set(tc.dirLight);
+                    ackoScene.dirLight.intensity = tc.dirIntensity;
+                }
 
                 // Ribbon colors
                 ackoScene.ribbonsGroup.children.forEach((mesh, idx) => {
-                    mesh.material.color.set(tc.palette[idx % tc.palette.length]);
-                    mesh.material.roughness = tc.ribbonRoughness;
-                    mesh.material.metalness = tc.ribbonMetalness;
-                    mesh.material.needsUpdate = true;
+                    if (mesh.material) {
+                        mesh.material.color.set(tc.palette[idx % tc.palette.length]);
+                        mesh.material.roughness = tc.ribbonRoughness;
+                        mesh.material.metalness = tc.ribbonMetalness;
+                        mesh.material.needsUpdate = true;
+                    }
                 });
             }
 
