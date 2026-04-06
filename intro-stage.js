@@ -1034,7 +1034,7 @@
         // Keep the intro stage fixed in-place; transition should be dissolve-only.
         const tyVh = 0;
         const sc = 1 - dissolveP * 0.08;
-        const opacity = dissolveP > 0.96 ? Math.max(0, 1 - (dissolveP - 0.96) / 0.04) : 1;
+        const opacity = Math.max(0, 1 - dissolveP * dissolveP * dissolveP);
         const ent = easeOutCubic(Math.min(1, introEntranceT / 1.14));
         const flowInX = prefersReducedMotion ? 0 : (1 - ent) * 0.32 * window.innerWidth;
         handoffEl.style.transformOrigin = '50% 0%';

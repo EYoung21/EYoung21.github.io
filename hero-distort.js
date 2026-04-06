@@ -493,6 +493,13 @@
             : 9;
         const amp = prefersReducedMotion ? 2 : Math.min(96, state.motion * 0.18 + audioAmp);
 
+        // Smoothly dim entire canvas content as dissolve progresses
+        // so remaining tiles don't linger as bright green fragments
+        const d = Math.max(0, Math.min(1, state.dissolveP || 0));
+        if (d > 0.001) {
+            ctx.globalAlpha = Math.max(0, 1 - d * d * 0.6);
+        }
+
         /* ── 2D tile-based rendering (localized XY distortion) ── */
         for (let row = 0; row < tileRows; row += 1) {
             for (let col = 0; col < tileCols; col += 1) {
@@ -519,6 +526,8 @@
             }
         }
 
+        // Reset globalAlpha before dissolve mask (clearRect ignores it but good practice)
+        ctx.globalAlpha = 1;
         applyDissolveMask();
         requestAnimationFrame(render);
     }

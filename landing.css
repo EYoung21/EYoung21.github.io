@@ -1429,19 +1429,17 @@ body.intro-play-active .intro-stage::after {
     opacity: 1;
 }
 .hero-grid-dissolve .grid-cell {
-    border-right: 1px solid rgba(255, 255, 255, 0.07);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    background:
-        radial-gradient(circle at 50% 50%, rgba(0, 255, 102, 0.16), rgba(0, 255, 102, 0.03) 60%, transparent 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    background: transparent;
     transform: translate3d(0, 0, 0) scale(1);
     opacity: 0;
     transition: opacity 120ms linear, transform 120ms linear, filter 120ms linear;
 }
 [data-theme="light"] .hero-grid-dissolve .grid-cell {
-    border-right-color: rgba(0, 0, 0, 0.08);
-    border-bottom-color: rgba(0, 0, 0, 0.08);
-    background:
-        radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.03) 60%, transparent 100%);
+    border-right-color: rgba(0, 0, 0, 0.05);
+    border-bottom-color: rgba(0, 0, 0, 0.05);
+    background: transparent;
 }
 @media (max-width: 768px) {
     .hero-grid-dissolve {
