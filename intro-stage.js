@@ -48,7 +48,11 @@
     let hsiPhase = 0;
     let beatFlash = 0;
     let scrollHandoff01 = 0;
+    /** 0..1 hero scroll progress (for sideline / background cube) */
+    let scrollP = 0;
     let baseCameraZ = 4.2;
+    /** Seconds since intro WebGL started — drives “flow in from the side” entrance */
+    let introEntranceT = 0;
 
     const SPEC_W = 256;
     const SPEC_H = 96;
@@ -106,6 +110,10 @@
 
     function smoothToward(cur, target, k) {
         return cur + (target - cur) * k;
+    }
+
+    function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
     }
 
     function bell(t, center, width) {
@@ -504,13 +512,22 @@
         frameTimes.push(dt);
         if (frameTimes.length > 40) frameTimes.shift();
 
+        const dtSec = Math.min(0.05, dt / 1000);
+        if (!prefersReducedMotion) {
+            introEntranceT += dtSec;
+        } else {
+            introEntranceT = 1.25;
+        }
+
         if (tabHidden) {
+            syncIntroFrameDom();
             requestAnimationFrame(animate);
             if (renderer && scene && camera) renderer.render(scene, camera);
             return;
         }
 
         time += prefersReducedMotion ? 0.006 : 0.014;
+        syncIntroFrameDom();
 
         let bands;
         if (prefersReducedMotion) {
@@ -702,13 +719,37 @@
         const total = rect.height;
         const scrolledPast = Math.max(0, -rect.top);
         const p = Math.min(1, scrolledPast / Math.max(total * 0.65, 1));
-        const o = 1 - p;
-        handoffEl.style.opacity = String(Math.max(0, Math.min(1, o)));
+        scrollP = p;
         scrollHandoff01 = p;
+
+        try {
+            window.dispatchEvent(new CustomEvent('portfolioHeroScroll', { detail: { p, scrolledPast, heroHeight: total } }));
+        } catch (e) { /* ignore */ }
 
         if (p > 0.08 && musicPlaying && audioEl && !audioEl.paused) {
             stopTrackFromScroll();
         }
+    }
+
+    /**
+     * Acko-like: after terminal boot, stage eases in from the side; on scroll, sideline to top then fade out.
+     * Called every animation frame so entrance + scroll transforms stay merged.
+     */
+    function syncIntroFrameDom() {
+        if (!handoffEl) return;
+        const p = scrollP;
+        const sidelineT = Math.min(1, Math.max(0, (p - 0.1) / 0.62));
+        const tyVh = -sidelineT * 46;
+        const sc = 1 - sidelineT * 0.54;
+        let opacity = 1;
+        if (p > 0.72) {
+            opacity = Math.max(0, 1 - (p - 0.72) / 0.28);
+        }
+        const ent = easeOutCubic(Math.min(1, introEntranceT / 1.14));
+        const flowInX = prefersReducedMotion ? 0 : (1 - ent) * 0.32 * window.innerWidth;
+        handoffEl.style.transformOrigin = '50% 0%';
+        handoffEl.style.transform = `translate3d(${flowInX}px, ${tyVh}vh, 0) scale(${sc})`;
+        handoffEl.style.opacity = String(Math.max(0, Math.min(1, opacity)));
     }
 
     function stopTrackFromScroll() {
@@ -824,6 +865,7 @@
     function start() {
         if (started) return;
         started = true;
+        introEntranceT = 0;
         buildScene();
         pickPlaylist().then(() => {});
 

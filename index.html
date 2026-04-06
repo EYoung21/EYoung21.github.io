@@ -37,9 +37,6 @@
     <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <!-- Legacy full-page canvas (WebGL lives in #intro-stage; keep node for older CSS hooks) -->
-    <canvas id="theme-canvas" class="theme-canvas" hidden aria-hidden="true"></canvas>
-    
     <div class="blob-bg">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -100,6 +97,8 @@
     </div>
 
     <main id="native-content">
+        <!-- Wireframe hypercube: fixed layer behind sections (see theme-hypercube.js) -->
+        <canvas id="theme-canvas" class="theme-canvas" aria-hidden="true"></canvas>
         <!-- ==================== HERO ==================== -->
         <section class="section hero" id="hero">
             <!-- Acko-like: fixed “stage” + native scroll below (see #native-content rest of <main>) -->
@@ -686,6 +685,7 @@
     </footer>
 
     <script src="intro-stage.js"></script>
+    <script src="theme-hypercube.js"></script>
     <script src="landing.js"></script>
 </body>
 </html>

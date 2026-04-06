@@ -300,6 +300,7 @@ img { max-width: 100%; height: auto; display: block; }
 .section {
     padding: var(--section-pad) 0;
     position: relative;
+    z-index: 1;
 }
 .section-label {
     font-family: var(--font-mono);
@@ -336,7 +337,7 @@ img { max-width: 100%; height: auto; display: block; }
 .hero-bg {
     position: absolute;
     inset: 0;
-    z-index: 2;
+    z-index: 1;
 }
 .hero-gradient {
     position: absolute;
@@ -358,7 +359,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 .hero-content {
     position: relative;
-    z-index: 3;
+    z-index: 4;
     max-width: var(--container);
     padding: 0 clamp(20px, 4vw, 60px);
     width: 100%;
@@ -1181,18 +1182,25 @@ a.exp-company:hover { opacity: 0.7; }
 }
 
 /* ── Intro: Acko-like fixed “stage” (WebGL) + scrolling native content in <main> ── */
+/* Stacking: theme canvas behind sections; WebGL egg above hero gradient; copy on top */
+#native-content {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+}
+
 .intro-fixed-frame {
     position: fixed;
     inset: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 1;
+    z-index: 3;
     pointer-events: none;
     overflow: hidden;
     transform-style: preserve-3d;
     perspective: min(96vw, 1496px);
     perspective-origin: 50% 45%;
-    transition: opacity 0.35s ease;
+    will-change: transform, opacity;
 }
 .intro-stage {
     position: absolute;
@@ -1409,9 +1417,22 @@ body.intro-play-active .intro-stage::after {
     }
 }
 
-/* ── Theme: legacy canvas (unused; WebGL is intro-stage) ── */
+/* ── Background hypercube: first child of #native-content, behind .section layers ── */
 .theme-canvas {
-    display: none !important;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    display: block;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-canvas {
+        transition: none;
+    }
 }
 
 /* ── Idea 7: Horizontal Scroll Projects ── */
