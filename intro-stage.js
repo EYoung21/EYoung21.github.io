@@ -9,6 +9,7 @@
     'use strict';
 
     if (typeof THREE === 'undefined') return;
+    const DISTORTION_ONLY = true;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isCoarse = window.matchMedia('(pointer: coarse)').matches;
@@ -666,7 +667,54 @@
         }
     }
 
+    function emitDistortionFrame(detail) {
+        try {
+            window.dispatchEvent(new CustomEvent('introDistortionFrame', { detail }));
+        } catch (e) { /* ignore */ }
+    }
+
     function animate() {
+        if (DISTORTION_ONLY) {
+            const now = performance.now();
+            const dt = now - lastFrameTime;
+            lastFrameTime = now;
+            const dtSec = Math.min(0.05, dt / 1000);
+            time += dtSec;
+            if (!prefersReducedMotion) {
+                introEntranceT += dtSec;
+            }
+
+            const bands = musicPlaying ? bandsFromAnalyser() : fakeBands(time);
+            const followK = musicPlaying ? 0.27 : 0.1;
+            sub = smoothToward(sub, Math.max(0, bands.sub), followK);
+            bass = smoothToward(bass, Math.max(0, bands.b), followK);
+            mid = smoothToward(mid, Math.max(0, bands.m), followK);
+            treble = smoothToward(treble, Math.max(0, bands.t), followK);
+            air = smoothToward(air, Math.max(0, bands.air), followK);
+            spectralFlux = smoothToward(spectralFlux, Math.max(0, bands.flux), 0.25);
+            beatFlash = Math.max(0, Math.min(1, (bass - bassPrev) * 4.2 + spectralFlux * 0.9));
+            bassPrev = bass;
+            const tSong = songProgress01();
+            const w = musicPlaying && !prefersReducedMotion ? narrativeWeights(tSong) : {
+                insect: 0.15, egg: 0.1, hatch: 0.08, ml: 0.1, products: 0.08,
+                lockin: 0.4, chicken: 0.2, eggml: 0.2, algo: 0.1, mosquito: 0.1
+            };
+
+            updateHandoffOpacity();
+            syncIntroFrameDom();
+            emitDistortionFrame({
+                mode: introMode,
+                playing: musicPlaying,
+                tSong,
+                weights: w,
+                bands: { sub, bass, mid, treble, air, spectralFlux, beatFlash },
+                muted,
+                themeLight
+            });
+
+            requestAnimationFrame(animate);
+            return;
+        }
         if (!scene) return;
         const now = performance.now();
         const dt = now - lastFrameTime;
@@ -1008,6 +1056,7 @@
             playBtn.setAttribute('aria-label', 'Play music and reactive visuals');
             playBtn.classList.remove('playing');
         }
+        emitDistortionFrame({ mode: introMode, playing: musicPlaying, muted });
     }
 
     function userPauseTrack() {
@@ -1021,6 +1070,7 @@
             playBtn.setAttribute('aria-label', 'Play music and reactive visuals');
             playBtn.classList.remove('playing');
         }
+        emitDistortionFrame({ mode: introMode, playing: musicPlaying, muted });
     }
 
     async function pickPlaylist() {
@@ -1068,6 +1118,7 @@
         if (songPopup) songPopup.classList.add('active');
         playBtn.setAttribute('aria-label', 'Pause music');
         playBtn.classList.add('playing');
+        emitDistortionFrame({ mode: introMode, playing: musicPlaying, muted });
         try {
             await audioEl.play();
         } catch (e) {
@@ -1088,6 +1139,7 @@
         if (icon) {
             icon.className = muted ? 'fas fa-volume-xmark' : 'fas fa-volume-high';
         }
+        emitDistortionFrame({ mode: introMode, playing: musicPlaying, muted });
     }
 
     function bindScrollHandoff() {
@@ -1144,16 +1196,18 @@
         if (started) return;
         started = true;
         introEntranceT = 0;
-        buildScene();
+        if (!DISTORTION_ONLY) buildScene();
         pickPlaylist().then(() => {});
 
         document.addEventListener('mousemove', onPointerMove, { passive: true });
-        canvasEl.addEventListener('pointerdown', onDragStart);
-        canvasEl.addEventListener('pointermove', onDragMove);
-        canvasEl.addEventListener('pointerup', onDragEnd);
-        canvasEl.addEventListener('pointercancel', onDragEnd);
-        canvasEl.addEventListener('pointerleave', onDragEnd);
-        window.addEventListener('resize', onResize);
+        if (!DISTORTION_ONLY) {
+            canvasEl.addEventListener('pointerdown', onDragStart);
+            canvasEl.addEventListener('pointermove', onDragMove);
+            canvasEl.addEventListener('pointerup', onDragEnd);
+            canvasEl.addEventListener('pointercancel', onDragEnd);
+            canvasEl.addEventListener('pointerleave', onDragEnd);
+            window.addEventListener('resize', onResize);
+        }
 
         playBtn?.addEventListener('click', onPlayClick);
         muteBtn?.addEventListener('click', onMuteClick);
