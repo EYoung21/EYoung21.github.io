@@ -659,21 +659,32 @@
                     }
                     
                     if (canvas) {
-                        // Acko-style: ribbon cluster FADES at TOP but stays fully visible until gone
-                        canvas.style.opacity = Math.max(0, 1 - p * 2.5);
-                        canvas.style.pointerEvents = (p > 0.4) ? 'none' : 'auto';
+                        // ACKO-STYLE: Canvas slides UP off the viewport top as you scroll
+                        const slideUpPx = p * window.innerHeight * 0.8; // slide up by 80% of viewport
+                        canvas.style.transform = `translateY(-${slideUpPx}px)`;
+                        canvas.style.opacity = Math.max(0, 1 - p * 1.5);
+                        canvas.style.pointerEvents = (p > 0.3) ? 'none' : 'auto';
+
+                        if (p > 0.7) {
+                            canvas.style.display = 'none';
+                        } else {
+                            canvas.style.display = 'block';
+                        }
                         
-                        // ACKO BEHAVIOR: ribbons slide UP and to the LEFT on scroll
-                        ribbonsGroup.position.x = -p * 120;
-                        ribbonsGroup.position.y = p * 60;
-                        ribbonsGroup.position.z = -p * 100;
+                        // Ribbons also slide UP and LEFT within the 3D space
+                        ribbonsGroup.position.x = -p * 80;
+                        ribbonsGroup.position.y = p * 40;
+                        ribbonsGroup.position.z = -p * 60;
                         bgPlane.position.z = -300 - (p * 200);
                         // Slight rotation as it slides away
-                        ribbonsGroup.rotation.x = p * 0.15;
-                        ribbonsGroup.rotation.y = -p * 0.3;
+                        ribbonsGroup.rotation.x = p * 0.1;
+                        ribbonsGroup.rotation.y = -p * 0.2;
                     }
                     if (introOverlay) {
-                        introOverlay.style.opacity = Math.max(0, 1 - p * 3);
+                        // Overlay slides up in sync with the canvas
+                        const slideUpPx = p * window.innerHeight * 0.8;
+                        introOverlay.style.transform = `translateY(-${slideUpPx}px)`;
+                        introOverlay.style.opacity = Math.max(0, 1 - p * 2);
                         introOverlay.style.pointerEvents = (p > 0.2) ? 'none' : 'auto';
                     }
 
@@ -694,11 +705,13 @@
                             canvas.style.opacity = '1';
                             canvas.style.pointerEvents = 'auto';
                             canvas.style.display = 'block';
+                            canvas.style.transform = 'translateY(0)';
                         }
                         if (introOverlay) {
                             introOverlay.style.opacity = '1';
                             introOverlay.style.pointerEvents = 'auto';
                             introOverlay.style.display = 'block';
+                            introOverlay.style.transform = 'translateY(0)';
                             introOverlay.classList.remove('playing');
                         }
                         // Re-show play button and masthead
