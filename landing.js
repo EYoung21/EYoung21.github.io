@@ -286,46 +286,65 @@
             }
 
             // Build faces between consecutive cross-sections (4 quads per segment = all 4 sides)
+            // Group 0: Top and Bottom faces
+            // Group 1: Side faces (edges)
+            let faceIndices = [];
+            let sideIndices = [];
+
             for (let i = 0; i < segments; i++) {
                 const a = i * 4;
                 const b = (i + 1) * 4;
 
                 // Top face (0-1 -> 4-5)
-                indices.push(a + 0, b + 0, b + 1);
-                indices.push(a + 0, b + 1, a + 1);
+                faceIndices.push(a + 0, b + 0, b + 1);
+                faceIndices.push(a + 0, b + 1, a + 1);
 
                 // Bottom face (2-3 -> 6-7)
-                indices.push(a + 2, b + 3, b + 2);
-                indices.push(a + 2, a + 3, b + 3);
+                faceIndices.push(a + 2, b + 3, b + 2);
+                faceIndices.push(a + 2, a + 3, b + 3);
 
                 // Right side (0-3 -> 4-7)
-                indices.push(a + 0, a + 3, b + 3);
-                indices.push(a + 0, b + 3, b + 0);
+                sideIndices.push(a + 0, a + 3, b + 3);
+                sideIndices.push(a + 0, b + 3, b + 0);
 
                 // Left side (1-2 -> 5-6)
-                indices.push(a + 1, b + 1, b + 2);
-                indices.push(a + 1, b + 2, a + 2);
+                sideIndices.push(a + 1, b + 1, b + 2);
+                sideIndices.push(a + 1, b + 2, a + 2);
             }
+            
+            // Combine indices
+            indices.push(...faceIndices, ...sideIndices);
 
             const geo = new THREE.BufferGeometry();
             geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
             geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
             geo.setIndex(indices);
+            
+            // Define groups for the two materials
+            geo.addGroup(0, faceIndices.length, 0); // Material 0 (faces)
+            geo.addGroup(faceIndices.length, sideIndices.length, 1); // Material 1 (sides)
+            
             geo.computeVertexNormals(); // Smooth normals
             geo.userData.origPositions = new Float32Array(positions);
 
-            const mat = new THREE.MeshStandardMaterial({
-                color: color,
+            // Acko-style rendering: crisp, opaque, colorful sides, light faces
+            const baseFaceColor = isDark() ? 0xdcdcdc : 0xffffff;
+
+            const faceMat = new THREE.MeshStandardMaterial({
+                color: baseFaceColor,
                 roughness: roughness,
                 metalness: metalness,
-                side: THREE.DoubleSide,
-                flatShading: false, // Smooth shading like acko
-                envMapIntensity: 0.4,
-                transparent: true,
-                opacity: opacity || 1.0,
+                side: THREE.DoubleSide
             });
 
-            return new THREE.Mesh(geo, mat);
+            const sideMat = new THREE.MeshStandardMaterial({
+                color: color, // The vibrant palette color
+                roughness: Math.max(0.1, roughness - 0.2), // Sides a bit smoother
+                metalness: metalness + 0.1,
+                side: THREE.DoubleSide
+            });
+
+            return new THREE.Mesh(geo, [faceMat, sideMat]);
         }
 
         let letterRibbons = [];
@@ -444,16 +463,25 @@
 
                 const chaosCurve = new THREE.CatmullRomCurve3(chaosPts, false, 'centripetal', 0.4);
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
+                
+                // For acko-style variety, sometimes the face is colored and side is dark
+                const isInverse = Math.random() > 0.7;
+                
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    4 + Math.random() * 6,       // width 4–10 (wide, but not obscuring text)
-                    0.8 + Math.random() * 0.8,    // thickness 0.8–1.6 (visible 3D edge)
+                    4 + Math.random() * 6,       // width
+                    0.8 + Math.random() * 0.8,    // thickness
                     chaosColor,
                     tc.ribbonRoughness + Math.random() * 0.15,
                     tc.ribbonMetalness + Math.random() * 0.15,
-                    150,
-                    0.85 + Math.random() * 0.15   // opacity 0.85–1.0 (more opaque for quality)
+                    150
                 );
+                
+                if (isInverse) {
+                    chaosRibbon.material[0].color.setHex(chaosColor);
+                    chaosRibbon.material[1].color.setHex(isDark() ? 0x222222 : 0xdddddd);
+                }
+                
                 chaosRibbons.push(chaosRibbon);
                 ribbonsGroup.add(chaosRibbon);
             }
