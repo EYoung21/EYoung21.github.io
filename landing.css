@@ -1318,12 +1318,12 @@ body.intro-play-active .intro-stage::after {
 }
 @keyframes gridDissolveCell {
     0% {
-        opacity: 0.9;
+        opacity: 0.95;
         transform: translate3d(0, 0, 0) scale(1);
         filter: blur(0px);
     }
     100% {
-        opacity: 0;
+        opacity: 0.1;
         transform: translate3d(var(--x-jitter, 0px), var(--y-jitter, -14px), 0) scale(0.86);
         filter: blur(2px);
     }

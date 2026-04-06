@@ -13,41 +13,31 @@
             key: 'lockin', label: 'LOCK IN',
             lines: ['focus.lock(apps.social)', 'session.start(90m)', 'streak += 1'],
             tint: '#32f08c',
-            icon: 'LOCK',
-            persona: 'Founder building focus products',
-            impact: 'Shipped cross-platform productivity app with streak mechanics'
+            icon: 'LOCK'
         },
         {
             key: 'chicken', label: 'CHICKEN',
             lines: ['lifeCycle.bootstrap()', 'hatch.seed(chicken)', 'iterate(instinct)'],
             tint: '#f59e0b',
-            icon: 'CHICK',
-            persona: 'Applied ML in ag + lifecycle data',
-            impact: 'Research from signal mountain roots to real-world farms'
+            icon: 'CHICK'
         },
         {
             key: 'eggml', label: 'EGG ML',
             lines: ['egg.scan(hsi)', 'model.fit(features)', 'loss -> 0.03'],
             tint: '#60a5fa',
-            icon: 'EGG-ML',
-            persona: 'Research engineer (UIUC x USDA)',
-            impact: 'Built interpretable pipelines for egg viability prediction'
+            icon: 'EGG-ML'
         },
         {
             key: 'algo', label: 'ALGOARENA',
             lines: ['battle.queue(opponents)', 'solve(dp | graphs)', 'rank.update(+42)'],
             tint: '#a78bfa',
-            icon: 'ARENA',
-            persona: 'Builder + competitor + full-stack cofounder',
-            impact: 'Designed and shipped real-time coding battles at scale'
+            icon: 'ARENA'
         },
         {
             key: 'mosquito', label: 'MOSQUITO / EPG',
             lines: ['epg.trace(frequency)', 'sharpshooter.target(lock)', 'ml.predict(trajectory)'],
             tint: '#f43f5e',
-            icon: 'EPG',
-            persona: 'Signal processing + ML systems',
-            impact: 'Extracted robust EPG features with measurable F1 gains'
+            icon: 'EPG'
         }
     ];
 
@@ -106,30 +96,95 @@
         context.closePath();
     }
 
-    function drawWrappedText(context, text, x, y, maxWidth, lineHeight, maxLines) {
-        const words = String(text || '').split(/\s+/).filter(Boolean);
-        if (!words.length) return 0;
-        const lines = [''];
-        words.forEach((word) => {
-            const current = lines[lines.length - 1];
-            const candidate = current ? `${current} ${word}` : word;
-            if (context.measureText(candidate).width <= maxWidth) {
-                lines[lines.length - 1] = candidate;
-            } else if (lines.length < maxLines) {
-                lines.push(word);
-            } else {
-                let last = `${lines[maxLines - 1]} ${word}`.trim();
-                while (context.measureText(`${last}...`).width > maxWidth && last.length > 1) {
-                    last = last.slice(0, -1);
-                }
-                lines[maxLines - 1] = `${last.trimEnd()}...`;
+    function drawChipIcon(context, key, cx, cy, size, color, active) {
+        const s = size;
+        context.save();
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        context.strokeStyle = color;
+        context.fillStyle = color;
+        context.lineWidth = Math.max(1.4, s * 0.12);
+        switch (key) {
+            case 'lockin': {
+                roundRectPath(context, cx - s * 0.32, cy - s * 0.03, s * 0.64, s * 0.42, s * 0.1);
+                context.stroke();
+                context.beginPath();
+                context.arc(cx, cy - s * 0.03, s * 0.22, Math.PI * 1.05, Math.PI * 1.95);
+                context.stroke();
+                context.beginPath();
+                context.arc(cx, cy + s * 0.15, s * 0.05, 0, Math.PI * 2);
+                context.fill();
+                break;
             }
-        });
-        if (lines.length > maxLines) {
-            lines.length = maxLines;
+            case 'chicken': {
+                context.beginPath();
+                context.arc(cx - s * 0.02, cy + s * 0.03, s * 0.23, 0, Math.PI * 2);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(cx + s * 0.2, cy + s * 0.02);
+                context.lineTo(cx + s * 0.36, cy + s * 0.1);
+                context.lineTo(cx + s * 0.2, cy + s * 0.18);
+                context.closePath();
+                context.fill();
+                context.beginPath();
+                context.moveTo(cx - s * 0.14, cy - s * 0.18);
+                context.lineTo(cx - s * 0.06, cy - s * 0.3);
+                context.lineTo(cx + s * 0.02, cy - s * 0.18);
+                context.stroke();
+                break;
+            }
+            case 'eggml': {
+                context.beginPath();
+                context.ellipse(cx, cy + s * 0.03, s * 0.22, s * 0.31, 0, 0, Math.PI * 2);
+                context.stroke();
+                if (active) {
+                    context.beginPath();
+                    context.moveTo(cx - s * 0.08, cy + s * 0.05);
+                    context.lineTo(cx, cy - s * 0.02);
+                    context.lineTo(cx + s * 0.1, cy + s * 0.1);
+                    context.stroke();
+                }
+                break;
+            }
+            case 'algo': {
+                context.beginPath();
+                context.moveTo(cx - s * 0.25, cy + s * 0.22);
+                context.lineTo(cx + s * 0.2, cy - s * 0.25);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(cx + s * 0.25, cy + s * 0.22);
+                context.lineTo(cx - s * 0.2, cy - s * 0.25);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(cx - s * 0.22, cy + s * 0.22);
+                context.lineTo(cx - s * 0.1, cy + s * 0.32);
+                context.moveTo(cx + s * 0.22, cy + s * 0.22);
+                context.lineTo(cx + s * 0.1, cy + s * 0.32);
+                context.stroke();
+                break;
+            }
+            case 'mosquito': {
+                context.beginPath();
+                context.ellipse(cx, cy + s * 0.06, s * 0.1, s * 0.22, 0, 0, Math.PI * 2);
+                context.stroke();
+                context.beginPath();
+                context.ellipse(cx - s * 0.12, cy - s * 0.06, s * 0.14, s * 0.08, -0.4, 0, Math.PI * 2);
+                context.ellipse(cx + s * 0.12, cy - s * 0.06, s * 0.14, s * 0.08, 0.4, 0, Math.PI * 2);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(cx, cy + s * 0.23);
+                context.lineTo(cx, cy + s * 0.36);
+                context.moveTo(cx - s * 0.14, cy + s * 0.2);
+                context.lineTo(cx - s * 0.2, cy + s * 0.34);
+                context.moveTo(cx + s * 0.14, cy + s * 0.2);
+                context.lineTo(cx + s * 0.2, cy + s * 0.34);
+                context.stroke();
+                break;
+            }
+            default:
+                break;
         }
-        lines.slice(0, maxLines).forEach((ln, idx) => context.fillText(ln, x, y + idx * lineHeight));
-        return Math.min(lines.length, maxLines);
+        context.restore();
     }
 
     function pickChapterIndex(weights) {
@@ -206,8 +261,8 @@
     }
 
     function drawHeroText() {
-        const size = Math.max(76, Math.min(286, state.w * 0.215));
-        srcCtx.font = `900 ${size}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
+        const baseSize = Math.max(76, Math.min(286, state.w * 0.215));
+        srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
         const chapter = chapters[state.chapterIdx];
         const huePulse = state.playing ? Math.min(1, state.bands.spectralFlux * 0.9 + state.beatShock * 0.7) : 0;
         srcCtx.fillStyle = huePulse > 0.02 ? mix('#c8ffe8', chapter.tint, Math.min(1, huePulse)) : state.palette.fg;
@@ -217,12 +272,30 @@
         const y = state.h * 0.5 + Math.sin(performance.now() * 0.0016) * pulseY;
         const split = state.playing ? Math.min(42, state.bands.treble * 16 + state.bands.spectralFlux * 28 + state.beatShock * 24) : 0;
         if (split > 0.1) {
+            let splitSize = baseSize;
+            srcCtx.font = `900 ${splitSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
+            let wEli = srcCtx.measureText('ELI').width;
+            let wYoung = srcCtx.measureText('YOUNG').width;
+            const desiredGap = Math.max(22, Math.min(84, state.w * 0.06)) + split * 1.45;
+            const maxAllowed = state.w * 0.9;
+            const totalWidth = wEli + wYoung + desiredGap;
+            if (totalWidth > maxAllowed) {
+                const shrink = Math.max(0.72, maxAllowed / totalWidth);
+                splitSize *= shrink;
+                srcCtx.font = `900 ${splitSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
+                wEli = srcCtx.measureText('ELI').width;
+                wYoung = srcCtx.measureText('YOUNG').width;
+            }
+            const centerX = state.w * 0.5;
+            const xEli = centerX - (desiredGap * 0.5 + wEli * 0.5);
+            const xYoung = centerX + (desiredGap * 0.5 + wYoung * 0.5);
             srcCtx.fillStyle = rgb(chapter.tint, 0.85);
-            srcCtx.fillText('ELI', state.w * 0.31 - split, y);
-            srcCtx.fillText('YOUNG', state.w * 0.67 + split, y);
+            srcCtx.fillText('ELI', xEli, y);
+            srcCtx.fillText('YOUNG', xYoung, y);
             srcCtx.fillStyle = rgb('#ffffff', 0.12 + split / 80);
-            srcCtx.fillRect(state.w * 0.5 - 1, y - size * 0.34, 2, size * 0.64);
+            srcCtx.fillRect(state.w * 0.5 - 1, y - splitSize * 0.34, 2, splitSize * 0.64);
         } else {
+            srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
             srcCtx.fillText('ELI YOUNG', state.w * 0.5, y);
         }
 
@@ -255,55 +328,33 @@
             srcCtx.fillText(line, overlayX, Math.max(138, state.h * 0.72) + i * 26);
         });
 
-        const narrow = state.w < 820;
-        const tiny = state.w < 560;
-        const hudW = narrow ? Math.min(state.w - 28, 360) : Math.min(520, state.w * 0.48);
-        const hudH = narrow ? 116 : 96;
-        const hudY = narrow ? Math.max(212, state.h * 0.81) : Math.max(224, state.h * 0.84);
-        roundRectPath(srcCtx, overlayX - 16, hudY - 34, hudW, hudH, 14);
-        srcCtx.fillStyle = rgb('#050608', 0.44 + state.bands.bass * 0.2);
-        srcCtx.fill();
-        srcCtx.strokeStyle = rgb(chapter.tint, 0.35 + state.bands.beatFlash * 0.28);
-        srcCtx.lineWidth = 1;
-        srcCtx.stroke();
-
-        srcCtx.font = `600 ${Math.max(10, Math.min(13, state.w * (narrow ? 0.017 : 0.011)))}px Inter, system-ui, sans-serif`;
-        srcCtx.fillStyle = rgb('#ffffff', 0.86);
-        srcCtx.fillText(chapter.persona, overlayX, hudY - 10);
-
-        srcCtx.font = `500 ${Math.max(9, Math.min(12, state.w * (narrow ? 0.015 : 0.01)))}px Inter, system-ui, sans-serif`;
-        srcCtx.fillStyle = rgb('#d1d5db', 0.78);
-        const linesUsed = drawWrappedText(
-            srcCtx,
-            chapter.impact,
-            overlayX,
-            hudY + 12,
-            hudW - 28,
-            narrow ? 14 : 13,
-            narrow ? 2 : 1
-        );
-
-        const skills = [
-            ['build', Math.min(1, (state.weights.algo || 0) * 0.9 + (state.weights.lockin || 0) * 0.45 + state.bands.bass * 0.35)],
-            ['research', Math.min(1, (state.weights.eggml || 0) * 0.95 + (state.weights.mosquito || 0) * 0.55 + state.bands.mid * 0.28)],
-            ['ship', Math.min(1, (state.weights.lockin || 0) * 0.65 + (state.weights.algo || 0) * 0.52 + state.bands.spectralFlux * 0.4)]
-        ];
-        const meterY = hudY + (narrow ? 18 + linesUsed * 14 : 36);
-        const meterGap = tiny ? 8 : 12;
-        const meterW = Math.min(narrow ? 100 : 132, (hudW - 24 - meterGap * 2) / 3);
-        skills.forEach((item, i) => {
-            const x = overlayX + i * (meterW + meterGap);
-            srcCtx.font = `600 ${Math.max(9, Math.min(11, state.w * 0.009))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
-            srcCtx.fillStyle = rgb('#9ca3af', 0.95);
-            srcCtx.fillText(item[0], x, meterY);
-
-            roundRectPath(srcCtx, x, meterY + 8, meterW, 10, 6);
-            srcCtx.fillStyle = rgb('#111827', 0.84);
+        const iconKeys = ['lockin', 'chicken', 'eggml', 'algo', 'mosquito'];
+        const activeIconKey = chapter.key;
+        const chipsY = Math.max(212, state.h * 0.84);
+        const chipSize = state.w < 700 ? 26 : 32;
+        const gap = state.w < 700 ? 8 : 10;
+        const chipW = state.w < 700 ? 44 : 50;
+        iconKeys.forEach((key, i) => {
+            const x = overlayX + i * (chipW + gap);
+            const isActive = key === activeIconKey;
+            srcCtx.fillStyle = isActive
+                ? rgb(chapter.tint, 0.36 + state.bands.beatFlash * 0.26)
+                : rgb('#0f172a', 0.46);
+            roundRectPath(srcCtx, x, chipsY, chipW, chipSize, 9);
             srcCtx.fill();
-
-            roundRectPath(srcCtx, x, meterY + 8, meterW * item[1], 10, 6);
-            srcCtx.fillStyle = rgb(chapter.tint, 0.78 + state.bands.beatFlash * 0.18);
-            srcCtx.fill();
+            srcCtx.strokeStyle = isActive ? rgb(chapter.tint, 0.9) : rgb('#475569', 0.42);
+            srcCtx.lineWidth = 1;
+            srcCtx.stroke();
+            const bounce = isActive ? Math.sin(state.tSong * 16 + i) * 2.4 * (0.4 + state.bands.beatFlash) : 0;
+            drawChipIcon(
+                srcCtx,
+                key,
+                x + chipW * 0.5,
+                chipsY + chipSize * 0.52 + bounce,
+                chipSize * 0.9,
+                rgb('#f8fafc', isActive ? 0.96 : 0.82),
+                isActive
+            );
         });
     }
 

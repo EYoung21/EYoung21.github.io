@@ -374,11 +374,12 @@
     function setupHeroGridDissolve() {
         const grid = document.getElementById('hero-grid-dissolve');
         const hero = document.getElementById('hero');
-        if (!grid || !hero || typeof ScrollTrigger === 'undefined') return;
+        if (!grid || !hero) return;
 
         if (!grid.childElementCount) {
-            const cols = 12;
-            const rows = 8;
+            const mobile = window.matchMedia('(max-width: 768px)').matches;
+            const cols = mobile ? 8 : 12;
+            const rows = mobile ? 12 : 8;
             const total = cols * rows;
             for (let i = 0; i < total; i += 1) {
                 const cell = document.createElement('span');
@@ -396,31 +397,45 @@
         }
 
         let didDissolve = false;
+        let replayTimer = null;
         const playDissolve = () => {
             grid.classList.remove('active');
             // Force reflow so class re-add replays animation.
             void grid.offsetWidth;
             grid.classList.add('active');
         };
-
-        ScrollTrigger.create({
-            trigger: hero,
-            start: 'top top',
-            end: 'bottom top',
-            onUpdate: (self) => {
-                const mobile = window.matchMedia('(max-width: 768px)').matches;
-                const triggerAt = mobile ? 0.5 : 0.58;
-                const resetAt = mobile ? 0.28 : 0.35;
-                if (self.progress > triggerAt && !didDissolve) {
-                    didDissolve = true;
-                    playDissolve();
-                }
-                if (self.progress < resetAt && didDissolve) {
-                    didDissolve = false;
-                    grid.classList.remove('active');
-                }
+        const stopReplay = () => {
+            if (replayTimer) {
+                clearInterval(replayTimer);
+                replayTimer = null;
             }
+            grid.classList.remove('active');
+        };
+        const startReplay = () => {
+            if (replayTimer) return;
+            playDissolve();
+            replayTimer = setInterval(playDissolve, 900);
+        };
+        const syncFromProgress = (p) => {
+            const mobile = window.matchMedia('(max-width: 768px)').matches;
+            const triggerAt = mobile ? 0.36 : 0.44;
+            const maxAt = 0.94;
+            const shouldShow = p > triggerAt && p < maxAt;
+            if (shouldShow && !didDissolve) {
+                didDissolve = true;
+                startReplay();
+            } else if (!shouldShow && didDissolve) {
+                didDissolve = false;
+                stopReplay();
+            }
+        };
+
+        window.addEventListener('portfolioHeroScroll', (ev) => {
+            const progress = ev.detail && typeof ev.detail.p === 'number' ? ev.detail.p : 0;
+            syncFromProgress(progress);
         });
+
+        window.addEventListener('beforeunload', stopReplay);
     }
 
     // ── Mobile Menu ──
