@@ -59,7 +59,11 @@
                 <div class="terminal-line"><span class="cursor">_</span></div>
             </div>
         </div>
+        <button class="terminal-skip" id="terminalSkip">Skip <span>⏭</span></button>
     </div>
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
 
     <!-- Navigation -->
     <nav class="nav" id="nav">
@@ -69,6 +73,7 @@
             <a href="#experience" class="nav-link" data-cursor="link">Experience</a>
             <a href="#projects" class="nav-link" data-cursor="link">Projects</a>
             <a href="#skills" class="nav-link" data-cursor="link">Skills</a>
+            <a href="#leadership" class="nav-link" data-cursor="link">Leadership</a>
             <a href="#contact" class="nav-link" data-cursor="link">Contact</a>
         </div>
         <div class="nav-actions">
@@ -92,6 +97,7 @@
         <a href="#experience" class="mobile-link">Experience</a>
         <a href="#projects" class="mobile-link">Projects</a>
         <a href="#skills" class="mobile-link">Skills</a>
+        <a href="#leadership" class="mobile-link">Leadership</a>
         <a href="#contact" class="mobile-link">Contact</a>
         <a href="imgs/Eli Young CV.pdf" download class="mobile-link">Resume ↓</a>
     </div>
@@ -133,6 +139,7 @@
                     </button>
                 </div>
             </div>
+            <div class="hero-spacer"></div>
             <div class="hero-content">
                 <div class="hero-masthead-text">
                     <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
@@ -360,15 +367,16 @@
 
         <!-- ==================== PROJECTS ==================== -->
         <section class="section projects" id="projects">
-            <div class="container">
-                <div class="section-label">03 / Projects</div>
-                <h2 class="section-heading" data-animate="split">Selected<br>work.</h2>
-            </div>
 
             <!-- Horizontal Scroll Wrapper -->
             <div class="horizontal-wrapper">
                 <div class="horizontal-container">
-                
+
+                <!-- Intro panel (scrolls horizontally with projects) -->
+                <div class="projects-intro-panel">
+                    <div class="section-label">03 / Projects</div>
+                    <h2 class="section-heading" data-animate="split">Selected<br>work.</h2>
+                </div>
                 <!-- Featured: AlgoArena -->
                 <div class="project-featured">
                     <a href="https://algoarena.net" target="_blank" class="project-featured-media" data-cursor="link">
@@ -605,7 +613,7 @@
         </section>
 
         <!-- ==================== LEADERSHIP ==================== -->
-        <section class="section leadership">
+        <section class="section leadership" id="leadership">
             <div class="container">
                 <div class="section-label">05 / Leadership</div>
                 <h2 class="section-heading" data-animate="split">Beyond<br>code.</h2>

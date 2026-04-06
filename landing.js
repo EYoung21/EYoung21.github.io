@@ -89,6 +89,7 @@
                             // TRIGGER WEBGL METAMORPHOSIS!
                             window.dispatchEvent(new Event('terminalBootComplete'));
                             document.getElementById('nav')?.classList.add('visible');
+                            bootComplete = true;
                             animateHero();
                         }
                     });
@@ -136,6 +137,22 @@
 
         setTimeout(typeLine, 300); // Start after brief delay
     }
+
+    // ── Skip Button ──
+    const skipBtn = document.getElementById('terminalSkip');
+    let bootComplete = false;
+
+    function skipBoot() {
+        if (bootComplete) return;
+        bootComplete = true;
+        const loader = document.getElementById('terminalLoader');
+        if (loader) loader.remove();
+        window.dispatchEvent(new Event('terminalBootComplete'));
+        document.getElementById('nav')?.classList.add('visible');
+        animateHero();
+    }
+
+    skipBtn?.addEventListener('click', skipBoot);
 
     window.addEventListener('load', runBootSequence);
 
@@ -492,8 +509,57 @@
             setupHeroGridDissolve();
             animateSplitHeadings();
             setupScrollAnimations();
+            setupScrollSpy();
+            setupProgressBar();
         }, 500);
     });
+
+    // ── ScrollSpy: Active Nav Link ──
+    function setupScrollSpy() {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        if (!sections.length || !navLinks.length) return;
+
+        sections.forEach(section => {
+            ScrollTrigger.create({
+                trigger: section,
+                start: 'top 40%',
+                end: 'bottom 40%',
+                onEnter: () => setActiveLink(section.id),
+                onEnterBack: () => setActiveLink(section.id),
+            });
+        });
+
+        function setActiveLink(id) {
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === '#' + id) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    // ── Scroll Progress Bar ──
+    function setupProgressBar() {
+        const bar = document.getElementById('scrollProgress');
+        if (!bar) return;
+
+        function updateProgress() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? Math.min(1, scrollY / docHeight) : 0;
+            bar.style.width = (progress * 100) + '%';
+        }
+
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        if (window.__portfolioLenis) {
+            window.__portfolioLenis.on('scroll', updateProgress);
+        }
+        updateProgress();
+    }
 
     // ── Idea 12B: Text Scramble (Hero) ──
         const roles = [

@@ -155,6 +155,43 @@ img { max-width: 100%; height: auto; display: block; }
 }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
+.terminal-skip {
+    position: absolute;
+    bottom: clamp(16px, 4vh, 32px);
+    right: clamp(16px, 4vw, 40px);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100000;
+}
+.terminal-skip:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+/* ── Scroll Progress Bar ── */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #22d3ee);
+    z-index: 10001;
+    pointer-events: none;
+    transition: width 60ms linear;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
 /* ── Navigation ── */
 .nav {
     position: fixed;
@@ -199,6 +236,8 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .nav-link:hover { color: var(--text); }
 .nav-link:hover::after { width: 100%; }
+.nav-link.active { color: var(--accent); }
+.nav-link.active::after { width: 100%; background: var(--accent); }
 
 .nav-actions {
     display: flex;
@@ -430,7 +469,11 @@ body[data-theme="light"] .mobile-menu {
     max-width: var(--container);
     padding: clamp(18px, 3vh, 32px) clamp(20px, 4vw, 60px) 0;
     width: 100%;
-    margin-top: 102vh;
+}
+.hero-spacer {
+    height: 100vh;
+    width: 100%;
+    pointer-events: none;
 }
 .intro-overlay-controls {
     position: absolute;
@@ -612,6 +655,33 @@ body[data-theme="light"] .mobile-menu {
     transform: translateX(8px);
 }
 .about-card:hover::before { opacity: 1; }
+
+/* ── Gradient Border Animation (Cards) ── */
+@property --gradient-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+@keyframes gradient-rotate {
+    0% { --gradient-angle: 0deg; }
+    100% { --gradient-angle: 360deg; }
+}
+.project-card,
+.about-card,
+.leadership-card {
+    animation: gradient-rotate 3s linear infinite paused;
+}
+.project-card:hover,
+.about-card:hover,
+.leadership-card:hover {
+    animation-play-state: running;
+    border-color: transparent;
+    background-image: linear-gradient(var(--bg-card), var(--bg-card)),
+                       conic-gradient(from var(--gradient-angle), var(--accent), #22d3ee, #a78bfa, var(--accent));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.12), 0 0 40px rgba(34, 211, 238, 0.06);
+}
 
 .about-card-icon {
     width: 48px; height: 48px;
@@ -1491,7 +1561,7 @@ body.intro-play-active .intro-stage::after {
         padding-top: 0;
     }
     .hero-content {
-        margin-top: 96vh;
+        padding-top: 0;
     }
     .intro-song-popup {
         max-width: min(85vw, 280px);
@@ -1642,6 +1712,16 @@ body.intro-play-active .intro-stage::after {
     flex-shrink: 0;
     margin: 0;
 }
+.projects-intro-panel {
+    width: 40vw;
+    min-width: 320px;
+    max-width: 560px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 clamp(20px, 4vw, 60px);
+}
 
 @media (max-width: 768px) {
     .horizontal-wrapper {
@@ -1657,6 +1737,12 @@ body.intro-play-active .intro-stage::after {
     .horizontal-container > .project-featured,
     .horizontal-container > .project-grid {
         width: 100%;
+        padding: 0 20px;
+    }
+    .projects-intro-panel {
+        width: 100%;
+        min-width: auto;
+        max-width: none;
         padding: 0 20px;
     }
 }
