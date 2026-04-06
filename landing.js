@@ -139,7 +139,7 @@
         scene.fog = new THREE.Fog(tc.fogColor, tc.fogNear, tc.fogFar);
 
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 4000);
-        camera.position.set(0, 0, 55);
+        camera.position.set(0, 0, 140);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -446,8 +446,8 @@
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    5 + Math.random() * 8,       // width 5–13 (wide, flowing strips)
-                    1.0 + Math.random() * 1.0,    // thickness 1.0–2.0 (visible 3D edge)
+                    4 + Math.random() * 6,       // width 4–10 (wide, but not obscuring text)
+                    0.8 + Math.random() * 0.8,    // thickness 0.8–1.6 (visible 3D edge)
                     chaosColor,
                     tc.ribbonRoughness + Math.random() * 0.15,
                     tc.ribbonMetalness + Math.random() * 0.15,
@@ -644,30 +644,42 @@
                 const mastheadEl = document.getElementById('acko-masthead');
                 if (mastheadEl) gsap.to(mastheadEl, { opacity: 0, duration: 0.6 });
 
-                // Phase 1: Camera SLIDES THROUGH "Eli Young" text close-up (like acko's opening)
-                // This shows the letters up close before the flying animation begins
+                // Phase 1: Camera SMOOTHLY approaches and then SLIDES THROUGH "Eli Young" text
+                // Start from overview (z=140), dive into the thick of the letters
                 tl.to({}, {
-                    duration: 8,
+                    duration: 7,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Start from right side, slide LEFT through the text at close range
-                        const textWidth = 70; // approximate "Eli Young" width
-                        camera.position.x = textWidth * 0.6 - p * textWidth * 1.2; // right to left
-                        camera.position.y = Math.sin(p * Math.PI) * 4; // gentle vertical arc
-                        camera.position.z = 15 + Math.sin(p * Math.PI * 2) * 5; // very close, weaving in Z
                         
-                        // Look slightly ahead of where we're going
-                        const lookX = camera.position.x - 10;
-                        const lookY = camera.position.y + Math.sin(p * Math.PI * 3) * 2;
-                        camera.lookAt(lookX, lookY, 0);
+                        // Smoothly transition from starting position (z=140) down to close range (z=20)
+                        const zDepth = 140 - p * 120; // 140 -> 20
+                        camera.position.z = zDepth;
                         
-                        camera.fov = 60 + p * 15;
+                        // Slide horizontally across the letters as we get closer
+                        const textWidth = 60; 
+                        // Start centered (x=0), start sweeping right to left as we get closer
+                        camera.position.x = (p * textWidth * 0.8) - (p * p * textWidth * 1.5); 
+                        
+                        camera.position.y = Math.sin(p * Math.PI) * 6; // gentle vertical arc
+                        
+                        // Look slightly ahead of where we're going, but start centered
+                        const lookX = camera.position.x - (p * 15);
+                        const lookY = camera.position.y + Math.sin(p * Math.PI * 2) * 5;
+                        camera.lookAt(lookX * p, lookY * p, 0); // interpolate look from 0,0,0
+                        
+                        camera.fov = 55 + p * 15; // Widen FOV as we enter for speed feeling
                         camera.updateProjectionMatrix();
                         
-                        // Gentle camera roll
-                        camera.rotation.z = Math.sin(p * Math.PI * 4) * 0.05;
+                        // Bring fog close as camera enters geometry — creates depth atmosphere
+                        if (scene.fog) {
+                            scene.fog.near = 150 - p * 120;  // 150 -> 30
+                            scene.fog.far = 600 - p * 500;   // 600 -> 100
+                        }
+                        
+                        // Gentle camera roll banking into the turn
+                        camera.rotation.z = Math.sin(p * Math.PI) * 0.15;
                     },
-                    ease: "power1.inOut"
+                    ease: "power2.inOut"
                 });
 
                 // Phase 2: Camera flies THROUGH ribbon geometry (song duration)
@@ -815,7 +827,7 @@
                         ribbonsGroup.rotation.set(0, 0, 0);
                         bgPlane.position.z = -300;
                         // Reset camera
-                        camera.position.set(0, 0, 55);
+                        camera.position.set(0, 0, 140);
                         camera.lookAt(0, 0, 0);
                         camera.fov = 55;
                         camera.updateProjectionMatrix();
