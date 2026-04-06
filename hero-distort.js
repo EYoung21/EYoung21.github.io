@@ -11,27 +11,32 @@
         {
             key: 'lockin', label: 'LOCK IN',
             lines: ['focus.lock(apps.social)', 'session.start(90m)', 'streak += 1'],
-            tint: '#32f08c'
+            tint: '#32f08c',
+            icon: 'LOCK'
         },
         {
             key: 'chicken', label: 'CHICKEN',
             lines: ['lifeCycle.bootstrap()', 'hatch.seed(chicken)', 'iterate(instinct)'],
-            tint: '#f59e0b'
+            tint: '#f59e0b',
+            icon: 'CHICK'
         },
         {
             key: 'eggml', label: 'EGG ML',
             lines: ['egg.scan(hsi)', 'model.fit(features)', 'loss -> 0.03'],
-            tint: '#60a5fa'
+            tint: '#60a5fa',
+            icon: 'EGG-ML'
         },
         {
             key: 'algo', label: 'ALGOARENA',
             lines: ['battle.queue(opponents)', 'solve(dp | graphs)', 'rank.update(+42)'],
-            tint: '#a78bfa'
+            tint: '#a78bfa',
+            icon: 'ARENA'
         },
         {
             key: 'mosquito', label: 'MOSQUITO / EPG',
             lines: ['epg.trace(frequency)', 'sharpshooter.target(lock)', 'ml.predict(trajectory)'],
-            tint: '#f43f5e'
+            tint: '#f43f5e',
+            icon: 'EPG'
         }
     ];
 
@@ -49,6 +54,8 @@
         weights: { lockin: 1, chicken: 0, eggml: 0, algo: 0, mosquito: 0 },
         bands: { sub: 0, bass: 0, mid: 0, treble: 0, air: 0, spectralFlux: 0, beatFlash: 0 },
         chapterIdx: 0,
+        beatShock: 0,
+        colorShock: 0,
         palette: { bg: '#0a0b0d', fg: '#32f08c', line: 'rgba(255,255,255,0.08)' }
     };
 
@@ -121,16 +128,17 @@
     }
 
     function drawBackgroundGrid() {
+        const e = state.playing ? (state.bands.bass * 0.35 + state.bands.spectralFlux * 0.85 + state.beatShock * 0.65) : 0;
         const g = srcCtx.createLinearGradient(0, 0, 0, state.h);
         g.addColorStop(0, state.palette.bg);
-        g.addColorStop(0.58, mix('#101820', chapters[state.chapterIdx].tint, state.playing ? 0.12 : 0.03));
+        g.addColorStop(0.58, mix('#101820', chapters[state.chapterIdx].tint, state.playing ? 0.18 + e * 0.34 : 0.03));
         g.addColorStop(1, state.palette.bg);
         srcCtx.fillStyle = g;
         srcCtx.fillRect(0, 0, state.w, state.h);
 
         srcCtx.strokeStyle = state.palette.line;
         srcCtx.lineWidth = 1;
-        const step = Math.max(36, Math.round(state.w / 34));
+        const step = Math.max(32, Math.round(state.w / 34));
         for (let x = 0; x < state.w; x += step) {
             srcCtx.beginPath();
             srcCtx.moveTo(x + 0.5, 0);
@@ -146,25 +154,42 @@
     }
 
     function drawHeroText() {
-        const size = Math.max(76, Math.min(250, state.w * 0.2));
+        const size = Math.max(76, Math.min(286, state.w * 0.215));
         srcCtx.font = `900 ${size}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
-        srcCtx.fillStyle = state.palette.fg;
+        const chapter = chapters[state.chapterIdx];
+        const huePulse = state.playing ? Math.min(1, state.bands.spectralFlux * 0.9 + state.beatShock * 0.7) : 0;
+        srcCtx.fillStyle = huePulse > 0.02 ? mix('#c8ffe8', chapter.tint, Math.min(1, huePulse)) : state.palette.fg;
         srcCtx.textAlign = 'center';
         srcCtx.textBaseline = 'middle';
-        const y = state.h * 0.48 + Math.sin(performance.now() * 0.0016) * (state.playing ? 4 + state.bands.bass * 5 : 2);
-        srcCtx.fillText('ELI YOUNG', state.w * 0.5, y);
+        const pulseY = state.playing ? 8 + state.bands.bass * 18 + state.beatShock * 14 : 2;
+        const y = state.h * 0.5 + Math.sin(performance.now() * 0.0016) * pulseY;
+        const split = state.playing ? Math.min(42, state.bands.treble * 16 + state.bands.spectralFlux * 28 + state.beatShock * 24) : 0;
+        if (split > 0.1) {
+            srcCtx.fillStyle = rgb(chapter.tint, 0.85);
+            srcCtx.fillText('ELI', state.w * 0.31 - split, y);
+            srcCtx.fillText('YOUNG', state.w * 0.67 + split, y);
+            srcCtx.fillStyle = rgb('#ffffff', 0.12 + split / 80);
+            srcCtx.fillRect(state.w * 0.5 - 1, y - size * 0.34, 2, size * 0.64);
+        } else {
+            srcCtx.fillText('ELI YOUNG', state.w * 0.5, y);
+        }
 
         if (!state.playing) return;
-        const chapter = chapters[state.chapterIdx];
+        const iconSize = Math.max(22, Math.min(46, state.w * 0.027));
+        srcCtx.font = `800 ${iconSize}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+        srcCtx.textAlign = 'center';
+        srcCtx.fillStyle = rgb(chapter.tint, 0.26 + state.bands.bass * 0.18 + state.bands.beatFlash * 0.2);
+        srcCtx.fillText(`[${chapter.icon}]`, state.w * 0.5, Math.max(64, state.h * 0.16));
+
         srcCtx.font = `700 ${Math.max(14, Math.min(24, state.w * 0.018))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         srcCtx.textAlign = 'left';
-        srcCtx.fillStyle = rgb(chapter.tint, 0.92);
+        srcCtx.fillStyle = rgb(chapter.tint, 0.84 + state.bands.spectralFlux * 0.15);
         srcCtx.fillText(`// ${chapter.label}`, 36, Math.max(70, state.h * 0.12));
 
         srcCtx.font = `600 ${Math.max(12, Math.min(20, state.w * 0.015))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         chapter.lines.forEach((line, i) => {
             const phase = ((state.tSong * 1000 + i * 120) % 1000) / 1000;
-            const alpha = 0.45 + (state.bands.spectralFlux || 0) * 0.4 + Math.sin(phase * Math.PI * 2) * 0.12;
+            const alpha = 0.42 + (state.bands.spectralFlux || 0) * 0.56 + state.beatShock * 0.22 + Math.sin(phase * Math.PI * 2) * 0.16;
             srcCtx.fillStyle = rgb(chapter.tint, Math.max(0.3, Math.min(0.95, alpha)));
             srcCtx.fillText(line, 36, Math.max(100, state.h * 0.18) + i * 26);
         });
@@ -185,30 +210,36 @@
         state.pointerY = y;
         state.lastMoveAt = performance.now();
         const gain = state.playing ? (1.15 + state.bands.treble * 0.9) : 1;
-        state.motion = Math.min(220, state.motion + 24 * gain);
+        state.motion = Math.min(320, state.motion + 35 * gain + state.bands.spectralFlux * 20);
 
-        const spread = state.playing ? 180 : 120;
+        const spread = state.playing ? 240 : 120;
         for (let i = 0; i < slices.length; i += 1) {
             const midX = i * SLICE_W + SLICE_W * 0.5;
             const dist = Math.abs(midX - x);
             if (dist > spread) continue;
             const f = 1 - dist / spread;
             const dir = midX < x ? -1 : 1;
-            const chaos = state.playing ? (0.8 + state.bands.spectralFlux * 1.2) : 0.55;
+            const chaos = state.playing ? (1.15 + state.bands.spectralFlux * 2.0 + state.bands.beatFlash * 1.1) : 0.55;
             slices[i].dx += dir * f * (chaos + Math.random() * 0.55);
-            slices[i].dy += (Math.random() - 0.5) * (state.playing ? 2.2 : 0.8) * f;
+            slices[i].dy += (Math.random() - 0.5) * (state.playing ? 3.6 : 0.8) * f;
         }
     }
 
     function distortStep(now) {
         const idle = now - state.lastMoveAt > 120;
-        const pull = idle ? (state.playing ? 0.88 : 0.84) : 0.92;
+        const pull = idle ? (state.playing ? 0.9 : 0.84) : 0.94;
         state.motion *= pull;
-        const damp = state.playing ? 0.84 : 0.8;
+        const damp = state.playing ? 0.86 : 0.8;
+        state.beatShock *= 0.86;
+        state.colorShock *= 0.91;
         for (let i = 0; i < slices.length; i += 1) {
             const s = slices[i];
             s.dx *= damp;
             s.dy *= damp;
+            if (state.playing) {
+                const pulse = Math.sin(now * 0.007 + i * 0.17) * (state.bands.bass * 0.7 + state.beatShock * 1.3);
+                s.dx += pulse * 0.22;
+            }
         }
     }
 
@@ -217,17 +248,17 @@
         distortStep(now);
         ctx.clearRect(0, 0, state.w, state.h);
         const audioAmp = state.playing
-            ? (12 + state.bands.bass * 18 + state.bands.spectralFlux * 24 + state.bands.beatFlash * 12)
+            ? (16 + state.bands.bass * 38 + state.bands.spectralFlux * 46 + state.bands.beatFlash * 30 + state.beatShock * 36)
             : 9;
-        const amp = prefersReducedMotion ? 2 : Math.min(56, state.motion * 0.12 + audioAmp);
+        const amp = prefersReducedMotion ? 2 : Math.min(96, state.motion * 0.18 + audioAmp);
 
         for (let i = 0; i < slices.length; i += 1) {
             const x = i * SLICE_W;
             const w = Math.min(SLICE_W, state.w - x);
             const sx = x;
-            const idxPhase = Math.sin(i * 0.07 + now * 0.002) * (state.playing ? state.bands.mid * 2.4 : 0.4);
-            const dx = x + (slices[i].dx + idxPhase) * amp * 0.06;
-            const dy = (slices[i].dy + Math.cos(i * 0.05 + now * 0.0018) * (state.playing ? state.bands.air * 1.8 : 0.2)) * amp * 0.04;
+            const idxPhase = Math.sin(i * 0.07 + now * 0.0037) * (state.playing ? state.bands.mid * 4.6 + state.beatShock * 3.1 : 0.4);
+            const dx = x + (slices[i].dx + idxPhase) * amp * 0.085;
+            const dy = (slices[i].dy + Math.cos(i * 0.05 + now * 0.0032) * (state.playing ? state.bands.air * 3.2 + state.beatShock * 2.2 : 0.2)) * amp * 0.055;
             ctx.drawImage(srcCanvas, sx * state.dpr, 0, w * state.dpr, state.h * state.dpr, dx, dy, w, state.h);
         }
         requestAnimationFrame(render);
@@ -247,6 +278,7 @@
         state.tSong = typeof d.tSong === 'number' ? d.tSong : state.tSong;
         state.weights = d.weights || state.weights;
         if (d.bands) {
+            const incomingBeat = d.bands.beatFlash || 0;
             state.bands = {
                 sub: d.bands.sub || 0,
                 bass: d.bands.bass || 0,
@@ -254,8 +286,13 @@
                 treble: d.bands.treble || 0,
                 air: d.bands.air || 0,
                 spectralFlux: d.bands.spectralFlux || 0,
-                beatFlash: d.bands.beatFlash || 0
+                beatFlash: incomingBeat
             };
+            if (incomingBeat > 0.12 || state.bands.spectralFlux > 0.16) {
+                state.beatShock = Math.min(1, state.beatShock + incomingBeat * 1.5 + state.bands.spectralFlux * 0.9);
+                state.colorShock = Math.min(1, state.colorShock + incomingBeat * 1.2);
+                state.motion = Math.min(360, state.motion + 28 + incomingBeat * 80 + state.bands.spectralFlux * 65);
+            }
         }
         state.chapterIdx = pickChapterIndex(state.weights);
         applyThemePalette();
