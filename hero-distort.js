@@ -2,6 +2,7 @@
     const canvas = document.getElementById('hero-distort-canvas') || document.getElementById('intro-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    const playBtnEl = document.getElementById('intro-play-btn');
     const srcCanvas = document.createElement('canvas');
     const srcCtx = srcCanvas.getContext('2d');
     if (!ctx || !srcCtx) return;
@@ -175,23 +176,32 @@
         }
 
         if (!state.playing) return;
+        const canvasRect = canvas.getBoundingClientRect();
+        let overlayX = 36;
+        if (playBtnEl && canvasRect.width > 0) {
+            const playRect = playBtnEl.getBoundingClientRect();
+            if (playRect.width > 0 && playRect.height > 0) {
+                const right = playRect.right - canvasRect.left;
+                overlayX = Math.max(36, Math.min(state.w * 0.52, right + 22));
+            }
+        }
         const iconSize = Math.max(22, Math.min(46, state.w * 0.027));
         srcCtx.font = `800 ${iconSize}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
-        srcCtx.textAlign = 'center';
+        srcCtx.textAlign = 'left';
         srcCtx.fillStyle = rgb(chapter.tint, 0.26 + state.bands.bass * 0.18 + state.bands.beatFlash * 0.2);
-        srcCtx.fillText(`[${chapter.icon}]`, state.w * 0.5, Math.max(64, state.h * 0.16));
+        srcCtx.fillText(`[${chapter.icon}]`, overlayX, Math.max(84, state.h * 0.6));
 
         srcCtx.font = `700 ${Math.max(14, Math.min(24, state.w * 0.018))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         srcCtx.textAlign = 'left';
         srcCtx.fillStyle = rgb(chapter.tint, 0.84 + state.bands.spectralFlux * 0.15);
-        srcCtx.fillText(`// ${chapter.label}`, 36, Math.max(70, state.h * 0.12));
+        srcCtx.fillText(`// ${chapter.label}`, overlayX, Math.max(110, state.h * 0.66));
 
         srcCtx.font = `600 ${Math.max(12, Math.min(20, state.w * 0.015))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         chapter.lines.forEach((line, i) => {
             const phase = ((state.tSong * 1000 + i * 120) % 1000) / 1000;
             const alpha = 0.42 + (state.bands.spectralFlux || 0) * 0.56 + state.beatShock * 0.22 + Math.sin(phase * Math.PI * 2) * 0.16;
             srcCtx.fillStyle = rgb(chapter.tint, Math.max(0.3, Math.min(0.95, alpha)));
-            srcCtx.fillText(line, 36, Math.max(100, state.h * 0.18) + i * 26);
+            srcCtx.fillText(line, overlayX, Math.max(138, state.h * 0.72) + i * 26);
         });
     }
 
