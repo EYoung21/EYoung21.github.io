@@ -322,7 +322,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ── HERO ── */
 .hero {
-    min-height: 100vh;
+    min-height: 190vh;
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -361,8 +361,22 @@ img { max-width: 100%; height: auto; display: block; }
     position: relative;
     z-index: 4;
     max-width: var(--container);
-    padding: 0 clamp(20px, 4vw, 60px);
+    padding: clamp(18px, 3vh, 32px) clamp(20px, 4vw, 60px) 0;
     width: 100%;
+    margin-top: 102vh;
+}
+.intro-overlay-controls {
+    position: absolute;
+    top: clamp(88px, 12vh, 132px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(var(--container), calc(100vw - clamp(40px, 8vw, 120px)));
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    z-index: 4;
+    pointer-events: none;
 }
 .hero-eyebrow {
     font-family: var(--font-mono);
@@ -472,7 +486,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 .scroll-hint {
     position: absolute;
-    bottom: 40px;
+    bottom: calc(100vh - 58px);
     left: 50%;
     transform: translateX(-50%);
     z-index: 4;
@@ -1233,17 +1247,11 @@ body.intro-play-active .intro-stage::after {
 
 /* Masthead: play (Acko #play) + title block + track / mute */
 .hero-masthead {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: clamp(12px, 3vw, 28px);
-    align-items: start;
-    margin-bottom: clamp(20px, 4vw, 36px);
-    position: relative;
-    z-index: 4;
-    pointer-events: auto;
+    display: contents;
 }
 .hero-masthead-text {
     min-width: 0;
+    margin-bottom: clamp(20px, 4vw, 36px);
 }
 .hero-masthead-audio {
     display: flex;
@@ -1251,6 +1259,7 @@ body.intro-play-active .intro-stage::after {
     align-items: flex-end;
     gap: 10px;
     padding-top: 4px;
+    pointer-events: auto;
 }
 .intro-play-btn {
     width: 52px;
@@ -1299,19 +1308,26 @@ body.intro-play-active .intro-stage::after {
     margin-top: 0;
     align-self: center;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    pointer-events: auto;
 }
 @media (max-width: 640px) {
-    .hero-masthead {
-        grid-template-columns: auto 1fr;
-        grid-template-rows: auto auto;
+    .hero {
+        min-height: 180vh;
+    }
+    .intro-overlay-controls {
+        width: calc(100vw - 28px);
+        top: clamp(84px, 11vh, 120px);
+        align-items: center;
     }
     .hero-masthead-audio {
-        grid-column: 1 / -1;
         flex-direction: row;
         align-items: center;
         justify-content: flex-start;
         flex-wrap: wrap;
         padding-top: 0;
+    }
+    .hero-content {
+        margin-top: 96vh;
     }
     .intro-song-popup {
         max-width: min(85vw, 280px);

@@ -111,34 +111,34 @@
                 <div class="hero-gradient"></div>
                 <div class="hero-grid"></div>
             </div>
-            <div class="hero-content">
-                <div class="hero-masthead" id="hero-masthead">
-                    <button type="button" class="intro-play-btn acko-play" id="intro-play-btn" aria-label="Play music and reactive visuals">
-                        <svg class="intro-play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                        </svg>
-                        <svg class="intro-pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M6 5H10V19H6V5ZM14 5H18V19H14V5Z" fill="currentColor"/>
-                        </svg>
+            <div class="intro-overlay-controls" id="hero-masthead">
+                <button type="button" class="intro-play-btn acko-play" id="intro-play-btn" aria-label="Play music and reactive visuals">
+                    <svg class="intro-play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                    </svg>
+                    <svg class="intro-pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M6 5H10V19H6V5ZM14 5H18V19H14V5Z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <div class="hero-masthead-audio">
+                    <div class="intro-song-popup" id="intro-song-popup">
+                        <a href="#" class="intro-song-link" id="intro-song-link" target="_blank" rel="noopener noreferrer">
+                            <span class="intro-song-name" id="intro-song-name">—</span>
+                            <span class="intro-song-artist" id="intro-song-artist">—</span>
+                        </a>
+                    </div>
+                    <button type="button" class="intro-mute-btn" id="intro-mute-btn" aria-label="Mute" aria-pressed="false">
+                        <i class="fas fa-volume-high" aria-hidden="true"></i>
                     </button>
-                    <div class="hero-masthead-text">
-                        <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
-                        <h1 class="hero-title">
-                            <span class="line">Eli</span>
-                            <span class="line">Young</span>
-                        </h1>
-                    </div>
-                    <div class="hero-masthead-audio">
-                        <div class="intro-song-popup" id="intro-song-popup">
-                            <a href="#" class="intro-song-link" id="intro-song-link" target="_blank" rel="noopener noreferrer">
-                                <span class="intro-song-name" id="intro-song-name">—</span>
-                                <span class="intro-song-artist" id="intro-song-artist">—</span>
-                            </a>
-                        </div>
-                        <button type="button" class="intro-mute-btn" id="intro-mute-btn" aria-label="Mute" aria-pressed="false">
-                            <i class="fas fa-volume-high" aria-hidden="true"></i>
-                        </button>
-                    </div>
+                </div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-masthead-text">
+                    <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
+                    <h1 class="hero-title">
+                        <span class="line">Eli</span>
+                        <span class="line">Young</span>
+                    </h1>
                 </div>
                 <p class="hero-description">
                     4th-year CS student at <strong>Swarthmore College</strong>.

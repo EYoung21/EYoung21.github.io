@@ -35,18 +35,23 @@
     let specPlane, specTexture, epg2Plane, epg2Texture;
     let coreParticles, mlParticles;
     let insectLines = [];
-    let billboardAA, billboardLI;
+    let syntaxConstellation, focusLockGroup;
+    let syntaxGlyphs = [];
     let satelliteEgg;
     let rimLight;
     let time = 0;
     let mouseX = 0, mouseY = 0;
     let bass = 0, mid = 0, treble = 0;
     let bassPrev = 0;
+    let sub = 0;
+    let air = 0;
+    let bandEnergyPrev = 0;
     let themeLight = false;
     let narrativePhase01 = 0;
     let hatchAmount = 0;
     let hsiPhase = 0;
     let beatFlash = 0;
+    let spectralFlux = 0;
     let scrollHandoff01 = 0;
     /** 0..1 hero scroll progress (for sideline / background cube) */
     let scrollP = 0;
@@ -129,14 +134,20 @@
         return Math.min(1, audioEl.currentTime / dur);
     }
 
-    /** Weights for four narrative beats (overlap for smooth blends) */
+    /**
+     * Weights for narrative beats — stronger overlap with explicit song-time “acts”
+     * so the story arc tracks playback position, not only the live spectrum.
+     */
     function narrativeWeights(t01) {
+        const sweep = 0.82 + 0.18 * Math.sin(t01 * Math.PI * 2 * 5);
+        const bridge = 0.75 + 0.25 * Math.sin(t01 * Math.PI * 2 * 2.5);
+        const cresc = Math.min(1, 0.3 + 1.4 * bell(t01, 0.48, 0.22));
         return {
-            insect: bell(t01, 0.12, 0.14) + bell(t01, 0.55, 0.2) * 0.35,
-            egg: bell(t01, 0.35, 0.16),
-            hatch: bell(t01, 0.58, 0.14),
-            ml: bell(t01, 0.78, 0.16),
-            products: bell(t01, 0.9, 0.12)
+            insect: (bell(t01, 0.1, 0.12) + bell(t01, 0.52, 0.18) * 0.45 + bell(t01, 0.78, 0.1) * 0.2) * sweep * bridge,
+            egg: (bell(t01, 0.28, 0.14) + bell(t01, 0.62, 0.2) * 0.35) * cresc * bridge,
+            hatch: (bell(t01, 0.52, 0.11) + bell(t01, 0.72, 0.12) * 0.5) * (0.85 + 0.15 * sweep) * cresc,
+            ml: (bell(t01, 0.68, 0.14) + bell(t01, 0.88, 0.08)) * sweep,
+            products: bell(t01, 0.86, 0.1) * (0.9 + 0.1 * Math.sin(t01 * Math.PI * 2 * 2))
         };
     }
 
@@ -149,7 +160,7 @@
             mediaSrc = audioCtx.createMediaElementSource(audioEl);
             analyser = audioCtx.createAnalyser();
             analyser.fftSize = isMobile ? 256 : 512;
-            analyser.smoothingTimeConstant = 0.65;
+            analyser.smoothingTimeConstant = 0.48;
             gainNode = audioCtx.createGain();
             gainNode.gain.value = muted ? 0 : 1;
             mediaSrc.connect(gainNode);
@@ -164,34 +175,65 @@
 
     function bandsFromAnalyser() {
         if (!analyser || !freqData || !musicPlaying || !audioEl || audioEl.paused) {
-            return { b: 0.15, m: 0.12, t: 0.1 };
+            bandEnergyPrev = 0;
+            return { sub: 0.12, b: 0.15, m: 0.12, t: 0.1, air: 0.08, flux: 0 };
         }
         analyser.getByteFrequencyData(freqData);
         const n = freqData.length;
-        const i0 = 0, i1 = Math.floor(n * 0.08), i2 = Math.floor(n * 0.35), i3 = Math.floor(n * 0.7);
-        let s0 = 0, s1 = 0, s2 = 0;
-        for (let i = i0; i < i1; i++) s0 += freqData[i];
-        for (let i = i1; i < i2; i++) s1 += freqData[i];
-        for (let i = i2; i < i3; i++) s2 += freqData[i];
-        const c0 = i1 - i0, c1 = i2 - i1, c2 = i3 - i2;
+        const ia = 0;
+        const ib = Math.floor(n * 0.05);
+        const ic = Math.floor(n * 0.12);
+        const id = Math.floor(n * 0.35);
+        const ie = Math.floor(n * 0.65);
+        const iz = n;
+        let sSub = 0, sBass = 0, sMid = 0, sTreble = 0, sAir = 0;
+        for (let i = ia; i < ib; i++) sSub += freqData[i];
+        for (let i = ib; i < ic; i++) sBass += freqData[i];
+        for (let i = ic; i < id; i++) sMid += freqData[i];
+        for (let i = id; i < ie; i++) sTreble += freqData[i];
+        for (let i = ie; i < iz; i++) sAir += freqData[i];
+        const cSub = Math.max(1, ib - ia);
+        const cB = Math.max(1, ic - ib);
+        const cM = Math.max(1, id - ic);
+        const cT = Math.max(1, ie - id);
+        const cA = Math.max(1, iz - ie);
+        const eSub = (sSub / cSub / 255) || 0;
+        const eB = (sBass / cB / 255) || 0;
+        const eM = (sMid / cM / 255) || 0;
+        const eT = (sTreble / cT / 255) || 0;
+        const eA = (sAir / cA / 255) || 0;
+        const total = eSub + eB + eM + eT + eA + 1e-6;
+        const prev = bandEnergyPrev;
+        let flux = 0;
+        if (prev > 0) {
+            flux = Math.max(0, total - prev) * 5.5;
+        }
+        bandEnergyPrev = total;
         return {
-            b: (s0 / c0 / 255) || 0,
-            m: (s1 / c1 / 255) || 0,
-            t: (s2 / c2 / 255) || 0
+            sub: eSub,
+            b: Math.min(1, eB * 1.05 + eSub * 0.35),
+            m: eM,
+            t: Math.min(1, eT * 1.05 + eA * 0.25),
+            air: eA,
+            flux: Math.min(1, flux)
         };
     }
 
     function fakeBands(t) {
         return {
+            sub: 0.08 + Math.sin(t * 1.4) * 0.05,
             b: 0.12 + Math.sin(t * 1.7) * 0.08 + Math.sin(t * 3.1) * 0.04,
             m: 0.1 + Math.sin(t * 2.3 + 1) * 0.06,
-            t: 0.08 + Math.sin(t * 4.2 + 0.5) * 0.05
+            t: 0.08 + Math.sin(t * 4.2 + 0.5) * 0.05,
+            air: 0.06 + Math.sin(t * 5.1) * 0.04,
+            flux: 0
         };
     }
 
-    function drawSpectrogramColumn(intensity, scrollMul) {
+    function drawSpectrogramColumn(intensity, scrollMul, songPhaseBoost) {
         const ctx = specCtx, W = SPEC_W, H = SPEC_H;
-        const steps = Math.max(1, Math.round(1 + scrollMul * 2));
+        const sb = 1 + (songPhaseBoost || 0);
+        const steps = Math.max(1, Math.round((1 + scrollMul * 2) * sb));
         for (let s = 0; s < steps; s++) {
             ctx.drawImage(specCanvas, 1, 0, W - 1, H, 0, 0, W - 1, H);
         }
@@ -203,12 +245,12 @@
         g.addColorStop(1, base);
         ctx.fillStyle = g;
         ctx.fillRect(W - 2, 0, 2, H);
-        ctx.fillStyle = `rgba(${themeLight ? '74,222,128' : '0,255,170'},${0.35 + intensity * 0.45})`;
-        const barH = Math.max(4, intensity * H * 0.85);
+        ctx.fillStyle = `rgba(${themeLight ? '74,222,128' : '0,255,170'},${0.35 + intensity * 0.45 * sb})`;
+        const barH = Math.max(4, intensity * H * 0.85 * (0.92 + 0.08 * sb));
         ctx.fillRect(W - 1, H - barH, 1, barH);
     }
 
-    function drawEpg2Spikes(midVal, trebleVal) {
+    function drawEpg2Spikes(midVal, trebleVal, t01, fluxAmt) {
         const ctx = epg2Ctx, W = EPG2_W, H = EPG2_H;
         ctx.fillStyle = themeLight ? '#e2e8f0' : '#020617';
         ctx.fillRect(0, 0, W, H);
@@ -216,38 +258,104 @@
         ctx.lineWidth = 1;
         ctx.beginPath();
         const n = 48;
+        const fx = fluxAmt || 0;
         for (let i = 0; i < n; i++) {
             const x = (i / (n - 1)) * W;
-            const h = (0.15 + midVal * 0.65 + Math.sin(time * 6 + i * 0.4) * 0.08 + trebleVal * 0.35) * H * 0.45;
+            const songRipple = Math.sin(t01 * Math.PI * 2 * 10 + i * 0.08) * 0.1;
+            const h = (0.12 + midVal * 0.68 + Math.sin(time * 6 + i * 0.4) * 0.1 + trebleVal * 0.38 + songRipple + fx * 0.35) * H * 0.46;
             ctx.moveTo(x, H);
             ctx.lineTo(x, H - h);
         }
         ctx.stroke();
     }
 
-    function makeTextBillboard(text, sub, color) {
-        const c = document.createElement('canvas');
-        const w = 512;
-        const h = 128;
-        c.width = w;
-        c.height = h;
-        const x = c.getContext('2d');
-        x.fillStyle = 'rgba(0,0,0,0.45)';
-        x.fillRect(0, 0, w, h);
-        x.strokeStyle = color;
-        x.lineWidth = 3;
-        x.strokeRect(4, 4, w - 8, h - 8);
-        x.fillStyle = 'rgba(240,245,240,0.95)';
-        x.font = 'bold 42px system-ui, "Space Grotesk", sans-serif';
-        x.fillText(text, 24, 72);
-        x.fillStyle = 'rgba(180,200,180,0.75)';
-        x.font = '22px ui-monospace, monospace';
-        x.fillText(sub, 24, 108);
-        const tex = new THREE.CanvasTexture(c);
-        tex.minFilter = THREE.LinearFilter;
-        const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.55), mat);
-        return mesh;
+    function addSyntaxConstellation(parent) {
+        const tc = themeColors();
+        syntaxConstellation = new THREE.Group();
+        syntaxConstellation.position.set(0, 0.2, 0);
+        parent.add(syntaxConstellation);
+
+        const pairs = [
+            ['{', '}', 0.95, 0.2],
+            ['[', ']', 1.18, 1.7],
+            ['<', '/>', 1.42, 3.3],
+            ['(', ')', 1.65, 4.6],
+            ['=>', '::', 1.92, 5.7]
+        ];
+
+        pairs.forEach((pair, i) => {
+            const radius = pair[2];
+            const phase = pair[3];
+            pair.slice(0, 2).forEach((token, j) => {
+                const sprite = document.createElement('canvas');
+                sprite.width = 256;
+                sprite.height = 128;
+                const sctx = sprite.getContext('2d');
+                sctx.clearRect(0, 0, sprite.width, sprite.height);
+                sctx.fillStyle = themeLight ? 'rgba(22,163,74,0.92)' : 'rgba(0,255,136,0.95)';
+                sctx.font = '700 66px ui-monospace, Menlo, Consolas, monospace';
+                sctx.textAlign = 'center';
+                sctx.textBaseline = 'middle';
+                sctx.fillText(token, sprite.width / 2, sprite.height / 2 + 4);
+                const tex = new THREE.CanvasTexture(sprite);
+                tex.minFilter = THREE.LinearFilter;
+                const mat = new THREE.MeshBasicMaterial({
+                    map: tex,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide
+                });
+                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.31), mat);
+                mesh.userData = { radius, phase: phase + j * Math.PI, tokenIndex: i };
+                syntaxConstellation.add(mesh);
+                syntaxGlyphs.push(mesh);
+            });
+        });
+
+        const rail = new THREE.Mesh(
+            new THREE.TorusGeometry(1.75, 0.03, 12, 80),
+            new THREE.MeshBasicMaterial({ color: tc.wire, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        rail.rotation.x = Math.PI * 0.65;
+        syntaxConstellation.add(rail);
+    }
+
+    function addFocusLockObjects(parent) {
+        const tc = themeColors();
+        focusLockGroup = new THREE.Group();
+        focusLockGroup.position.set(0, -0.12, -0.1);
+        parent.add(focusLockGroup);
+
+        const mkRing = (r, t, opacity) =>
+            new THREE.Mesh(
+                new THREE.TorusGeometry(r, t, 16, 96),
+                new THREE.MeshBasicMaterial({
+                    color: tc.ml,
+                    transparent: true,
+                    opacity,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                })
+            );
+
+        const ringA = mkRing(1.06, 0.018, 0.12);
+        const ringB = mkRing(1.22, 0.014, 0.09);
+        ringA.rotation.x = Math.PI / 2;
+        ringB.rotation.x = Math.PI / 2;
+        ringB.rotation.y = Math.PI * 0.22;
+        focusLockGroup.add(ringA);
+        focusLockGroup.add(ringB);
+
+        const latch = new THREE.Mesh(
+            new THREE.BoxGeometry(0.16, 0.11, 0.08),
+            new THREE.MeshBasicMaterial({ color: tc.specHi, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        latch.position.set(0, 1.02, 0);
+        focusLockGroup.add(latch);
+
+        focusLockGroup.userData = { ringA, ringB, latch };
     }
 
     function buildInsectTrails(parent) {
@@ -444,16 +552,8 @@
         mlParticles.userData.vels = mlVel;
 
         buildInsectTrails(scene);
-
-        billboardAA = makeTextBillboard('AlgoArena', 'competitive programming', '#00ff66');
-        billboardAA.position.set(-2.1, 0.9, 0.5);
-        billboardAA.rotation.y = 0.35;
-        scene.add(billboardAA);
-
-        billboardLI = makeTextBillboard('Lock In', 'focus · shipped', '#66a3ff');
-        billboardLI.position.set(2.1, 0.55, 0.4);
-        billboardLI.rotation.y = -0.4;
-        scene.add(billboardLI);
+        addSyntaxConstellation(scene);
+        addFocusLockObjects(scene);
     }
 
     function updateThemeScene() {
@@ -470,6 +570,18 @@
         }
         if (specPlane && specPlane.material) specPlane.material.opacity = themeLight ? 0.88 : 0.92;
         if (mlParticles && mlParticles.material) mlParticles.material.color.setHex(tc.ml);
+        if (focusLockGroup && focusLockGroup.userData) {
+            focusLockGroup.userData.ringA.material.color.setHex(tc.ml);
+            focusLockGroup.userData.ringB.material.color.setHex(tc.ml);
+            focusLockGroup.userData.latch.material.color.setHex(tc.specHi);
+        }
+        if (syntaxConstellation) {
+            syntaxConstellation.traverse((obj) => {
+                if (obj.isMesh && obj.material && obj.material.color && !obj.material.map) {
+                    obj.material.color.setHex(tc.wire);
+                }
+            });
+        }
     }
 
     new MutationObserver(() => updateThemeScene()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -531,20 +643,25 @@
 
         let bands;
         if (prefersReducedMotion) {
-            bands = { b: 0.1, m: 0.09, t: 0.08 };
+            bands = { sub: 0.09, b: 0.1, m: 0.09, t: 0.08, air: 0.07, flux: 0 };
         } else if (musicPlaying && analyser) {
             bands = bandsFromAnalyser();
         } else {
             bands = fakeBands(time);
         }
 
-        bass = smoothToward(bass, bands.b, 0.12);
-        mid = smoothToward(mid, bands.m, 0.12);
-        treble = smoothToward(treble, bands.t, 0.12);
+        const followK = musicPlaying && !prefersReducedMotion ? 0.27 : 0.11;
+        bass = smoothToward(bass, bands.b, followK);
+        mid = smoothToward(mid, bands.m, followK);
+        treble = smoothToward(treble, bands.t, followK);
+        sub = smoothToward(sub, bands.sub != null ? bands.sub : bass * 0.6, followK);
+        air = smoothToward(air, bands.air != null ? bands.air : treble * 0.5, followK);
+        spectralFlux = smoothToward(spectralFlux, bands.flux != null ? bands.flux : 0, 0.4);
 
-        const beatDeriv = Math.max(0, bass - bassPrev - 0.02);
+        const beatDeriv = Math.max(0, bass - bassPrev - 0.012);
         bassPrev = bass;
-        beatFlash = smoothToward(beatFlash, Math.min(1, beatDeriv * 8), 0.25);
+        const transientHit = Math.min(1, beatDeriv * 9 + spectralFlux * 1.1 + sub * 0.35);
+        beatFlash = smoothToward(beatFlash, transientHit, 0.3);
 
         const tSong = songProgress01();
         const w = musicPlaying && !prefersReducedMotion ? narrativeWeights(tSong) : { insect: 0.15, egg: 0.1, hatch: 0.08, ml: 0.1, products: 0.08 };
@@ -556,27 +673,39 @@
         const wMl = w.ml + w.products * 0.5;
         const wProd = w.products;
 
-        hatchAmount = smoothToward(hatchAmount, Math.min(1, wHatch * 1.2 + treble * 0.4 + beatFlash * 0.3), 0.08);
-        hsiPhase += 0.008 + treble * 0.04;
+        const songArc = musicPlaying ? bell(tSong, 0.5, 0.32) : 0;
+        hatchAmount = smoothToward(
+            hatchAmount,
+            Math.min(1, wHatch * 1.45 + treble * 0.48 + beatFlash * 0.38 + songArc * 0.22 + tSong * 0.1 * (musicPlaying ? 1 : 0)),
+            0.095
+        );
+        hsiPhase += 0.008 + treble * 0.055 + air * 0.035 + (musicPlaying ? tSong * 0.032 + spectralFlux * 0.045 : 0);
 
-        const spin = prefersReducedMotion ? 0.0004 : 0.0018 + mid * (0.004 + wInsect * 0.003);
+        const spin = prefersReducedMotion
+            ? 0.0004
+            : 0.0018 + mid * (0.005 + wInsect * 0.004) + sub * 0.003 + (musicPlaying ? 0.0014 * Math.sin(tSong * Math.PI * 2 * 2) : 0);
         const mx = prefersReducedMotion ? 0 : mouseX;
         const my = prefersReducedMotion ? 0 : mouseY;
 
         const tc = themeColors();
-        const colInt = Math.min(1, bass * 0.7 + mid * 0.35 + treble * 0.2);
-        const scrollMul = 1 + mid * (0.8 + wInsect * 0.6);
+        const colInt = Math.min(1, bass * 0.55 + mid * 0.32 + treble * 0.2 + sub * 0.28 + spectralFlux * 0.42);
+        const scrollMul =
+            1 +
+            mid * (0.95 + wInsect * 0.7) +
+            bass * 0.4 +
+            (musicPlaying ? 0.35 * Math.sin(tSong * Math.PI * 2 * 4) + 0.15 * songArc : 0);
+        const specSongBoost = musicPlaying ? songArc * 0.85 + spectralFlux * 0.5 : 0;
 
         if (eggMesh) {
             eggMesh.rotation.y += spin + mx * 0.008;
             eggMesh.rotation.x += Math.sin(time * 0.4) * 0.001 + my * 0.006;
-            const pulse = 1 + bass * 0.07 + treble * 0.04;
+            const pulse = 1 + bass * 0.09 + treble * 0.05 + sub * 0.06 + (musicPlaying ? 0.04 * Math.sin(tSong * Math.PI * 2 * 6) : 0);
             eggMesh.scale.set(1.12 * pulse, 1.52 * pulse, 1.05 * pulse);
 
             const em = eggMesh.material;
-            const hue = (hsiPhase * 0.08 + wEgg * 0.12 + treble * 0.15) % 1;
-            em.emissive.setHSL(0.28 + hue * 0.15, 0.45 + wEgg * 0.2, 0.15 + treble * 0.25);
-            em.emissiveIntensity = (themeLight ? 0.08 : 0.16) + wEgg * 0.15 + beatFlash * 0.25;
+            const hue = (hsiPhase * 0.08 + wEgg * 0.14 + treble * 0.18 + (musicPlaying ? tSong * 0.12 : 0)) % 1;
+            em.emissive.setHSL(0.28 + hue * 0.18, 0.45 + wEgg * 0.22, 0.14 + treble * 0.28 + air * 0.08);
+            em.emissiveIntensity = (themeLight ? 0.08 : 0.16) + wEgg * 0.18 + beatFlash * 0.32 + spectralFlux * 0.15;
         }
 
         if (eggWire) {
@@ -612,7 +741,7 @@
         }
 
         if (satelliteEgg) {
-            const orbit = time * (0.35 + wEgg * 0.4);
+            const orbit = time * (0.38 + wEgg * 0.48) + (musicPlaying ? tSong * Math.PI * 2 * 4 : 0) + bass * 0.85;
             const r = 1.45 + wEgg * 0.2;
             satelliteEgg.position.x = Math.cos(orbit) * r;
             satelliteEgg.position.z = Math.sin(orbit) * r * 0.85;
@@ -621,19 +750,22 @@
         }
 
         if (!prefersReducedMotion || Math.floor(time * 10) % 24 === 0) {
-            drawSpectrogramColumn(colInt, scrollMul);
+            drawSpectrogramColumn(colInt, scrollMul, specSongBoost);
             if (specTexture) specTexture.needsUpdate = true;
-            drawEpg2Spikes(mid, treble);
+            drawEpg2Spikes(mid, treble, tSong, spectralFlux);
             if (epg2Texture) epg2Texture.needsUpdate = true;
         }
 
         if (specPlane) {
-            specPlane.position.y = -1.35 + Math.sin(time * 0.9) * 0.04 * (prefersReducedMotion ? 0.2 : 1);
+            specPlane.position.y =
+                -1.35 +
+                Math.sin(time * 0.9) * 0.04 * (prefersReducedMotion ? 0.2 : 1) +
+                (musicPlaying ? Math.sin(tSong * Math.PI * 2 * 4) * 0.07 : 0);
             specPlane.material.opacity = (themeLight ? 0.88 : 0.92) * (0.65 + colInt * 0.35 + wInsect * 0.15);
         }
         if (epg2Plane) {
             epg2Plane.material.opacity = 0.45 + wInsect * 0.45 + mid * 0.15;
-            epg2Plane.position.x = Math.sin(time * 0.35) * 0.08 * wInsect;
+            epg2Plane.position.x = Math.sin(time * 0.35) * 0.08 * wInsect + (musicPlaying ? Math.sin(tSong * Math.PI * 2 * 3) * 0.06 : 0);
         }
 
         if (coreParticles && coreParticles.userData.vels) {
@@ -676,27 +808,56 @@
         });
         if (musicPlaying && !prefersReducedMotion) updateInsects(wInsect, mid);
 
-        if (billboardAA) {
-            billboardAA.material.opacity = Math.min(0.85, wProd * 0.9 + beatFlash * 0.2);
-            billboardAA.rotation.y = 0.35 + Math.sin(time * 0.4) * 0.08;
+        if (syntaxConstellation && syntaxGlyphs.length) {
+            const centroid = (sub * 0.1 + bass * 0.25 + mid * 0.5 + treble * 0.75 + air * 0.95) / Math.max(0.001, sub + bass + mid + treble + air);
+            const swirl = 0.5 + wProd * 0.8 + centroid * 0.6;
+            syntaxConstellation.rotation.y += 0.0035 * swirl;
+            syntaxConstellation.rotation.x = Math.sin(time * 0.35 + centroid * 3) * 0.22;
+            const alpha = Math.min(0.92, 0.12 + wProd * 0.65 + spectralFlux * 0.3);
+            syntaxGlyphs.forEach((glyph, i) => {
+                const ud = glyph.userData;
+                const ang = time * (0.38 + swirl) + ud.phase + tSong * Math.PI * 2 * (0.6 + i * 0.02);
+                glyph.position.set(
+                    Math.cos(ang) * ud.radius,
+                    Math.sin(ang * 1.7 + i * 0.3) * 0.26 + Math.cos(ang * 0.7) * 0.09,
+                    Math.sin(ang) * ud.radius * 0.64
+                );
+                glyph.lookAt(camera.position);
+                glyph.material.opacity = alpha * (0.72 + 0.28 * Math.sin(time * 3 + i));
+            });
         }
-        if (billboardLI) {
-            billboardLI.material.opacity = Math.min(0.85, wProd * 0.85 + mid * 0.1);
-            billboardLI.rotation.y = -0.4 + Math.sin(time * 0.35) * 0.06;
+
+        if (focusLockGroup && focusLockGroup.userData) {
+            const d = focusLockGroup.userData;
+            const gate = Math.min(1, wProd * 1.2 + wMl * 0.4);
+            const lockPulse = 0.75 + beatFlash * 0.5 + spectralFlux * 0.35;
+            focusLockGroup.rotation.y += 0.002 + gate * 0.006;
+            focusLockGroup.rotation.x = Math.sin(time * 0.5 + tSong * Math.PI * 2) * 0.3;
+            d.ringA.material.opacity = 0.06 + gate * 0.28 * lockPulse;
+            d.ringB.material.opacity = 0.05 + gate * 0.22 * (0.85 + air * 0.4);
+            d.ringA.scale.setScalar(0.96 + gate * 0.12 + beatFlash * 0.08);
+            d.ringB.scale.setScalar(0.98 + gate * 0.14 + spectralFlux * 0.1);
+            d.latch.material.opacity = 0.08 + gate * 0.4;
+            d.latch.position.y = 0.94 + Math.sin(time * 4 + beatFlash * 6) * 0.08 + gate * 0.1;
         }
 
         if (rimLight) {
             rimLight.intensity = (themeLight ? 0.4 : 0.65) * (1 + beatFlash * 0.5 + wHatch * 0.3);
         }
 
-        const targetZ = baseCameraZ + scrollHandoff01 * 0.85;
+        const musicZ = musicPlaying && !prefersReducedMotion ? Math.sin(tSong * Math.PI * 2 * 3) * 0.14 + songArc * 0.08 : 0;
+        const targetZ = baseCameraZ + scrollHandoff01 * 0.85 + musicZ;
         const targetY = 0.15 + my * 0.22;
         const targetX = mx * 0.35;
         if (camera) {
             camera.position.x += (targetX - camera.position.x) * 0.04;
             camera.position.y += (targetY - camera.position.y) * 0.04;
             camera.position.z += (targetZ - camera.position.z) * 0.06;
-            camera.lookAt(0, -0.05 + wEgg * 0.04, 0);
+            camera.lookAt(
+                Math.sin(tSong * Math.PI * 2 * 2) * 0.04 * (musicPlaying ? 1 : 0),
+                -0.05 + wEgg * 0.05 + (musicPlaying ? Math.sin(tSong * Math.PI * 2 * 8) * 0.07 : 0),
+                0
+            );
         }
 
         if (renderer && scene && camera) renderer.render(scene, camera);
@@ -726,7 +887,9 @@
             window.dispatchEvent(new CustomEvent('portfolioHeroScroll', { detail: { p, scrolledPast, heroHeight: total } }));
         } catch (e) { /* ignore */ }
 
-        if (p > 0.08 && musicPlaying && audioEl && !audioEl.paused) {
+        const heroContent = hero.querySelector('.hero-content');
+        const infoReached = heroContent ? heroContent.getBoundingClientRect().top <= window.innerHeight * 0.9 : false;
+        if ((infoReached || p > 0.82) && musicPlaying && audioEl && !audioEl.paused) {
             stopTrackFromScroll();
         }
     }
@@ -754,6 +917,7 @@
 
     function stopTrackFromScroll() {
         musicPlaying = false;
+        bandEnergyPrev = 0;
         introMode = 'idle';
         document.body.classList.remove('intro-play-active', 'intro-narrative-playing');
         if (songPopup) songPopup.classList.remove('active');
@@ -769,6 +933,7 @@
 
     function userPauseTrack() {
         musicPlaying = false;
+        bandEnergyPrev = 0;
         introMode = 'idle';
         document.body.classList.remove('intro-play-active', 'intro-narrative-playing');
         if (songPopup) songPopup.classList.remove('active');
@@ -818,6 +983,7 @@
         }
 
         musicPlaying = true;
+        bandEnergyPrev = 0;
         introMode = 'playing';
         document.body.classList.add('intro-play-active', 'intro-narrative-playing');
         if (songPopup) songPopup.classList.add('active');
