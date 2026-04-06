@@ -99,22 +99,48 @@
         <a href="imgs/Eli Young CV.pdf" download class="mobile-link">Resume ↓</a>
     </div>
 
-    <main>
+    <main id="native-content">
         <!-- ==================== HERO ==================== -->
         <section class="section hero" id="hero">
-            <div id="intro-stage" class="intro-stage" aria-hidden="true">
-                <canvas id="intro-canvas" class="intro-canvas"></canvas>
+            <!-- Acko-like: fixed “stage” + native scroll below (see #native-content rest of <main>) -->
+            <div id="intro-fixed-frame" class="intro-fixed-frame">
+                <div id="intro-stage" class="intro-stage" aria-hidden="true">
+                    <canvas id="intro-canvas" class="intro-canvas"></canvas>
+                </div>
             </div>
             <div class="hero-bg">
                 <div class="hero-gradient"></div>
                 <div class="hero-grid"></div>
             </div>
             <div class="hero-content">
-                <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
-                <h1 class="hero-title">
-                    <span class="line">Eli</span>
-                    <span class="line">Young</span>
-                </h1>
+                <div class="hero-masthead" id="hero-masthead">
+                    <button type="button" class="intro-play-btn acko-play" id="intro-play-btn" aria-label="Play music and reactive visuals">
+                        <svg class="intro-play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                        </svg>
+                        <svg class="intro-pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M6 5H10V19H6V5ZM14 5H18V19H14V5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <div class="hero-masthead-text">
+                        <p class="hero-eyebrow">Computer Science · Machine Learning · Product</p>
+                        <h1 class="hero-title">
+                            <span class="line">Eli</span>
+                            <span class="line">Young</span>
+                        </h1>
+                    </div>
+                    <div class="hero-masthead-audio">
+                        <div class="intro-song-popup" id="intro-song-popup">
+                            <a href="#" class="intro-song-link" id="intro-song-link" target="_blank" rel="noopener noreferrer">
+                                <span class="intro-song-name" id="intro-song-name">—</span>
+                                <span class="intro-song-artist" id="intro-song-artist">—</span>
+                            </a>
+                        </div>
+                        <button type="button" class="intro-mute-btn" id="intro-mute-btn" aria-label="Mute" aria-pressed="false">
+                            <i class="fas fa-volume-high" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
                 <p class="hero-description">
                     4th-year CS student at <strong>Swarthmore College</strong>.
                     Co-founder of <a href="https://algoarena.net" target="_blank" data-cursor="link">AlgoArena</a>.
@@ -148,26 +174,7 @@
                     </div>
                 </div>
             </div>
-            <div class="intro-audio-dock" id="intro-audio-dock">
-                <button type="button" class="intro-play-btn" id="intro-play-btn" aria-label="Play music and reactive visuals">
-                    <svg class="intro-play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
-                    </svg>
-                    <svg class="intro-pause-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M6 5H10V19H6V5ZM14 5H18V19H14V5Z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <div class="intro-song-popup" id="intro-song-popup">
-                    <a href="#" class="intro-song-link" id="intro-song-link" target="_blank" rel="noopener noreferrer">
-                        <span class="intro-song-name" id="intro-song-name">—</span>
-                        <span class="intro-song-artist" id="intro-song-artist">—</span>
-                    </a>
-                </div>
-                <button type="button" class="intro-mute-btn" id="intro-mute-btn" aria-label="Mute" aria-pressed="false">
-                    <i class="fas fa-volume-high" aria-hidden="true"></i>
-                </button>
-            </div>
-            <p class="intro-motion-hint"><span>Move the pointer to shift the view · Optional sound</span></p>
+            <p class="intro-motion-hint"><span>Drag the scene (pointer) · Play for sound-reactive readout — scroll for content</span></p>
             <div class="scroll-hint">
                 <div class="scroll-line"></div>
                 <span>Scroll</span>

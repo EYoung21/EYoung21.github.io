@@ -16,6 +16,8 @@
     const isMobile = window.innerWidth < 768 || isCoarse;
 
     const introStage = document.getElementById('intro-stage');
+    const introFixedFrame = document.getElementById('intro-fixed-frame');
+    const handoffEl = introFixedFrame || introStage;
     const canvasEl = document.getElementById('intro-canvas');
     const playBtn = document.getElementById('intro-play-btn');
     const songPopup = document.getElementById('intro-song-popup');
@@ -322,15 +324,13 @@
 
     function updateHandoffOpacity() {
         const hero = document.getElementById('hero');
-        if (!hero || !introStage) return;
+        if (!hero || !handoffEl) return;
         const rect = hero.getBoundingClientRect();
-        const vh = window.innerHeight;
         const total = rect.height;
         const scrolledPast = Math.max(0, -rect.top);
         const p = Math.min(1, scrolledPast / Math.max(total * 0.65, 1));
         const o = 1 - p;
-        introStage.style.opacity = String(Math.max(0, Math.min(1, o)));
-        introStage.style.pointerEvents = o < 0.03 ? 'none' : 'none';
+        handoffEl.style.opacity = String(Math.max(0, Math.min(1, o)));
 
         if (p > 0.08 && musicPlaying && audioEl && !audioEl.paused) {
             stopTrackFromScroll();
@@ -379,9 +379,13 @@
             songLinkEl.href = selectedMeta.url || '#';
             songLinkEl.setAttribute('aria-label', `Open ${selectedMeta.artist} — ${selectedMeta.title} in a new tab`);
         }
-        audioEl = new Audio(`./music/${encodeURIComponent(selectedMeta.file)}`);
-        audioEl.preload = 'metadata';
-        audioEl.crossOrigin = 'anonymous';
+        const path = String(selectedMeta.file)
+            .split('/')
+            .filter(Boolean)
+            .map(encodeURIComponent)
+            .join('/');
+        audioEl = new Audio(`music/${path}`);
+        audioEl.preload = 'auto';
         audioEl.addEventListener('ended', stopTrackFromScroll);
     }
 
