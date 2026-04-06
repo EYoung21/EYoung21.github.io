@@ -62,8 +62,11 @@
         dissolveP: 0
     };
 
-    const slices = [];
-    const SLICE_W = 5;
+    /* ── 2D tile grid for localized distortion (like Trae.ai) ── */
+    const TILE = 28;  // tile size in CSS pixels
+    let tiles = [];   // flat array of { dx, dy } per tile
+    let tileCols = 0;
+    let tileRows = 0;
 
     function rgb(hex, alpha) {
         const h = hex.replace('#', '');
@@ -305,10 +308,14 @@
         srcCanvas.height = pxH;
         ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
         srcCtx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
-        const needed = Math.ceil(state.w / SLICE_W);
-        slices.length = needed;
+
+        // Build 2D tile grid
+        tileCols = Math.ceil(state.w / TILE);
+        tileRows = Math.ceil(state.h / TILE);
+        const needed = tileCols * tileRows;
+        tiles = [];
         for (let i = 0; i < needed; i += 1) {
-            if (!slices[i]) slices[i] = { dx: 0, dy: 0 };
+            tiles.push({ dx: 0, dy: 0 });
         }
     }
 
@@ -419,6 +426,7 @@
         drawHeroText();
     }
 
+    /* ── Pointer: apply localized 2D force to tile grid ── */
     function affectFromPointer(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
         const x = clientX - rect.left;
@@ -430,16 +438,28 @@
         const gain = state.playing ? (1.15 + state.bands.treble * 0.9) : 1;
         state.motion = Math.min(320, state.motion + 35 * gain + state.bands.spectralFlux * 20);
 
-        const spread = state.playing ? 240 : 120;
-        for (let i = 0; i < slices.length; i += 1) {
-            const midX = i * SLICE_W + SLICE_W * 0.5;
-            const dist = Math.abs(midX - x);
-            if (dist > spread) continue;
-            const f = 1 - dist / spread;
-            const dir = midX < x ? -1 : 1;
-            const chaos = state.playing ? (1.15 + state.bands.spectralFlux * 2.0 + state.bands.beatFlash * 1.1) : 0.55;
-            slices[i].dx += dir * f * (chaos + Math.random() * 0.55);
-            slices[i].dy += (Math.random() - 0.5) * (state.playing ? 3.6 : 0.8) * f;
+        const radius = state.playing ? 240 : 140;
+        const minCol = Math.max(0, Math.floor((x - radius) / TILE));
+        const maxCol = Math.min(tileCols - 1, Math.ceil((x + radius) / TILE));
+        const minRow = Math.max(0, Math.floor((y - radius) / TILE));
+        const maxRow = Math.min(tileRows - 1, Math.ceil((y + radius) / TILE));
+
+        for (let row = minRow; row <= maxRow; row += 1) {
+            for (let col = minCol; col <= maxCol; col += 1) {
+                const midX = col * TILE + TILE * 0.5;
+                const midY = row * TILE + TILE * 0.5;
+                const ddx = midX - x;
+                const ddy = midY - y;
+                const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+                if (dist > radius) continue;
+                const f = 1 - dist / radius;
+                const chaos = state.playing ? (1.15 + state.bands.spectralFlux * 2.0 + state.bands.beatFlash * 1.1) : 0.55;
+                const idx = row * tileCols + col;
+                // Push tiles away from cursor (radial force)
+                const angle = Math.atan2(ddy, ddx);
+                tiles[idx].dx += Math.cos(angle) * f * (chaos + Math.random() * 0.35) * 0.7;
+                tiles[idx].dy += Math.sin(angle) * f * (chaos + Math.random() * 0.35) * 0.7;
+            }
         }
     }
 
@@ -447,69 +467,21 @@
         const idle = now - state.lastMoveAt > 120;
         const pull = idle ? (state.playing ? 0.9 : 0.84) : 0.94;
         state.motion *= pull;
-        const damp = state.playing ? 0.86 : 0.8;
+        const damp = state.playing ? 0.88 : 0.82;
         state.beatShock *= 0.86;
         state.colorShock *= 0.91;
-        for (let i = 0; i < slices.length; i += 1) {
-            const s = slices[i];
-            s.dx *= damp;
-            s.dy *= damp;
+        for (let i = 0; i < tiles.length; i += 1) {
+            const t = tiles[i];
+            t.dx *= damp;
+            t.dy *= damp;
             if (state.playing) {
-                const pulse = Math.sin(now * 0.007 + i * 0.17) * (state.bands.bass * 0.7 + state.beatShock * 1.3);
-                s.dx += pulse * 0.22;
+                const col = i % tileCols;
+                const row = Math.floor(i / tileCols);
+                const pulse = Math.sin(now * 0.007 + col * 0.17 + row * 0.13) * (state.bands.bass * 0.5 + state.beatShock * 0.9);
+                t.dx += pulse * 0.12;
+                t.dy += Math.cos(now * 0.006 + row * 0.15 + col * 0.09) * (state.bands.mid * 0.3 + state.beatShock * 0.5) * 0.08;
             }
         }
-    }
-
-    function renderPointerWarp(now, amp) {
-        if (state.pointerX < -1000 || state.pointerY < -1000) return;
-        const px = state.pointerX;
-        const py = state.pointerY;
-        if (px < 0 || py < 0 || px > state.w || py > state.h) return;
-
-        const pointerAge = now - state.lastMoveAt;
-        const pointerHot = Math.max(0, 1 - pointerAge / 900);
-        if (pointerHot <= 0.02 && !state.playing) return;
-
-        const tile = state.w < 900 ? 20 : 26;
-        const radius = Math.min(state.w * 0.36, state.playing ? 300 : 220);
-        const minX = Math.max(0, Math.floor((px - radius) / tile) * tile);
-        const maxX = Math.min(state.w, Math.ceil((px + radius) / tile) * tile);
-        const minY = Math.max(0, Math.floor((py - radius) / tile) * tile);
-        const maxY = Math.min(state.h, Math.ceil((py + radius) / tile) * tile);
-
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-        ctx.globalAlpha = 0.08 + pointerHot * (state.playing ? 0.28 : 0.16);
-        for (let y = minY; y < maxY; y += tile) {
-            for (let x = minX; x < maxX; x += tile) {
-                const cx = x + tile * 0.5;
-                const cy = y + tile * 0.5;
-                const dx = cx - px;
-                const dy = cy - py;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist > radius) continue;
-                const t = 1 - dist / radius;
-                const swirl = Math.sin(now * 0.004 + cx * 0.03 + cy * 0.02) * t;
-                const pull = (state.playing ? 1.3 : 0.75) * (0.8 + state.bands.spectralFlux * 1.6 + state.bands.beatFlash * 1.4);
-                const ox = (dx * 0.02 + dy * 0.05) * t * amp * 0.12 * pull + swirl * amp * 0.08;
-                const oy = (dy * 0.02 - dx * 0.05) * t * amp * 0.11 * pull - swirl * amp * 0.06;
-                const tw = Math.min(tile, state.w - x);
-                const th = Math.min(tile, state.h - y);
-                ctx.drawImage(
-                    srcCanvas,
-                    x * state.dpr,
-                    y * state.dpr,
-                    tw * state.dpr,
-                    th * state.dpr,
-                    x + ox,
-                    y + oy,
-                    tw,
-                    th
-                );
-            }
-        }
-        ctx.restore();
     }
 
     function render(now) {
@@ -521,16 +493,32 @@
             : 9;
         const amp = prefersReducedMotion ? 2 : Math.min(96, state.motion * 0.18 + audioAmp);
 
-        for (let i = 0; i < slices.length; i += 1) {
-            const x = i * SLICE_W;
-            const w = Math.min(SLICE_W, state.w - x);
-            const sx = x;
-            const idxPhase = Math.sin(i * 0.07 + now * 0.0037) * (state.playing ? state.bands.mid * 4.6 + state.beatShock * 3.1 : 0.4);
-            const dx = x + (slices[i].dx + idxPhase) * amp * 0.085;
-            const dy = (slices[i].dy + Math.cos(i * 0.05 + now * 0.0032) * (state.playing ? state.bands.air * 3.2 + state.beatShock * 2.2 : 0.2)) * amp * 0.055;
-            ctx.drawImage(srcCanvas, sx * state.dpr, 0, w * state.dpr, state.h * state.dpr, dx, dy, w, state.h);
+        /* ── 2D tile-based rendering (localized XY distortion) ── */
+        for (let row = 0; row < tileRows; row += 1) {
+            for (let col = 0; col < tileCols; col += 1) {
+                const idx = row * tileCols + col;
+                const x = col * TILE;
+                const y = row * TILE;
+                const w = Math.min(TILE, state.w - x);
+                const h = Math.min(TILE, state.h - y);
+                if (w <= 0 || h <= 0) continue;
+
+                const tileData = tiles[idx];
+                const idxPhaseX = Math.sin(col * 0.07 + row * 0.05 + now * 0.0037) * (state.playing ? state.bands.mid * 3.2 + state.beatShock * 2.0 : 0.3);
+                const idxPhaseY = Math.cos(row * 0.06 + col * 0.04 + now * 0.0032) * (state.playing ? state.bands.air * 2.4 + state.beatShock * 1.5 : 0.15);
+                const dx = x + (tileData.dx + idxPhaseX) * amp * 0.065;
+                const dy = y + (tileData.dy + idxPhaseY) * amp * 0.055;
+
+                ctx.drawImage(
+                    srcCanvas,
+                    x * state.dpr, y * state.dpr,
+                    w * state.dpr, h * state.dpr,
+                    dx, dy,
+                    w, h
+                );
+            }
         }
-        renderPointerWarp(now, amp);
+
         applyDissolveMask();
         requestAnimationFrame(render);
     }

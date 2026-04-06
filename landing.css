@@ -426,7 +426,7 @@ body[data-theme="light"] .mobile-menu {
 
 .hero-content {
     position: relative;
-    z-index: 4;
+    z-index: 2;
     max-width: var(--container);
     padding: clamp(18px, 3vh, 32px) clamp(20px, 4vw, 60px) 0;
     width: 100%;
@@ -442,7 +442,7 @@ body[data-theme="light"] .mobile-menu {
     justify-content: space-between;
     align-items: flex-start;
     gap: 16px;
-    z-index: 4;
+    z-index: 6;
     pointer-events: none;
     transform-style: preserve-3d;
 }
@@ -547,7 +547,7 @@ body[data-theme="light"] .mobile-menu {
     bottom: calc(100vh - 58px);
     left: 50%;
     transform: translateX(-50%);
-    z-index: 4;
+    z-index: 6;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1306,7 +1306,7 @@ body[data-theme="light"] .blob-3 {
     inset: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 3;
+    z-index: 5;
     pointer-events: none;
     overflow: hidden;
     transform-style: preserve-3d;
