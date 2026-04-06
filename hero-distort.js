@@ -320,32 +320,46 @@
     }
 
     function drawBackgroundGrid() {
+        const d = Math.max(0, Math.min(1, state.dissolveP || 0));
         const e = state.playing ? (state.bands.bass * 0.35 + state.bands.spectralFlux * 0.85 + state.beatShock * 0.65) : 0;
+        // Reduce green tint as dissolve progresses so remaining tiles don't form a green orb
+        const tintFade = Math.max(0, 1 - d * 1.5);
+        const tintAmt = (state.playing ? 0.18 + e * 0.34 : 0.03) * tintFade;
         const g = srcCtx.createLinearGradient(0, 0, 0, state.h);
         g.addColorStop(0, state.palette.bg);
-        g.addColorStop(0.58, mix('#101820', chapters[state.chapterIdx].tint, state.playing ? 0.18 + e * 0.34 : 0.03));
+        g.addColorStop(0.58, mix('#101820', chapters[state.chapterIdx].tint, tintAmt));
         g.addColorStop(1, state.palette.bg);
         srcCtx.fillStyle = g;
         srcCtx.fillRect(0, 0, state.w, state.h);
 
-        srcCtx.strokeStyle = state.palette.line;
-        srcCtx.lineWidth = 1;
-        const step = Math.max(32, Math.round(state.w / 34));
-        for (let x = 0; x < state.w; x += step) {
-            srcCtx.beginPath();
-            srcCtx.moveTo(x + 0.5, 0);
-            srcCtx.lineTo(x + 0.5, state.h);
-            srcCtx.stroke();
-        }
-        for (let y = 0; y < state.h; y += Math.max(42, Math.round(state.h / 16))) {
-            srcCtx.beginPath();
-            srcCtx.moveTo(0, y + 0.5);
-            srcCtx.lineTo(state.w, y + 0.5);
-            srcCtx.stroke();
+        // Fade grid lines during dissolve
+        const lineAlpha = Math.max(0, 1 - d * 2);
+        if (lineAlpha > 0.01) {
+            srcCtx.globalAlpha = lineAlpha;
+            srcCtx.strokeStyle = state.palette.line;
+            srcCtx.lineWidth = 1;
+            const step = Math.max(32, Math.round(state.w / 34));
+            for (let x = 0; x < state.w; x += step) {
+                srcCtx.beginPath();
+                srcCtx.moveTo(x + 0.5, 0);
+                srcCtx.lineTo(x + 0.5, state.h);
+                srcCtx.stroke();
+            }
+            for (let y = 0; y < state.h; y += Math.max(42, Math.round(state.h / 16))) {
+                srcCtx.beginPath();
+                srcCtx.moveTo(0, y + 0.5);
+                srcCtx.lineTo(state.w, y + 0.5);
+                srcCtx.stroke();
+            }
+            srcCtx.globalAlpha = 1;
         }
     }
 
     function drawHeroText() {
+        // Skip drawing hero text when dissolve is well underway
+        const d = Math.max(0, Math.min(1, state.dissolveP || 0));
+        if (d > 0.67) return;
+
         const leftPad = Math.max(18, state.w * 0.035);
         let baseSize = Math.max(76, Math.min(286, state.w * 0.215));
         srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
