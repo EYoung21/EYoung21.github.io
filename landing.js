@@ -659,19 +659,7 @@
                     }
                     
                     if (canvas) {
-                        // ACKO-STYLE: Canvas slides UP off the viewport top as you scroll
-                        const slideUpPx = p * window.innerHeight * 0.8; // slide up by 80% of viewport
-                        canvas.style.transform = `translateY(-${slideUpPx}px)`;
-                        canvas.style.opacity = Math.max(0, 1 - p * 1.5);
-                        canvas.style.pointerEvents = (p > 0.3) ? 'none' : 'auto';
-
-                        if (p > 0.7) {
-                            canvas.style.display = 'none';
-                        } else {
-                            canvas.style.display = 'block';
-                        }
-                        
-                        // Ribbons also slide UP and LEFT within the 3D space
+                        // Ribbons slide UP and LEFT within the 3D space for parallax
                         ribbonsGroup.position.x = -p * 80;
                         ribbonsGroup.position.y = p * 40;
                         ribbonsGroup.position.z = -p * 60;
@@ -681,10 +669,6 @@
                         ribbonsGroup.rotation.y = -p * 0.2;
                     }
                     if (introOverlay) {
-                        // Overlay slides up in sync with the canvas
-                        const slideUpPx = p * window.innerHeight * 0.8;
-                        introOverlay.style.transform = `translateY(-${slideUpPx}px)`;
-                        introOverlay.style.opacity = Math.max(0, 1 - p * 2);
                         introOverlay.style.pointerEvents = (p > 0.2) ? 'none' : 'auto';
                     }
 
@@ -702,17 +686,15 @@
                         camera.updateProjectionMatrix();
                         // Show canvas and overlay
                         if (canvas) {
-                            canvas.style.opacity = '1';
                             canvas.style.pointerEvents = 'auto';
-                            canvas.style.display = 'block';
-                            canvas.style.transform = 'translateY(0)';
+                            canvas.style.transform = 'none';
+                            canvas.style.opacity = '1';
                         }
                         if (introOverlay) {
-                            introOverlay.style.opacity = '1';
                             introOverlay.style.pointerEvents = 'auto';
-                            introOverlay.style.display = 'block';
-                            introOverlay.style.transform = 'translateY(0)';
                             introOverlay.classList.remove('playing');
+                            introOverlay.style.transform = 'none';
+                            introOverlay.style.opacity = '1';
                         }
                         // Re-show play button and masthead
                         if (playBtn) gsap.set(playBtn, { opacity: 1, scale: 1, pointerEvents: 'auto' });
@@ -1003,7 +985,6 @@
                             terminalLoader.remove();
                             // TRIGGER WEBGL METAMORPHOSIS!
                             window.dispatchEvent(new Event('terminalBootComplete'));
-                            document.getElementById('nav')?.classList.add('visible');
                             animateHero();
                         }
                     });
