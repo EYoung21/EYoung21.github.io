@@ -386,56 +386,40 @@
                 cell.className = 'grid-cell';
                 const col = i % cols;
                 const row = Math.floor(i / cols);
-                const waveDelay = row * 35 + col * 18 + Math.floor(Math.random() * 120);
+                const waveDelay = row * 24 + col * 14 + Math.floor(Math.random() * 80);
                 const xJitter = Math.round((Math.random() - 0.5) * 20);
                 const yJitter = -12 - Math.round(Math.random() * 22);
+                const order = (waveDelay / (rows * 24 + cols * 14 + 80));
                 cell.style.setProperty('--delay', String(waveDelay));
                 cell.style.setProperty('--x-jitter', `${xJitter}px`);
                 cell.style.setProperty('--y-jitter', `${yJitter}px`);
+                cell.dataset.order = String(Math.max(0, Math.min(1, order)));
                 grid.appendChild(cell);
             }
         }
 
-        let didDissolve = false;
-        let replayTimer = null;
-        const playDissolve = () => {
-            grid.classList.remove('active');
-            // Force reflow so class re-add replays animation.
-            void grid.offsetWidth;
-            grid.classList.add('active');
-        };
-        const stopReplay = () => {
-            if (replayTimer) {
-                clearInterval(replayTimer);
-                replayTimer = null;
-            }
-            grid.classList.remove('active');
-        };
-        const startReplay = () => {
-            if (replayTimer) return;
-            playDissolve();
-            replayTimer = setInterval(playDissolve, 900);
-        };
-        const syncFromProgress = (p) => {
-            const mobile = window.matchMedia('(max-width: 768px)').matches;
-            const triggerAt = mobile ? 0.36 : 0.44;
-            const maxAt = 0.94;
-            const shouldShow = p > triggerAt && p < maxAt;
-            if (shouldShow && !didDissolve) {
-                didDissolve = true;
-                startReplay();
-            } else if (!shouldShow && didDissolve) {
-                didDissolve = false;
-                stopReplay();
-            }
+        const cells = Array.from(grid.querySelectorAll('.grid-cell'));
+        const syncFromProgress = (dissolveP) => {
+            const d = Math.max(0, Math.min(1, dissolveP));
+            grid.classList.toggle('active', d > 0.001 && d < 0.999);
+            cells.forEach((cell) => {
+                const order = Number(cell.dataset.order || '0');
+                const local = Math.max(0, Math.min(1, (d - order + 0.18) / 0.24));
+                const drift = Math.max(0, Math.min(1, d * 1.2));
+                const xJitter = parseFloat(getComputedStyle(cell).getPropertyValue('--x-jitter')) || 0;
+                const yJitter = parseFloat(getComputedStyle(cell).getPropertyValue('--y-jitter')) || -12;
+                cell.style.opacity = String(local * (1 - d * 0.12));
+                cell.style.transform = `translate3d(${(xJitter * local * drift).toFixed(2)}px, ${(yJitter * local * drift).toFixed(2)}px, 0) scale(${(1 - local * 0.18).toFixed(3)})`;
+                cell.style.filter = `blur(${(local * 1.8).toFixed(2)}px)`;
+            });
         };
 
         window.addEventListener('portfolioHeroScroll', (ev) => {
-            const progress = ev.detail && typeof ev.detail.p === 'number' ? ev.detail.p : 0;
-            syncFromProgress(progress);
+            const dissolveP = ev.detail && typeof ev.detail.dissolveP === 'number'
+                ? ev.detail.dissolveP
+                : 0;
+            syncFromProgress(dissolveP);
         });
-
-        window.addEventListener('beforeunload', stopReplay);
     }
 
     // ── Mobile Menu ──

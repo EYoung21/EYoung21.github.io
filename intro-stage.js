@@ -1007,16 +1007,17 @@
         const total = rect.height;
         const scrolledPast = Math.max(0, -rect.top);
         const p = Math.min(1, scrolledPast / Math.max(total * 0.65, 1));
+        const dissolveP = Math.max(0, Math.min(1, (p - 0.38) / 0.34));
         scrollP = p;
         scrollHandoff01 = p;
 
         try {
-            window.dispatchEvent(new CustomEvent('portfolioHeroScroll', { detail: { p, scrolledPast, heroHeight: total } }));
+            window.dispatchEvent(new CustomEvent('portfolioHeroScroll', { detail: { p, dissolveP, scrolledPast, heroHeight: total } }));
         } catch (e) { /* ignore */ }
 
         const heroContent = hero.querySelector('.hero-content');
         const infoReached = heroContent ? heroContent.getBoundingClientRect().top <= window.innerHeight * 0.9 : false;
-        if ((infoReached || p > 0.82) && musicPlaying && audioEl && !audioEl.paused) {
+        if ((infoReached || dissolveP > 0.86) && musicPlaying && audioEl && !audioEl.paused) {
             stopTrackFromScroll();
         }
     }
@@ -1028,18 +1029,17 @@
     function syncIntroFrameDom() {
         if (!handoffEl) return;
         const p = scrollP;
+        const dissolveP = Math.max(0, Math.min(1, (p - 0.38) / 0.34));
         const sidelineT = Math.min(1, Math.max(0, (p - 0.1) / 0.62));
         const tyVh = -sidelineT * 46;
-        const sc = 1 - sidelineT * 0.54;
-        let opacity = 1;
-        if (p > 0.72) {
-            opacity = Math.max(0, 1 - (p - 0.72) / 0.28);
-        }
+        const sc = (1 - sidelineT * 0.54) * (1 - dissolveP * 0.2);
+        const opacity = Math.max(0, 1 - dissolveP);
         const ent = easeOutCubic(Math.min(1, introEntranceT / 1.14));
         const flowInX = prefersReducedMotion ? 0 : (1 - ent) * 0.32 * window.innerWidth;
         handoffEl.style.transformOrigin = '50% 0%';
         handoffEl.style.transform = `translate3d(${flowInX}px, ${tyVh}vh, 0) scale(${sc})`;
         handoffEl.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+        handoffEl.style.filter = `blur(${(dissolveP * 6).toFixed(2)}px)`;
     }
 
     function stopTrackFromScroll() {
