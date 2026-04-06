@@ -1341,7 +1341,8 @@ a.exp-company:hover { opacity: 0.7; }
     width: 100vw;
     height: 100vh;
     z-index: 9999;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: grab;
 }
 .intro-overlay {
     position: absolute !important;

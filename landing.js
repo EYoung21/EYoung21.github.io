@@ -60,28 +60,55 @@
         const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
         const isDark = () => getTheme() === 'dark';
 
-        // Theme-aware colors — User's GREEN palette with acko-quality rendering
-        // Greens, whites, cyans — vivid on dark, muted on light
+        // Theme-aware colors — RICH MULTI-COLOR palette inspired by user's code snippet
+        // Colors: golden yellow (keywords), green (strings), teal/blue (types), 
+        // coral/orange (values), white (text), grey (comments) — like acko's varied palette
         const themeColors = {
             dark: {
-                bg: 0x050505,
-                stripe1: '#0a0a0a', stripe2: '#111111',
-                palette: [0x00ff66, 0x00cc55, 0x22c55e, 0x44ffaa, 0x88ffcc, 0x33ddaa, 0xffffff, 0x00e85c, 0x66ffbb, 0xaaffdd],
-                ambient: 0x222222, ambientIntensity: 0.7,
-                dirLight: 0xffffff, dirIntensity: 0.9,
-                pointLight: 0x00ff66, pointIntensity: 3.0,
-                ribbonRoughness: 0.3, ribbonMetalness: 0.3,
-                fogColor: 0x050505, fogNear: 100, fogFar: 500,
+                bg: 0x1a1a2e,
+                stripe1: '#1a1a2e', stripe2: '#16213e',
+                palette: [
+                    0xe2b714, // golden yellow (Python keywords)
+                    0x00ff66, // bright green (strings)
+                    0x4ec9b0, // teal (class names)
+                    0x569cd6, // blue (types/params)
+                    0xce9178, // coral/salmon (string values)
+                    0xdcdcaa, // soft yellow (function names)
+                    0xc586c0, // purple (keywords)
+                    0xd4d4d4, // light grey (text)
+                    0x9cdcfe, // light blue (variables)
+                    0x4fc1ff, // bright cyan (constants)
+                    0xf44747, // red (errors/accents)
+                    0xffffff, // white
+                ],
+                ambient: 0x334466, ambientIntensity: 0.8,
+                dirLight: 0xffeedd, dirIntensity: 1.1,
+                pointLight: 0x00ff66, pointIntensity: 2.5,
+                ribbonRoughness: 0.35, ribbonMetalness: 0.25,
+                fogColor: 0x1a1a2e, fogNear: 150, fogFar: 600,
             },
             light: {
                 bg: 0xf0f3f6,
                 stripe1: '#ffffff', stripe2: '#e8ecf0',
-                palette: [0x00cc55, 0x222222, 0x333344, 0x888888, 0xffffff, 0x22c55e, 0x44ffaa, 0x555555, 0x00aa44, 0xbbbbbb],
+                palette: [
+                    0xc17d11, // dark gold
+                    0x2e7d32, // forest green
+                    0x0277bd, // deep blue
+                    0xd84315, // burnt orange
+                    0x37474f, // dark blue-grey
+                    0x6a1b9a, // deep purple
+                    0x00695c, // teal
+                    0x878787, // grey
+                    0x1565c0, // royal blue
+                    0xffffff, // white
+                    0xbf360c, // dark red-orange
+                    0x455a64, // slate
+                ],
                 ambient: 0xffffff, ambientIntensity: 1.0,
-                dirLight: 0xffffff, dirIntensity: 0.6,
-                pointLight: 0x00ff66, pointIntensity: 2.5,
+                dirLight: 0xffffff, dirIntensity: 0.8,
+                pointLight: 0x00ff66, pointIntensity: 2.0,
                 ribbonRoughness: 0.4, ribbonMetalness: 0.15,
-                fogColor: 0xf0f3f6, fogNear: 120, fogFar: 600,
+                fogColor: 0xf0f3f6, fogNear: 150, fogFar: 600,
             }
         };
 
@@ -112,7 +139,7 @@
         scene.fog = new THREE.Fog(tc.fogColor, tc.fogNear, tc.fogFar);
 
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 4000);
-        camera.position.set(0, 0, 120);
+        camera.position.set(0, 0, 55);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -122,45 +149,47 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.1;
 
-        // Lighting — soft, warm, multi-directional (acko-style non-photorealistic)
+        // Lighting — Rich multi-light setup for premium 3D quality like acko.net
         const ambientLight = new THREE.AmbientLight(tc.ambient, tc.ambientIntensity);
         scene.add(ambientLight);
         
-        // Main key light — warm, from upper right
+        // Strong key light from upper right — creates crisp highlights
         const dirLight = new THREE.DirectionalLight(tc.dirLight, tc.dirIntensity);
-        dirLight.position.set(60, 80, 100);
+        dirLight.position.set(80, 100, 120);
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // Fill light — subtle green tint from the left
-        const dirLight2 = new THREE.DirectionalLight(0x00ff66, 0.25);
-        dirLight2.position.set(-60, -30, 50);
+        // Cool fill light from lower left — depth separation
+        const dirLight2 = new THREE.DirectionalLight(0x4488cc, 0.4);
+        dirLight2.position.set(-60, -50, 80);
         scene.add(dirLight2);
 
-        // Rim light from behind — creates edge highlights
-        const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.25);
-        dirLight3.position.set(0, 0, -80);
+        // Warm backlight — rim highlights on ribbon edges
+        const dirLight3 = new THREE.DirectionalLight(0xffaa44, 0.3);
+        dirLight3.position.set(-30, 60, -40);
         scene.add(dirLight3);
         
-        const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 400);
+        const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 600);
         mouseLight.position.set(0, 0, 100);
         scene.add(mouseLight);
 
-        // Acko Background — subtle diagonal stripes (softer, warmer)
+        // Acko Background — visible diagonal stripes (key visual element!)
         const buildStripeBg = () => {
             const stripeCanvas = document.createElement('canvas');
             stripeCanvas.width = 256; stripeCanvas.height = 256;
             const ctx = stripeCanvas.getContext('2d');
             const colors = isDark() ? themeColors.dark : themeColors.light;
+            // Base fill
             ctx.fillStyle = colors.stripe1;
             ctx.fillRect(0, 0, 256, 256);
+            // Visible diagonal stripes — acko.net's signature background
             ctx.strokeStyle = colors.stripe2;
-            ctx.lineWidth = 20;
-            ctx.globalAlpha = 0.6;
+            ctx.lineWidth = 28;
+            ctx.globalAlpha = isDark() ? 0.35 : 0.5;
             ctx.beginPath();
-            for (let j = -4; j < 8; j++) {
-                ctx.moveTo(-128 + j * 64, 128 + j * 64);
-                ctx.lineTo(128 + j * 64, -128 + j * 64);
+            for (let j = -6; j < 14; j++) {
+                ctx.moveTo(-256 + j * 64, 256 + j * 64);
+                ctx.lineTo(256 + j * 64, -256 + j * 64);
             }
             ctx.stroke();
             ctx.globalAlpha = 1.0;
@@ -169,11 +198,11 @@
 
         let stripeTex = buildStripeBg();
         stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
-        stripeTex.repeat.set(60, 60);
+        stripeTex.repeat.set(40, 40);
 
         const bgMaterial = new THREE.MeshBasicMaterial({ map: stripeTex });
         const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), bgMaterial);
-        bgPlane.position.z = -300;
+        bgPlane.position.z = -150;
         scene.add(bgPlane);
 
         // ═══════════════════════════════════════════════
@@ -344,8 +373,8 @@
                         allShapePoints.push(new THREE.Vector3(
                             p.x + xOffset,
                             p.y + yOffset,
-                            // VERY subtle Z — just enough depth to feel 3D, but readable
-                            Math.sin(allShapePoints.length * 0.04 + sIdx * 1.2) * 1.5 + Math.cos(allShapePoints.length * 0.02) * 0.8
+                            // More pronounced Z-depth for thick 3D letterforms like acko.net
+                            Math.sin(allShapePoints.length * 0.06 + sIdx * 1.5) * 5 + Math.cos(allShapePoints.length * 0.03) * 3
                         ));
                     });
                 });
@@ -360,12 +389,12 @@
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        6 + Math.random() * 5,    // width 6–11 (wider, flatter strips like acko)
-                        0.6 + Math.random() * 0.4, // thickness 0.6–1.0 (THINNER edge — more tape-like)
+                        7 + Math.random() * 6,    // width 7–13 (wider, flatter strips like acko)
+                        1.5 + Math.random() * 1.0, // thickness 1.5–2.5 (thicker edges for visible 3D depth)
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
                         tc.ribbonMetalness,
-                        Math.min(allShapePoints.length * 2, 250)
+                        Math.min(allShapePoints.length * 2, 300)
                     );
                     letterRibbons.push(ribbon);
                     ribbonsGroup.add(ribbon);
@@ -374,9 +403,9 @@
 
             // ── Build dense flowing background ribbons — like acko.net's architectural density ──
             // Acko keeps ribbons everywhere so the camera ALWAYS has geometry in view
-            const chaosCount = 22; // Dense composition — fills the scene
+            const chaosCount = 30; // Dense composition — fills the scene like acko.net
             for (let c = 0; c < chaosCount; c++) {
-                const numPts = 7 + Math.floor(Math.random() * 5); // 7-11 points = longer, smoother
+                const numPts = 8 + Math.floor(Math.random() * 6); // 8-13 points = longer, smoother
                 const chaosPts = [];
                 // Mix of ribbons: some weave through text, some arc around it
                 const angle = (c / chaosCount) * Math.PI * 2;
@@ -417,13 +446,13 @@
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    5 + Math.random() * 7,       // width 5–12 (wide, flowing strips)
-                    0.5 + Math.random() * 0.5,    // thickness 0.5–1.0 (thin tape edge)
+                    5 + Math.random() * 8,       // width 5–13 (wide, flowing strips)
+                    1.0 + Math.random() * 1.0,    // thickness 1.0–2.0 (visible 3D edge)
                     chaosColor,
-                    tc.ribbonRoughness + Math.random() * 0.1,
-                    tc.ribbonMetalness + Math.random() * 0.1,
-                    120,
-                    0.7 + Math.random() * 0.2     // opacity 0.7–0.9 (semi-transparent for depth)
+                    tc.ribbonRoughness + Math.random() * 0.15,
+                    tc.ribbonMetalness + Math.random() * 0.15,
+                    150,
+                    0.85 + Math.random() * 0.15   // opacity 0.85–1.0 (more opaque for quality)
                 );
                 chaosRibbons.push(chaosRibbon);
                 ribbonsGroup.add(chaosRibbon);
@@ -542,14 +571,20 @@
             return camera.position.clone().add(dir.multiplyScalar(60));
         };
 
+        // Click-and-drag to rotate the 3D scene (like acko.net)
+        // Listen on canvas AND overlay — both should allow dragging
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#intro-overlay') && !introPlaying) {
+            if (!introPlaying) {
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
+                if (canvas) canvas.style.cursor = 'grabbing';
             }
         });
-        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mouseup', () => { 
+            isDragging = false;
+            if (canvas) canvas.style.cursor = 'grab';
+        });
 
         window.addEventListener('mousemove', (e) => {
             const mx = (e.clientX / window.innerWidth - 0.5);
@@ -561,8 +596,10 @@
             if (isDragging && !introPlaying) {
                 const deltaX = e.clientX - startX;
                 const deltaY = e.clientY - startY;
-                rotationY += deltaX * 0.005;
-                rotationX += deltaY * 0.005;
+                rotationY += deltaX * 0.008;
+                rotationX += deltaY * 0.008;
+                // Clamp vertical rotation to avoid flipping
+                rotationX = Math.max(-1.2, Math.min(1.2, rotationX));
                 startX = e.clientX;
                 startY = e.clientY;
             }
@@ -607,26 +644,30 @@
                 const mastheadEl = document.getElementById('acko-masthead');
                 if (mastheadEl) gsap.to(mastheadEl, { opacity: 0, duration: 0.6 });
 
-                // Phase 1: Slow approach and start entering the geometry (6 seconds)
+                // Phase 1: Camera SLIDES THROUGH "Eli Young" text close-up (like acko's opening)
+                // This shows the letters up close before the flying animation begins
                 tl.to({}, {
-                    duration: 6,
+                    duration: 8,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Slowly approach from z=120 to z=25 (entering the ribbon cluster)
-                        camera.position.z = 120 - p * 95; // 120 -> 25
-                        camera.position.x = Math.sin(p * Math.PI * 0.5) * 10; // gentle arc
-                        camera.position.y = p * 3; // slight rise
-                        camera.lookAt(0, 0, 0);
-                        camera.fov = 55 + p * 20; // widen FOV as we enter
+                        // Start from right side, slide LEFT through the text at close range
+                        const textWidth = 70; // approximate "Eli Young" width
+                        camera.position.x = textWidth * 0.6 - p * textWidth * 1.2; // right to left
+                        camera.position.y = Math.sin(p * Math.PI) * 4; // gentle vertical arc
+                        camera.position.z = 15 + Math.sin(p * Math.PI * 2) * 5; // very close, weaving in Z
+                        
+                        // Look slightly ahead of where we're going
+                        const lookX = camera.position.x - 10;
+                        const lookY = camera.position.y + Math.sin(p * Math.PI * 3) * 2;
+                        camera.lookAt(lookX, lookY, 0);
+                        
+                        camera.fov = 60 + p * 15;
                         camera.updateProjectionMatrix();
                         
-                        // Bring fog close as camera enters geometry — creates depth atmosphere
-                        if (scene.fog) {
-                            scene.fog.near = 100 - p * 70;  // 100 -> 30
-                            scene.fog.far = 500 - p * 400;  // 500 -> 100
-                        }
+                        // Gentle camera roll
+                        camera.rotation.z = Math.sin(p * Math.PI * 4) * 0.05;
                     },
-                    ease: "power2.inOut"
+                    ease: "power1.inOut"
                 });
 
                 // Phase 2: Camera flies THROUGH ribbon geometry (song duration)
@@ -774,9 +815,9 @@
                         ribbonsGroup.rotation.set(0, 0, 0);
                         bgPlane.position.z = -300;
                         // Reset camera
-                        camera.position.set(0, 0, 120);
+                        camera.position.set(0, 0, 55);
                         camera.lookAt(0, 0, 0);
-                        camera.fov = 60;
+                        camera.fov = 55;
                         camera.updateProjectionMatrix();
                         // Show canvas and overlay
                         if (canvas) {
