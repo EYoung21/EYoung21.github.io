@@ -58,7 +58,8 @@
         beatShock: 0,
         colorShock: 0,
         palette: { bg: '#0a0b0d', fg: '#32f08c', line: 'rgba(255,255,255,0.08)' },
-        iconDrifters: []
+        iconDrifters: [],
+        dissolveP: 0
     };
 
     const slices = [];
@@ -229,6 +230,37 @@
             const alpha = alphaBase + state.bands.beatFlash * 0.2;
             drawChipIcon(srcCtx, d.key, d.x, d.y, d.size, rgb(chapter.tint, alpha), d.key === dominantKey);
         });
+    }
+
+    function pseudoRand(n) {
+        const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+        return x - Math.floor(x);
+    }
+
+    function applyDissolveMask() {
+        const d = Math.max(0, Math.min(1, state.dissolveP || 0));
+        if (d <= 0.001) return;
+        const cols = state.w < 768 ? 12 : 20;
+        const rows = state.w < 768 ? 18 : 12;
+        const cw = state.w / cols;
+        const ch = state.h / rows;
+        for (let r = 0; r < rows; r += 1) {
+            for (let c = 0; c < cols; c += 1) {
+                const i = r * cols + c;
+                const order = (r / rows) * 0.45 + (c / cols) * 0.35 + pseudoRand(i) * 0.2;
+                if (d <= order) continue;
+                const local = Math.max(0, Math.min(1, (d - order) / 0.24));
+                const inset = Math.min(cw, ch) * 0.06 * local;
+                const driftX = (pseudoRand(i + 77) - 0.5) * cw * 0.22 * local;
+                const driftY = (pseudoRand(i + 137) - 0.5) * ch * 0.22 * local;
+                ctx.clearRect(
+                    c * cw + inset + driftX,
+                    r * ch + inset + driftY,
+                    Math.max(0, cw - inset * 2),
+                    Math.max(0, ch - inset * 2)
+                );
+            }
+        }
     }
 
     function pickChapterIndex(weights) {
@@ -445,6 +477,7 @@
             const dy = (slices[i].dy + Math.cos(i * 0.05 + now * 0.0032) * (state.playing ? state.bands.air * 3.2 + state.beatShock * 2.2 : 0.2)) * amp * 0.055;
             ctx.drawImage(srcCanvas, sx * state.dpr, 0, w * state.dpr, state.h * state.dpr, dx, dy, w, state.h);
         }
+        applyDissolveMask();
         requestAnimationFrame(render);
     }
 
@@ -460,6 +493,7 @@
         state.playing = !!d.playing;
         state.mode = d.mode || (state.playing ? 'playNarrative' : 'idleDistortion');
         state.tSong = typeof d.tSong === 'number' ? d.tSong : state.tSong;
+        state.dissolveP = typeof d.dissolveP === 'number' ? d.dissolveP : state.dissolveP;
         state.weights = d.weights || state.weights;
         if (d.bands) {
             const incomingBeat = d.bands.beatFlash || 0;

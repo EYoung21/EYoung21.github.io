@@ -706,6 +706,7 @@
                 mode: introMode,
                 playing: musicPlaying,
                 tSong,
+                dissolveP: Math.max(0, Math.min(1, (scrollP - 0.38) / 0.34)),
                 weights: w,
                 bands: { sub, bass, mid, treble, air, spectralFlux, beatFlash },
                 muted,
@@ -1033,13 +1034,13 @@
         const sidelineT = Math.min(1, Math.max(0, (p - 0.1) / 0.62));
         const tyVh = -sidelineT * 46;
         const sc = (1 - sidelineT * 0.54) * (1 - dissolveP * 0.2);
-        const opacity = Math.max(0, 1 - dissolveP);
+        const opacity = dissolveP > 0.96 ? Math.max(0, 1 - (dissolveP - 0.96) / 0.04) : 1;
         const ent = easeOutCubic(Math.min(1, introEntranceT / 1.14));
         const flowInX = prefersReducedMotion ? 0 : (1 - ent) * 0.32 * window.innerWidth;
         handoffEl.style.transformOrigin = '50% 0%';
         handoffEl.style.transform = `translate3d(${flowInX}px, ${tyVh}vh, 0) scale(${sc})`;
         handoffEl.style.opacity = String(Math.max(0, Math.min(1, opacity)));
-        handoffEl.style.filter = `blur(${(dissolveP * 6).toFixed(2)}px)`;
+        handoffEl.style.filter = `blur(${(dissolveP * 0.8).toFixed(2)}px)`;
     }
 
     function stopTrackFromScroll() {
