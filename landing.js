@@ -168,9 +168,10 @@
         // Creates a solid ribbon tube along a curve path
         function createFlatRibbon(curvePath, ribbonRadius, unused, color, roughness, metalness, segments) {
             segments = segments || 200;
-            ribbonRadius = ribbonRadius || 0.6;
+            ribbonRadius = ribbonRadius || 3.0;
 
-            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, ribbonRadius, 8, false);
+            // 12 radial segments for rounder, more solid-looking tubes (like acko)
+            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, ribbonRadius, 12, false);
             tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
 
             const mat = new THREE.MeshStandardMaterial({
@@ -243,7 +244,7 @@
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        0.5 + Math.random() * 0.5,  // radius 0.5–1.0 (visible but not overwhelming)
+                        2.0 + Math.random() * 3.0,  // radius 2–5 (thick, wide, acko-style)
                         0,
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
@@ -276,7 +277,7 @@
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    0.3 + Math.random() * 0.5,   // radius 0.3–0.8
+                    1.5 + Math.random() * 2.5,   // radius 1.5–4.0 (thick, like acko chaos)
                     0,
                     chaosColor,
                     tc.ribbonRoughness + Math.random() * 0.15,
@@ -303,6 +304,12 @@
             ribbonsGroup.position.x = -300;
             ribbonsGroup.rotation.y = -0.8;
             ribbonsGroup.rotation.z = 0.3;
+
+            // Show the intro overlay now (was hidden during terminal boot)
+            if (introOverlay) {
+                introOverlay.style.display = 'block';
+                introOverlay.style.opacity = '1';
+            }
 
             // Animate them into position
             gsap.to(ribbonsGroup.position, {
@@ -348,7 +355,7 @@
         // INTERACTION — play button hover "sucking" effect 
         // ═══════════════════════════════════════════════
         
-        // Compute play button world-space target for the "suck" effect
+        // Compute play button world-space target for the "suck" convergence point
         const getPlayBtnTarget = () => {
             if (!playBtn) return new THREE.Vector3(60, -50, 20);
             const rect = playBtn.getBoundingClientRect();
@@ -356,9 +363,9 @@
             const ndcY = -((rect.top + rect.height / 2) / window.innerHeight) * 2 + 1;
             const target = new THREE.Vector3(ndcX, ndcY, 0.5);
             target.unproject(camera);
-            // Push it forward a bit
+            // Push it toward camera to create tight convergence point
             const dir = target.sub(camera.position).normalize();
-            return camera.position.clone().add(dir.multiplyScalar(80));
+            return camera.position.clone().add(dir.multiplyScalar(60));
         };
 
         window.addEventListener('mousedown', (e) => {
@@ -420,21 +427,23 @@
                 introTimeline = tl;
                 const prompt = introOverlay ? introOverlay.querySelector('.intro-prompt') : null;
                 
-                // Hide play button + prompt immediately
+                // Hide play button + masthead + prompt immediately
                 if (playBtn) gsap.to(playBtn, { opacity: 0, scale: 0.3, duration: 0.5, pointerEvents: 'none' });
                 if (prompt) gsap.to(prompt, { opacity: 0, duration: 0.4 });
+                const mastheadEl = document.getElementById('acko-masthead');
+                if (mastheadEl) gsap.to(mastheadEl, { opacity: 0, duration: 0.6 });
 
-                // Phase 1: Dramatic zoom INTO the ribbon structure (3 seconds)
+                // Phase 1: Slow pan CLOSE to "Eli Young" text, revealing the structure (5 seconds)
                 tl.to({}, {
-                    duration: 3,
+                    duration: 5,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Zoom from overview to closer — but NOT inside the ribbons
-                        camera.position.z = 120 - p * 80; // 120 -> 40
-                        camera.position.x = Math.sin(p * Math.PI) * 20 * p;
-                        camera.position.y = Math.cos(p * 2) * 8 * p;
+                        // Slowly approach the text from z=120 to z=30 (very close, showing ribbon details)
+                        camera.position.z = 120 - p * 90; // 120 -> 30
+                        camera.position.x = Math.sin(p * Math.PI * 0.5) * 15; // gentle arc
+                        camera.position.y = p * 5; // slight rise
                         camera.lookAt(0, 0, 0);
-                        camera.fov = 60 + p * 10;
+                        camera.fov = 60 + p * 15;
                         camera.updateProjectionMatrix();
                     },
                     ease: "power2.inOut"
@@ -442,7 +451,7 @@
 
                 // Phase 2: Camera traces the letter paths (song duration)
                 tl.to({}, {
-                    duration: Math.max(songDuration - 8, 30),
+                    duration: Math.max(songDuration - 13, 25),
                     onUpdate: function() {
                         const p = this.progress();
                         
@@ -456,10 +465,10 @@
                             camera.lookAt(lookTarget);
                             
                             // Cinematic camera roll
-                            camera.rotation.z = Math.sin(p * 25) * 0.12;
+                            camera.rotation.z = Math.sin(p * 25) * 0.08;
                             
                             // Slowly modulate FOV for variety
-                            camera.fov = 65 + Math.sin(p * 8) * 10;
+                            camera.fov = 65 + Math.sin(p * 8) * 8;
                             camera.updateProjectionMatrix();
                         }
                     },
@@ -521,6 +530,7 @@
         // SCROLL — ribbons slide to side like acko.net
         // ═══════════════════════════════════════════════
         if (typeof ScrollTrigger !== 'undefined') {
+            let wasScrolledDown = false;
             ScrollTrigger.create({
                 trigger: 'body',
                 start: 'top top',
@@ -540,10 +550,19 @@
                         introTimeline = null;
                         introPlaying = false;
                     }
+
+                    // Hide popups when scrolling
+                    if (p > 0.01) {
+                        wasScrolledDown = true;
+                        if (songPopup) songPopup.classList.remove('active');
+                        const scrollStopMsg = document.getElementById('scroll-stop-msg');
+                        if (scrollStopMsg) scrollStopMsg.classList.remove('active');
+                    }
                     
                     if (canvas) {
-                        canvas.style.opacity = Math.max(0, 1 - p * 1.8);
-                        canvas.style.pointerEvents = (p > 0.5) ? 'none' : 'auto';
+                        // Acko-style: ribbon cluster FADES at TOP but stays fully visible until gone
+                        canvas.style.opacity = Math.max(0, 1 - p * 2.5);
+                        canvas.style.pointerEvents = (p > 0.4) ? 'none' : 'auto';
                         
                         // ACKO BEHAVIOR: ribbons slide UP and to the LEFT on scroll
                         ribbonsGroup.position.x = -p * 120;
@@ -555,8 +574,45 @@
                         ribbonsGroup.rotation.y = -p * 0.3;
                     }
                     if (introOverlay) {
-                        introOverlay.style.opacity = Math.max(0, 1 - p * 2);
-                        introOverlay.style.pointerEvents = (p > 0.3) ? 'none' : 'auto';
+                        introOverlay.style.opacity = Math.max(0, 1 - p * 3);
+                        introOverlay.style.pointerEvents = (p > 0.2) ? 'none' : 'auto';
+                    }
+
+                    // SCROLL BACK UP — reset everything to initial state
+                    if (p < 0.01 && wasScrolledDown) {
+                        wasScrolledDown = false;
+                        // Reset ribbon positions
+                        ribbonsGroup.position.set(0, 0, 0);
+                        ribbonsGroup.rotation.set(0, 0, 0);
+                        bgPlane.position.z = -300;
+                        // Reset camera
+                        camera.position.set(0, 0, 120);
+                        camera.lookAt(0, 0, 0);
+                        camera.fov = 60;
+                        camera.updateProjectionMatrix();
+                        // Show canvas and overlay
+                        if (canvas) {
+                            canvas.style.opacity = '1';
+                            canvas.style.pointerEvents = 'auto';
+                            canvas.style.display = 'block';
+                        }
+                        if (introOverlay) {
+                            introOverlay.style.opacity = '1';
+                            introOverlay.style.pointerEvents = 'auto';
+                            introOverlay.style.display = 'block';
+                            introOverlay.classList.remove('playing');
+                        }
+                        // Re-show play button and masthead
+                        if (playBtn) gsap.set(playBtn, { opacity: 1, scale: 1, pointerEvents: 'auto' });
+                        const mTitle = document.querySelector('.masthead-title');
+                        const mAuthor = document.querySelector('.masthead-author');
+                        const mArrow = document.getElementById('acko-arrow');
+                        const mHead = document.getElementById('acko-masthead');
+                        if (mTitle) gsap.set(mTitle, { opacity: 1 });
+                        if (mAuthor) gsap.set(mAuthor, { opacity: 1 });
+                        if (mArrow) gsap.set(mArrow, { opacity: 1 });
+                        if (mHead) gsap.set(mHead, { opacity: 1 });
+                        introPlaying = false;
                     }
                 }
             });
@@ -629,18 +685,18 @@
                         const nz = oz + Math.sin(time * noiseSpeed * 2 + idx * 0.5 + i * 0.001) * noiseScale * 4;
 
                         if (currentHover > 0.01 && !introPlaying) {
-                            // "SUCKING" into play button — gravitational pull
-                            const intensity = Math.pow(currentHover, 1.8);
+                            // "SUCKING" into play button — SHARP CONVERGENCE like acko
+                            const intensity = Math.pow(currentHover, 1.2); // More aggressive curve
                             const dx = playTarget.x - nx;
                             const dy = playTarget.y - ny;
                             const dz = playTarget.z - nz;
                             const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                            const falloff = Math.min(1, 200 / (dist + 1)); // Closer = stronger pull
+                            const falloff = Math.min(1, 350 / (dist + 1)); // Wider reach, stronger pull
                             const pull = intensity * falloff;
                             pos.setXYZ(i, 
-                                nx + dx * pull * 0.6, 
-                                ny + dy * pull * 0.6, 
-                                nz + dz * pull * 0.3
+                                nx + dx * pull * 0.92,  // Nearly full convergence to point
+                                ny + dy * pull * 0.92, 
+                                nz + dz * pull * 0.85
                             );
                         } else if (currentHover < -0.01) {
                             // Explosion outward

@@ -1352,8 +1352,8 @@ a.exp-company:hover { opacity: 0.7; }
     z-index: 1000000 !important;
     background: transparent;
     pointer-events: none;
-    display: block;
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
+    display: none; /* Hidden during terminal boot, shown by JS after boot */
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .intro-overlay.hidden {
     opacity: 0 !important;
@@ -1509,7 +1509,7 @@ a.exp-company:hover { opacity: 0.7; }
     border-color: rgba(0, 0, 0, 0.15);
 }
 
-/* ── Scroll-to-stop Message — upper right dark pill (like acko) ── */
+/* ── Scroll-to-stop Message — upper right pill (unified with song popup) ── */
 .scroll-stop-msg {
     position: absolute;
     top: 20px;
@@ -1518,7 +1518,7 @@ a.exp-company:hover { opacity: 0.7; }
     font-size: 13px;
     font-weight: 400;
     color: #e0e0e0;
-    padding: 10px 20px;
+    padding: 10px 18px;
     background: rgba(30, 30, 30, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
