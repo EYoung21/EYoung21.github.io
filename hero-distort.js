@@ -55,6 +55,9 @@
         weights: { lockin: 1, chicken: 0, eggml: 0, algo: 0, mosquito: 0 },
         bands: { sub: 0, bass: 0, mid: 0, treble: 0, air: 0, spectralFlux: 0, beatFlash: 0 },
         chapterIdx: 0,
+        renderedChapterIdx: 0,
+        scrambleStart: 0,
+        particles: [],
         beatShock: 0,
         colorShock: 0,
         palette: { bg: '#0a0b0d', fg: '#32f08c', line: 'rgba(255,255,255,0.08)' },
@@ -216,12 +219,24 @@
 
     function drawDriftingIcons(chapter) {
         ensureDrifters(chapter.key);
-        const lift = 0.45 + state.bands.bass * 0.75 + state.bands.spectralFlux * 0.4;
+        
+        // Smooth the lift so the icons glide instead of jerking
+        const targetLift = 0.45 + state.bands.bass * 0.75 + state.bands.spectralFlux * 0.4;
+        state.smoothLift = state.smoothLift || 0;
+        state.smoothLift += (targetLift - state.smoothLift) * 0.15;
+        
         const dominantKey = chapter.key;
         state.iconDrifters.forEach((d, i) => {
             if (d.key !== dominantKey) d.key = dominantKey;
-            d.x += d.speed * (0.8 + lift * 2.1);
-            d.y += Math.sin(state.tSong * 2.2 + d.phase + i * 0.2) * (0.15 + state.bands.air * 0.65);
+            
+            // Approach target speed smoothly
+            const targetSpeed = d.speed * (1.2 + state.smoothLift * 4.0);
+            d.currentSpeed = d.currentSpeed || targetSpeed;
+            d.currentSpeed += (targetSpeed - d.currentSpeed) * 0.08;
+            d.x += d.currentSpeed;
+            
+            d.y += Math.sin(state.tSong * 2.5 + d.phase + i * 0.3) * (0.2 + state.bands.air * 0.85);
+            
             if (d.x - d.size * 0.55 > state.w) {
                 const reset = spawnDrifter(-d.size - 40 - Math.random() * 160, dominantKey);
                 d.key = dominantKey;
@@ -229,11 +244,21 @@
                 d.y = reset.y;
                 d.size = reset.size;
                 d.speed = reset.speed;
+                d.currentSpeed = 0;
                 d.phase = reset.phase;
             }
-            const alphaBase = d.key === dominantKey ? 0.22 : 0.12;
-            const alpha = alphaBase + state.bands.beatFlash * 0.2;
+            
+            // Decrease transparency (increase alpha base) and add dynamic flash
+            const alphaBase = d.key === dominantKey ? 0.65 : 0.35;
+            const alpha = Math.min(1.0, alphaBase + state.bands.beatFlash * 0.35);
+            
+            srcCtx.save();
+            if (d.key === dominantKey) {
+                srcCtx.shadowColor = rgb(chapter.tint, alpha);
+                srcCtx.shadowBlur = 10 + state.bands.beatFlash * 25;
+            }
             drawChipIcon(srcCtx, d.key, d.x, d.y, d.size, rgb(chapter.tint, alpha), d.key === dominantKey);
+            srcCtx.restore();
         });
     }
 
@@ -355,6 +380,17 @@
         }
     }
 
+    function scrambleString(txt, progress) {
+        if (progress <= 0) return txt;
+        let res = '';
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!<>-_\\/[]{}—=+*^?#_';
+        for (let i = 0; i < txt.length; i++) {
+            if (txt[i] === ' ' || Math.random() > progress) res += txt[i];
+            else res += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return res;
+    }
+
     function drawHeroText() {
         // Skip drawing hero text when dissolve is well underway
         const d = Math.max(0, Math.min(1, state.dissolveP || 0));
@@ -369,13 +405,26 @@
             srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
         }
         const huePulse = state.playing ? Math.min(1, state.bands.spectralFlux * 0.9 + state.beatShock * 0.7) : 0;
-        srcCtx.fillStyle = huePulse > 0.02 ? mix('#c8ffe8', chapter.tint, Math.min(1, huePulse)) : state.palette.fg;
+        const baseColor = huePulse > 0.02 ? mix('#c8ffe8', chapter.tint, Math.min(1, huePulse)) : state.palette.fg;
         srcCtx.textAlign = 'left';
         srcCtx.textBaseline = 'middle';
         const pulseY = state.playing ? 8 + state.bands.bass * 18 + state.beatShock * 14 : 2;
         const y = state.h * 0.5 + Math.sin(performance.now() * 0.0016) * pulseY;
         const split = state.playing ? Math.min(42, state.bands.treble * 16 + state.bands.spectralFlux * 28 + state.beatShock * 24) : 0;
         const textStartX = leftPad;
+
+        const drawAberrationText = (text, tx, ty, fillBase) => {
+            const aberration = state.playing ? Math.min(18, state.bands.beatFlash * 55 * state.beatShock) : 0;
+            if (aberration > 1.0) {
+                srcCtx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+                srcCtx.fillText(text, tx - aberration, ty);
+                srcCtx.fillStyle = 'rgba(255, 0, 255, 0.7)';
+                srcCtx.fillText(text, tx + aberration, ty);
+            }
+            srcCtx.fillStyle = fillBase;
+            srcCtx.fillText(text, tx, ty);
+        };
+
         if (split > 0.1) {
             let splitSize = baseSize;
             srcCtx.font = `900 ${splitSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
@@ -393,14 +442,15 @@
             }
             const xEli = textStartX;
             const xYoung = xEli + wEli + desiredGap;
-            srcCtx.fillStyle = rgb(chapter.tint, 0.85);
-            srcCtx.fillText('ELI', xEli, y);
-            srcCtx.fillText('YOUNG', xYoung, y);
+            
+            drawAberrationText('ELI', xEli, y, rgb(chapter.tint, 0.85));
+            drawAberrationText('YOUNG', xYoung, y, rgb(chapter.tint, 0.85));
+            
             srcCtx.fillStyle = rgb('#ffffff', 0.12 + split / 80);
             srcCtx.fillRect(xEli + wEli + desiredGap * 0.5 - 1, y - splitSize * 0.34, 2, splitSize * 0.64);
         } else {
             srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
-            srcCtx.fillText('ELI YOUNG', textStartX, y);
+            drawAberrationText('ELI YOUNG', textStartX, y, baseColor);
         }
 
         if (!state.playing) return;
@@ -413,30 +463,170 @@
                 overlayX = Math.max(36, Math.min(state.w * 0.52, right + 22));
             }
         }
+        
+        const scrambleP = Math.max(0, 1 - (performance.now() - (state.scrambleStart || 0)) / 450);
+
         const iconSize = Math.max(22, Math.min(46, state.w * 0.027));
         srcCtx.font = `800 ${iconSize}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         srcCtx.textAlign = 'left';
         srcCtx.fillStyle = rgb(chapter.tint, 0.26 + state.bands.bass * 0.18 + state.bands.beatFlash * 0.2);
-        srcCtx.fillText(`[${chapter.icon}]`, overlayX, Math.max(84, state.h * 0.6));
+        srcCtx.fillText(scrambleString(`[${chapter.icon}]`, scrambleP), overlayX, Math.max(84, state.h * 0.6));
 
         srcCtx.font = `700 ${Math.max(14, Math.min(24, state.w * 0.018))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         srcCtx.textAlign = 'left';
         srcCtx.fillStyle = rgb(chapter.tint, 0.84 + state.bands.spectralFlux * 0.15);
-        srcCtx.fillText(`// ${chapter.label}`, overlayX, Math.max(110, state.h * 0.66));
+        srcCtx.fillText(scrambleString(`// ${chapter.label}`, scrambleP), overlayX, Math.max(110, state.h * 0.66));
 
         srcCtx.font = `600 ${Math.max(12, Math.min(20, state.w * 0.015))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
         chapter.lines.forEach((line, i) => {
             const phase = ((state.tSong * 1000 + i * 120) % 1000) / 1000;
             const alpha = 0.42 + (state.bands.spectralFlux || 0) * 0.56 + state.beatShock * 0.22 + Math.sin(phase * Math.PI * 2) * 0.16;
             srcCtx.fillStyle = rgb(chapter.tint, Math.max(0.3, Math.min(0.95, alpha)));
-            srcCtx.fillText(line, overlayX, Math.max(138, state.h * 0.72) + i * 26);
+            srcCtx.fillText(scrambleString(line, scrambleP), overlayX, Math.max(138, state.h * 0.72) + i * 26);
         });
         drawDriftingIcons(chapter);
+    }
+
+    function drawWavelengths() {
+        if (!state.playing) return;
+        const d = Math.max(0, Math.min(1, state.dissolveP || 0));
+        const lineAlpha = Math.max(0, 1 - d * 2);
+        if (lineAlpha <= 0.01) return;
+
+        srcCtx.save();
+        const chapter = chapters[state.chapterIdx];
+        const color = chapter.tint;
+        const baseline = state.h * 0.88; 
+
+        // Main EPG trace
+        srcCtx.beginPath();
+        srcCtx.strokeStyle = color;
+        srcCtx.lineWidth = Math.max(1, state.w * 0.0012);
+        srcCtx.lineJoin = 'round';
+        srcCtx.globalAlpha = lineAlpha * 0.6;
+
+        const points = Math.max(100, Math.floor(state.w / 5));
+        const step = state.w / points;
+        
+        const time = performance.now() * 0.003;
+        const b = state.bands.bass || 0;
+        const m = state.bands.mid || 0;
+        const t = state.bands.treble || 0;
+        const flux = state.bands.spectralFlux || 0;
+
+        for (let i = 0; i <= points; i++) {
+            const x = i * step;
+            const normX = i / points;
+            
+            let wave = 0;
+            wave += Math.sin(normX * 8 - time * 1.5) * b * 65; 
+            wave += Math.sin(normX * 35 + time * 2) * m * 35; 
+            wave += Math.sin(normX * 90 - time * 4) * t * 18; 
+            wave += (pseudoRand(i * 13 + Math.floor(time * 3)) - 0.5) * flux * 40;
+            
+            const envelope = Math.sin(normX * Math.PI);
+            let y = baseline - (wave * envelope);
+            
+            // Pointer repulsion
+            if (state.pointerX > 0 && state.pointerY > 0) {
+                const dx = x - state.pointerX;
+                const dy = y - state.pointerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const repulseRad = 150 + state.bands.beatFlash * 80;
+                if (dist < repulseRad) {
+                    const force = Math.pow(1 - dist / repulseRad, 2);
+                    y += force * (130 + state.bands.spectralFlux * 60); 
+                }
+            }
+            
+            if (i === 0) srcCtx.moveTo(x, y);
+            else srcCtx.lineTo(x, y);
+        }
+        srcCtx.stroke();
+
+        // Secondary fainter EPG trace (shifted phase)
+        srcCtx.beginPath();
+        srcCtx.globalAlpha = lineAlpha * 0.25;
+        for (let i = 0; i <= points; i++) {
+            const x = i * step;
+            const normX = i / points;
+            let wave = 0;
+            wave += Math.sin(normX * 12 - time * 1.8) * b * 50; 
+            wave += Math.sin(normX * 42 + time * 2.5) * m * 25; 
+            wave += Math.sin(normX * 110 - time * 4.5) * t * 12; 
+            wave += (pseudoRand(i * 17 + Math.floor(time * 4)) - 0.5) * flux * 25;
+            const envelope = Math.sin(normX * Math.PI);
+            let y = baseline - (wave * envelope);
+            
+            // Pointer repulsion
+            if (state.pointerX > 0 && state.pointerY > 0) {
+                const dx = x - state.pointerX;
+                const dy = y - state.pointerY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const repulseRad = 150 + state.bands.beatFlash * 80;
+                if (dist < repulseRad) {
+                    const force = Math.pow(1 - dist / repulseRad, 2);
+                    y += force * (80 + state.bands.spectralFlux * 40); 
+                }
+            }
+            
+            if (i === 0) srcCtx.moveTo(x, y);
+            else srcCtx.lineTo(x, y);
+        }
+        srcCtx.stroke();
+
+        // Hyperspectral style vertical bounds
+        srcCtx.globalAlpha = lineAlpha * 0.15;
+        const specBars = Math.floor(state.w / 12);
+        const specStep = state.w / specBars;
+        for (let i = 0; i < specBars; i++) {
+            const x = i * specStep;
+            const normX = i / specBars;
+            let intensity = 0;
+            if (normX < 0.3) intensity = b;
+            else if (normX < 0.7) intensity = m;
+            else intensity = t;
+            
+            intensity *= 0.3 + 0.7 * Math.sin(i * 0.8 - time * 0.8);
+            
+            if (intensity > 0.08) {
+                const barH = intensity * 180;
+                const g = srcCtx.createLinearGradient(0, baseline, 0, baseline - barH);
+                g.addColorStop(0, mix(state.palette.bg, color, 0.85));
+                g.addColorStop(1, state.palette.bg);
+                srcCtx.fillStyle = g;
+                srcCtx.fillRect(x, baseline - barH, specStep * 0.7, barH);
+            }
+        }
+        srcCtx.restore();
+    }
+
+    function updateAndDrawParticles() {
+        if (!state.particles) state.particles = [];
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+            let p = state.particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.35; // gravity
+            p.life -= 0.02 + Math.random() * 0.02;
+            if (p.life <= 0) {
+                state.particles.splice(i, 1);
+                continue;
+            }
+            srcCtx.fillStyle = p.color;
+            srcCtx.globalAlpha = p.life;
+            srcCtx.beginPath();
+            srcCtx.arc(p.x, p.y, p.life * 2.5, 0, Math.PI * 2);
+            srcCtx.fill();
+        }
+        srcCtx.globalAlpha = 1;
     }
 
     function drawSource() {
         srcCtx.clearRect(0, 0, state.w, state.h);
         drawBackgroundGrid();
+        updateAndDrawParticles();
+        drawWavelengths();
         drawHeroText();
     }
 
@@ -475,6 +665,25 @@
                 tiles[idx].dy += Math.sin(angle) * f * (chaos + Math.random() * 0.35) * 0.7;
             }
         }
+        
+        // Spawn sparks on drag and strong transient features
+        if (state.playing && state.bands.beatFlash > 0.4) {
+            if (Math.random() < state.bands.beatFlash) {
+                const chapter = chapters[state.chapterIdx];
+                for (let i = 0; i < 4; i++) {
+                    state.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 12 + (x - (state.pointerLastX || x)) * 0.4,
+                        vy: (Math.random() - 0.5) * 12 + (y - (state.pointerLastY || y)) * 0.4,
+                        life: 1.0,
+                        color: Math.random() > 0.4 ? chapter.tint : '#ffffff'
+                    });
+                }
+            }
+        }
+        state.pointerLastX = x;
+        state.pointerLastY = y;
     }
 
     function distortStep(now) {
@@ -577,7 +786,12 @@
                 state.motion = Math.min(360, state.motion + 28 + incomingBeat * 80 + state.bands.spectralFlux * 65);
             }
         }
-        state.chapterIdx = pickChapterIndex(state.weights);
+        const newChapterIdx = pickChapterIndex(state.weights);
+        if (state.renderedChapterIdx !== newChapterIdx) {
+            state.renderedChapterIdx = newChapterIdx;
+            state.scrambleStart = performance.now();
+        }
+        state.chapterIdx = newChapterIdx;
         applyThemePalette();
     });
 
