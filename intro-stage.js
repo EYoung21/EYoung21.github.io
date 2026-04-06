@@ -1031,9 +1031,9 @@
         if (!handoffEl) return;
         const p = scrollP;
         const dissolveP = Math.max(0, Math.min(1, (p - 0.38) / 0.34));
-        const sidelineT = Math.min(1, Math.max(0, (p - 0.1) / 0.62));
-        const tyVh = -sidelineT * 46;
-        const sc = (1 - sidelineT * 0.54) * (1 - dissolveP * 0.2);
+        // Keep the intro stage fixed in-place; transition should be dissolve-only.
+        const tyVh = 0;
+        const sc = 1 - dissolveP * 0.08;
         const opacity = dissolveP > 0.96 ? Math.max(0, 1 - (dissolveP - 0.96) / 0.04) : 1;
         const ent = easeOutCubic(Math.min(1, introEntranceT / 1.14));
         const flowInX = prefersReducedMotion ? 0 : (1 - ent) * 0.32 * window.innerWidth;

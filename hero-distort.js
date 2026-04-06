@@ -189,10 +189,11 @@
         context.restore();
     }
 
-    function spawnDrifter(xOverride) {
+    function spawnDrifter(xOverride, keyOverride) {
         const keys = ['lockin', 'chicken', 'eggml', 'algo', 'mosquito'];
+        const chosenKey = keyOverride || keys[Math.floor(Math.random() * keys.length)];
         return {
-            key: keys[Math.floor(Math.random() * keys.length)],
+            key: chosenKey,
             x: typeof xOverride === 'number' ? xOverride : -120 - Math.random() * 420,
             y: state.h * (0.22 + Math.random() * 0.58),
             size: Math.max(120, Math.min(280, state.w * (0.12 + Math.random() * 0.08))),
@@ -201,25 +202,26 @@
         };
     }
 
-    function ensureDrifters() {
+    function ensureDrifters(chapterKey) {
         const target = state.w < 900 ? 4 : 6;
         if (state.iconDrifters.length === target) return;
         state.iconDrifters = [];
         for (let i = 0; i < target; i += 1) {
-            state.iconDrifters.push(spawnDrifter(-150 - i * (state.w / Math.max(1, target))));
+            state.iconDrifters.push(spawnDrifter(-150 - i * (state.w / Math.max(1, target)), chapterKey));
         }
     }
 
     function drawDriftingIcons(chapter) {
-        ensureDrifters();
+        ensureDrifters(chapter.key);
         const lift = 0.45 + state.bands.bass * 0.75 + state.bands.spectralFlux * 0.4;
         const dominantKey = chapter.key;
         state.iconDrifters.forEach((d, i) => {
+            if (d.key !== dominantKey) d.key = dominantKey;
             d.x += d.speed * (0.8 + lift * 2.1);
             d.y += Math.sin(state.tSong * 2.2 + d.phase + i * 0.2) * (0.15 + state.bands.air * 0.65);
             if (d.x - d.size * 0.55 > state.w) {
-                const reset = spawnDrifter(-d.size - 40 - Math.random() * 160);
-                d.key = Math.random() > 0.6 ? dominantKey : reset.key;
+                const reset = spawnDrifter(-d.size - 40 - Math.random() * 160, dominantKey);
+                d.key = dominantKey;
                 d.x = reset.x;
                 d.y = reset.y;
                 d.size = reset.size;
