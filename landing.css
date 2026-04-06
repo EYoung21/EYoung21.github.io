@@ -68,6 +68,11 @@ body::after {
     opacity: 0.3;
     mix-blend-mode: overlay;
 }
+html[data-theme="light"] body::after,
+body[data-theme="light"]::after {
+    opacity: 0.08;
+    mix-blend-mode: normal;
+}
 
 ::selection { background: var(--accent); color: var(--bg); }
 
@@ -231,7 +236,41 @@ body[data-theme="light"] .theme-toggle .fa-sun {
 }
 html[data-theme="light"] .nav,
 body[data-theme="light"] .nav {
-    background: rgba(255,255,255,0.6);
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+}
+html[data-theme="light"] .nav-link,
+body[data-theme="light"] .nav-link {
+    color: #475569;
+}
+html[data-theme="light"] .nav-link:hover,
+body[data-theme="light"] .nav-link:hover {
+    color: #0f172a;
+}
+html[data-theme="light"] .nav-logo,
+body[data-theme="light"] .nav-logo {
+    color: #16a34a;
+}
+html[data-theme="light"] .nav-resume,
+body[data-theme="light"] .nav-resume {
+    border-color: #16a34a;
+    color: #15803d;
+}
+html[data-theme="light"] .nav-resume:hover,
+body[data-theme="light"] .nav-resume:hover {
+    background: #16a34a;
+    color: #ffffff;
+}
+html[data-theme="light"] .theme-toggle,
+body[data-theme="light"] .theme-toggle {
+    border-color: rgba(15, 23, 42, 0.16);
+    color: #334155;
+}
+html[data-theme="light"] .theme-toggle:hover,
+body[data-theme="light"] .theme-toggle:hover {
+    border-color: #16a34a;
+    color: #15803d;
 }
 
 html[data-theme="light"] .terminal-loader,
@@ -1199,6 +1238,12 @@ a.exp-company:hover { opacity: 0.7; }
     background: #000;
     pointer-events: none;
 }
+html[data-theme="light"] .blob-bg,
+body[data-theme="light"] .blob-bg {
+    background: radial-gradient(circle at 20% 15%, rgba(134, 239, 172, 0.28), transparent 40%),
+                radial-gradient(circle at 85% 10%, rgba(147, 197, 253, 0.2), transparent 44%),
+                linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%);
+}
 .blob {
     position: absolute;
     filter: blur(80px);
@@ -1225,6 +1270,21 @@ a.exp-company:hover { opacity: 0.7; }
     top: 40%; left: 30%;
     animation-delay: -10s;
     animation-duration: 22s;
+}
+html[data-theme="light"] .blob-1,
+body[data-theme="light"] .blob-1 {
+    background: rgba(34, 197, 94, 0.14);
+    opacity: 0.38;
+}
+html[data-theme="light"] .blob-2,
+body[data-theme="light"] .blob-2 {
+    background: rgba(59, 130, 246, 0.11);
+    opacity: 0.3;
+}
+html[data-theme="light"] .blob-3,
+body[data-theme="light"] .blob-3 {
+    background: rgba(16, 185, 129, 0.1);
+    opacity: 0.28;
 }
 
 @keyframes floatBlob {
