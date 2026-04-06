@@ -60,17 +60,18 @@
         const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
         const isDark = () => getTheme() === 'dark';
 
-        // Theme-aware colors — USER'S GREEN PALETTE, not acko's orange/teal
+        // Theme-aware colors — User's GREEN palette with acko-quality rendering
+        // Greens, whites, cyans — vivid on dark, muted on light
         const themeColors = {
             dark: {
                 bg: 0x050505,
                 stripe1: '#0a0a0a', stripe2: '#111111',
-                // Bright greens, whites, cyans — all visible on dark bg
                 palette: [0x00ff66, 0x00cc55, 0x22c55e, 0x44ffaa, 0x88ffcc, 0x33ddaa, 0xffffff, 0x00e85c, 0x66ffbb, 0xaaffdd],
-                ambient: 0x222222, ambientIntensity: 0.6,
-                dirLight: 0xffffff, dirIntensity: 0.8,
-                pointLight: 0x00ff66, pointIntensity: 3.5,
-                ribbonRoughness: 0.25, ribbonMetalness: 0.4,
+                ambient: 0x222222, ambientIntensity: 0.7,
+                dirLight: 0xffffff, dirIntensity: 0.9,
+                pointLight: 0x00ff66, pointIntensity: 3.0,
+                ribbonRoughness: 0.3, ribbonMetalness: 0.3,
+                fogColor: 0x050505, fogNear: 100, fogFar: 500,
             },
             light: {
                 bg: 0xf0f3f6,
@@ -80,6 +81,7 @@
                 dirLight: 0xffffff, dirIntensity: 0.6,
                 pointLight: 0x00ff66, pointIntensity: 2.5,
                 ribbonRoughness: 0.4, ribbonMetalness: 0.15,
+                fogColor: 0xf0f3f6, fogNear: 120, fogFar: 600,
             }
         };
 
@@ -106,53 +108,68 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(tc.bg);
+        // Fog for depth — gives that acko.net depth-of-field feel
+        scene.fog = new THREE.Fog(tc.fogColor, tc.fogNear, tc.fogFar);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 4000);
         camera.position.set(0, 0, 120);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = false;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
 
-        // Lighting — richer setup for flat ribbons
+        // Lighting — soft, warm, multi-directional (acko-style non-photorealistic)
         const ambientLight = new THREE.AmbientLight(tc.ambient, tc.ambientIntensity);
         scene.add(ambientLight);
         
+        // Main key light — warm, from upper right
         const dirLight = new THREE.DirectionalLight(tc.dirLight, tc.dirIntensity);
-        dirLight.position.set(50, 80, 100);
+        dirLight.position.set(60, 80, 100);
+        dirLight.castShadow = true;
         scene.add(dirLight);
 
-        const dirLight2 = new THREE.DirectionalLight(0x00ff66, 0.3);
-        dirLight2.position.set(-50, -40, 60);
+        // Fill light — subtle green tint from the left
+        const dirLight2 = new THREE.DirectionalLight(0x00ff66, 0.25);
+        dirLight2.position.set(-60, -30, 50);
         scene.add(dirLight2);
+
+        // Rim light from behind — creates edge highlights
+        const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.25);
+        dirLight3.position.set(0, 0, -80);
+        scene.add(dirLight3);
         
-        const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 600);
+        const mouseLight = new THREE.PointLight(tc.pointLight, tc.pointIntensity, 400);
         mouseLight.position.set(0, 0, 100);
         scene.add(mouseLight);
 
-        // Acko Background — subtle diagonal stripes
+        // Acko Background — subtle diagonal stripes (softer, warmer)
         const buildStripeBg = () => {
             const stripeCanvas = document.createElement('canvas');
-            stripeCanvas.width = 128; stripeCanvas.height = 128;
+            stripeCanvas.width = 256; stripeCanvas.height = 256;
             const ctx = stripeCanvas.getContext('2d');
             const colors = isDark() ? themeColors.dark : themeColors.light;
             ctx.fillStyle = colors.stripe1;
-            ctx.fillRect(0, 0, 128, 128);
+            ctx.fillRect(0, 0, 256, 256);
             ctx.strokeStyle = colors.stripe2;
-            ctx.lineWidth = 14;
+            ctx.lineWidth = 20;
+            ctx.globalAlpha = 0.6;
             ctx.beginPath();
-            for (let j = -2; j < 4; j++) {
-                ctx.moveTo(-64 + j * 64, 64 + j * 64);
-                ctx.lineTo(64 + j * 64, -64 + j * 64);
+            for (let j = -4; j < 8; j++) {
+                ctx.moveTo(-128 + j * 64, 128 + j * 64);
+                ctx.lineTo(128 + j * 64, -128 + j * 64);
             }
             ctx.stroke();
+            ctx.globalAlpha = 1.0;
             return new THREE.CanvasTexture(stripeCanvas);
         };
 
         let stripeTex = buildStripeBg();
         stripeTex.wrapS = stripeTex.wrapT = THREE.RepeatWrapping;
-        stripeTex.repeat.set(80, 80);
+        stripeTex.repeat.set(60, 60);
 
         const bgMaterial = new THREE.MeshBasicMaterial({ map: stripeTex });
         const bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), bgMaterial);
@@ -170,7 +187,7 @@
          * Unlike TubeGeometry (round tubes), this creates wide, flat tape-like bands
          * that match acko.net's ribbon aesthetic — visible front/back faces with depth.
          */
-        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments) {
+        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments, opacity) {
             segments = segments || 200;
             ribbonWidth = ribbonWidth || 6;       // Width of the flat strip (acko uses wide strips)
             ribbonThickness = ribbonThickness || 1.2; // Thickness of the strip edge
@@ -273,6 +290,10 @@
                 roughness: roughness,
                 metalness: metalness,
                 side: THREE.DoubleSide,
+                flatShading: false, // Smooth shading like acko
+                envMapIntensity: 0.4,
+                transparent: true,
+                opacity: opacity || 1.0,
             });
 
             return new THREE.Mesh(geo, mat);
@@ -307,7 +328,7 @@
             const currentPalette = isDark() ? themeColors.dark.palette : themeColors.light.palette;
 
             // ── Build letter ribbons: ONE ribbon per shape outline ──
-            // CRITICAL: Low Z-depth variation so "Eli Young" is clearly READABLE
+            // VERY LOW Z-depth variation for clean, readable letterforms like acko.net
             shapes.forEach((shape, sIdx) => {
                 const allCurves = [...shape.curves];
                 if (shape.holes) {
@@ -317,15 +338,14 @@
                 // Concatenate all curve points into one continuous 3D path
                 const allShapePoints = [];
                 allCurves.forEach((curve, ci) => {
-                    const pts = curve.getPoints(40);
+                    const pts = curve.getPoints(30); // Fewer points = smoother
                     pts.forEach((p, idx) => {
-                        // Skip duplicate start points (curves join end-to-start)
                         if (ci > 0 && idx === 0) return;
                         allShapePoints.push(new THREE.Vector3(
                             p.x + xOffset,
                             p.y + yOffset,
-                            // LOW Z variation — keeps letters readable like acko.net
-                            Math.sin(allShapePoints.length * 0.08 + sIdx * 1.5) * 3 + Math.cos(allShapePoints.length * 0.04) * 2
+                            // VERY subtle Z — just enough depth to feel 3D, but readable
+                            Math.sin(allShapePoints.length * 0.04 + sIdx * 1.2) * 1.5 + Math.cos(allShapePoints.length * 0.02) * 0.8
                         ));
                     });
                 });
@@ -336,52 +356,74 @@
                 });
 
                 if (allShapePoints.length >= 3) {
-                    const curvePath = new THREE.CatmullRomCurve3(allShapePoints);
+                    const curvePath = new THREE.CatmullRomCurve3(allShapePoints, false, 'centripetal', 0.3);
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        5 + Math.random() * 4,    // width 5–9 (wide, flat strips)
-                        1.0 + Math.random() * 0.8, // thickness 1.0–1.8 (thin edge)
+                        6 + Math.random() * 5,    // width 6–11 (wider, flatter strips like acko)
+                        0.6 + Math.random() * 0.4, // thickness 0.6–1.0 (THINNER edge — more tape-like)
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
                         tc.ribbonMetalness,
-                        Math.min(allShapePoints.length * 2, 300)
+                        Math.min(allShapePoints.length * 2, 250)
                     );
                     letterRibbons.push(ribbon);
                     ribbonsGroup.add(ribbon);
                 }
             });
 
-            // ── Build CHAOTIC background ribbons — fewer, spread further out ──
-            const chaosCount = 12;
+            // ── Build dense flowing background ribbons — like acko.net's architectural density ──
+            // Acko keeps ribbons everywhere so the camera ALWAYS has geometry in view
+            const chaosCount = 22; // Dense composition — fills the scene
             for (let c = 0; c < chaosCount; c++) {
-                const numPts = 4 + Math.floor(Math.random() * 6);
+                const numPts = 7 + Math.floor(Math.random() * 5); // 7-11 points = longer, smoother
                 const chaosPts = [];
-                // Push chaos ribbons FURTHER from center so they frame the text, not obscure it
+                // Mix of ribbons: some weave through text, some arc around it
                 const angle = (c / chaosCount) * Math.PI * 2;
-                const radius = 60 + Math.random() * 80;
-                const cx = Math.cos(angle) * radius;
-                const cy = Math.sin(angle) * (radius * 0.4);
-                const cz = (Math.random() - 0.5) * 60;
+                const layerType = c % 3; // 0=through-text, 1=around, 2=background
+                let radius, startX, startY, startZ;
+                
+                if (layerType === 0) {
+                    // Through-text ribbons: start outside, pass through center at varied depths
+                    radius = 40 + Math.random() * 30;
+                    startX = Math.cos(angle) * radius;
+                    startY = Math.sin(angle) * (radius * 0.3);
+                    startZ = (Math.random() - 0.5) * 20; // wider z spread
+                } else if (layerType === 1) {
+                    // Close orbit: stay near the text area, at various z layers
+                    radius = 25 + Math.random() * 40;
+                    startX = Math.cos(angle) * radius;
+                    startY = Math.sin(angle) * (radius * 0.4);
+                    startZ = -8 + Math.random() * 30; // z from -8 to +22
+                } else {
+                    // Background layer: wider sweep, creates depth layering
+                    radius = 60 + Math.random() * 60;
+                    startX = Math.cos(angle) * radius;
+                    startY = Math.sin(angle) * (radius * 0.35);
+                    startZ = -10 + Math.random() * 35; // z from -10 to +25
+                }
 
                 for (let j = 0; j < numPts; j++) {
+                    const t = j / (numPts - 1);
+                    const passThrough = layerType === 0 ? Math.sin(t * Math.PI) * 60 : Math.sin(t * Math.PI) * 35;
                     chaosPts.push(new THREE.Vector3(
-                        cx + (Math.random() - 0.5) * 100,
-                        cy + (Math.random() - 0.5) * 50,
-                        cz + (Math.random() - 0.5) * 40 + Math.sin(j * 1.5) * 15
+                        startX + (Math.random() - 0.5) * 60 + passThrough,
+                        startY + (Math.random() - 0.5) * 25 + Math.cos(t * Math.PI) * 10,
+                        startZ + (Math.random() - 0.5) * 15 + Math.sin(j * 1.2) * 8
                     ));
                 }
 
-                const chaosCurve = new THREE.CatmullRomCurve3(chaosPts);
+                const chaosCurve = new THREE.CatmullRomCurve3(chaosPts, false, 'centripetal', 0.4);
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    4 + Math.random() * 5,       // width 4–9 (flat strip)
-                    0.8 + Math.random() * 0.8,    // thickness 0.8–1.6
+                    5 + Math.random() * 7,       // width 5–12 (wide, flowing strips)
+                    0.5 + Math.random() * 0.5,    // thickness 0.5–1.0 (thin tape edge)
                     chaosColor,
-                    tc.ribbonRoughness + Math.random() * 0.15,
-                    tc.ribbonMetalness + Math.random() * 0.2,
-                    80
+                    tc.ribbonRoughness + Math.random() * 0.1,
+                    tc.ribbonMetalness + Math.random() * 0.1,
+                    120,
+                    0.7 + Math.random() * 0.2     // opacity 0.7–0.9 (semi-transparent for depth)
                 );
                 chaosRibbons.push(chaosRibbon);
                 ribbonsGroup.add(chaosRibbon);
@@ -390,12 +432,31 @@
             allRibbons = [...letterRibbons, ...chaosRibbons];
 
             // ── Build the master camera path ──
-            if (cameraWaypoints.length > 2) {
-                const cinematicWaypoints = cameraWaypoints.map(wp => 
-                    new THREE.Vector3(wp.x * 1.05, wp.y * 1.05 + 2, wp.z + 15)
-                );
-                masterCameraPath = new THREE.CatmullRomCurve3(cinematicWaypoints, false, 'centripetal', 0.5);
-                console.log(`Camera path built with ${cinematicWaypoints.length} waypoints tracing all letters`);
+            // ACKO-STYLE: Camera flies FORWARD through the ribbon geometry,
+            // weaving in a serpentine pattern. This ensures ribbons pass by on
+            // all sides instead of the camera orbiting a fixed center.
+            {
+                const flyWaypoints = [];
+                const totalPoints = 200; // high resolution for smooth motion
+                
+                for (let i = 0; i < totalPoints; i++) {
+                    const t = i / totalPoints;
+                    
+                    // X: serpentine weave left-to-right through the text extent
+                    const x = Math.sin(t * Math.PI * 5) * 25 + Math.cos(t * Math.PI * 3.3) * 10;
+                    
+                    // Y: gentle up-down undulation
+                    const y = Math.sin(t * Math.PI * 3.7) * 12 + Math.cos(t * Math.PI * 6.1) * 5;
+                    
+                    // Z: forward sweep through the ribbon depth layers
+                    // Goes from 30 -> -10 -> 25 -> -5 -> 20 (weaving through layers)
+                    const z = 15 + Math.sin(t * Math.PI * 4.2) * 18 + Math.cos(t * Math.PI * 2.7) * 8;
+                    
+                    flyWaypoints.push(new THREE.Vector3(x, y, z));
+                }
+                
+                masterCameraPath = new THREE.CatmullRomCurve3(flyWaypoints, false, 'centripetal', 0.5);
+                console.log(`Camera fly-through path built with ${totalPoints} points, serpentine weave through ribbon space`);
             }
 
             // ── SWIRL-IN ANIMATION: ribbons fly in from the left ──
@@ -532,25 +593,32 @@
                 const mastheadEl = document.getElementById('acko-masthead');
                 if (mastheadEl) gsap.to(mastheadEl, { opacity: 0, duration: 0.6 });
 
-                // Phase 1: Slow pan CLOSE to "Eli Young" text, revealing the structure (5 seconds)
+                // Phase 1: Slow approach and start entering the geometry (6 seconds)
                 tl.to({}, {
-                    duration: 5,
+                    duration: 6,
                     onUpdate: function() {
                         const p = this.progress();
-                        // Slowly approach the text from z=120 to z=30 (very close, showing ribbon details)
-                        camera.position.z = 120 - p * 90; // 120 -> 30
-                        camera.position.x = Math.sin(p * Math.PI * 0.5) * 15; // gentle arc
-                        camera.position.y = p * 5; // slight rise
+                        // Slowly approach from z=120 to z=25 (entering the ribbon cluster)
+                        camera.position.z = 120 - p * 95; // 120 -> 25
+                        camera.position.x = Math.sin(p * Math.PI * 0.5) * 10; // gentle arc
+                        camera.position.y = p * 3; // slight rise
                         camera.lookAt(0, 0, 0);
-                        camera.fov = 60 + p * 15;
+                        camera.fov = 55 + p * 20; // widen FOV as we enter
                         camera.updateProjectionMatrix();
+                        
+                        // Bring fog close as camera enters geometry — creates depth atmosphere
+                        if (scene.fog) {
+                            scene.fog.near = 100 - p * 70;  // 100 -> 30
+                            scene.fog.far = 500 - p * 400;  // 500 -> 100
+                        }
                     },
                     ease: "power2.inOut"
                 });
 
-                // Phase 2: Camera traces the letter paths (song duration)
+                // Phase 2: Camera flies THROUGH ribbon geometry (song duration)
+                // Acko-style: camera looks AHEAD along its serpentine path
                 tl.to({}, {
-                    duration: Math.max(songDuration - 13, 25),
+                    duration: Math.max(songDuration - 16, 25),
                     onUpdate: function() {
                         const p = this.progress();
                         
@@ -558,17 +626,29 @@
                             const point = masterCameraPath.getPointAt(p);
                             camera.position.copy(point);
                             
-                            // Look ahead along the path
-                            const lookP = Math.min(p + 0.008, 1);
+                            // Look AHEAD along the flight path (like flying a drone)
+                            // Small lookahead = smoother turns, large = snappier direction changes
+                            const lookP = Math.min(p + 0.02, 0.999);
                             const lookTarget = masterCameraPath.getPointAt(lookP);
+                            
+                            // Add a gentle vertical offset so we're not staring directly down the path
+                            // This creates a slight "looking up/down" that shows more geometry
+                            lookTarget.y += Math.sin(p * 4) * 5;
+                            lookTarget.x += Math.cos(p * 3) * 3;
                             camera.lookAt(lookTarget);
                             
-                            // Cinematic camera roll
-                            camera.rotation.z = Math.sin(p * 25) * 0.08;
+                            // Cinematic camera roll — gentle banking into turns
+                            camera.rotation.z = Math.sin(p * 15) * 0.08;
                             
-                            // Slowly modulate FOV for variety
-                            camera.fov = 65 + Math.sin(p * 8) * 8;
+                            // Wider FOV for immersion — oscillate gently
+                            camera.fov = 70 + Math.sin(p * 5) * 8;
                             camera.updateProjectionMatrix();
+                            
+                            // Push fog very far during fly-through (fog was washing everything out)
+                            if (scene.fog) {
+                                scene.fog.near = 200;
+                                scene.fog.far = 800;
+                            }
                         }
                     },
                     ease: "none"
@@ -765,30 +845,31 @@
 
                 if (pos && orig) {
                     const isLetter = idx < letterRibbons.length;
-                    const noiseScale = isLetter ? 1.0 : 1.8;
-                    const noiseSpeed = isLetter ? 1.2 : 0.8;
+                    // MUCH gentler breathing — acko ribbons barely move when idle
+                    const noiseScale = isLetter ? 0.3 : 0.8;
+                    const noiseSpeed = isLetter ? 0.4 : 0.3;
 
                     for (let i = 0; i < pos.count; i++) {
                         const ox = orig[i * 3];
                         const oy = orig[i * 3 + 1];
                         const oz = orig[i * 3 + 2];
 
-                        // Organic breathing / floating noise
-                        const nx = ox + Math.sin(time * noiseSpeed + idx * 0.15 + i * 0.002) * noiseScale * 2;
-                        const ny = oy + Math.cos(time * noiseSpeed + idx * 0.15 + i * 0.003) * noiseScale * 2;
-                        const nz = oz + Math.sin(time * noiseSpeed * 2 + idx * 0.5 + i * 0.001) * noiseScale * 4;
+                        // Very subtle organic breathing — keeps letters readable
+                        const nx = ox + Math.sin(time * noiseSpeed + idx * 0.15 + i * 0.002) * noiseScale;
+                        const ny = oy + Math.cos(time * noiseSpeed + idx * 0.15 + i * 0.003) * noiseScale;
+                        const nz = oz + Math.sin(time * noiseSpeed * 1.5 + idx * 0.5 + i * 0.001) * noiseScale * 1.5;
 
                         if (currentHover > 0.01 && !introPlaying) {
                             // "SUCKING" into play button — SHARP CONVERGENCE like acko
-                            const intensity = Math.pow(currentHover, 1.2); // More aggressive curve
+                            const intensity = Math.pow(currentHover, 1.2);
                             const dx = playTarget.x - nx;
                             const dy = playTarget.y - ny;
                             const dz = playTarget.z - nz;
                             const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                            const falloff = Math.min(1, 350 / (dist + 1)); // Wider reach, stronger pull
+                            const falloff = Math.min(1, 350 / (dist + 1));
                             const pull = intensity * falloff;
                             pos.setXYZ(i, 
-                                nx + dx * pull * 0.92,  // Nearly full convergence to point
+                                nx + dx * pull * 0.92,
                                 ny + dy * pull * 0.92, 
                                 nz + dz * pull * 0.85
                             );
@@ -828,7 +909,7 @@
         // Store scene reference for theme updates
         ackoScene = { 
             scene, renderer, camera, ribbonsGroup, bgPlane, bgMaterial,
-            ambientLight, mouseLight, dirLight, dirLight2, themeColors, 
+            ambientLight, mouseLight, dirLight, dirLight2, dirLight3, themeColors, 
             buildStripeBg, stripeTex, letterRibbons, chaosRibbons
         };
     };
@@ -852,8 +933,13 @@
             if (ackoScene) {
                 const tc = isDark ? ackoScene.themeColors.dark : ackoScene.themeColors.light;
                 
-                // Background
+                // Background + Fog
                 ackoScene.scene.background = new THREE.Color(tc.bg);
+                if (ackoScene.scene.fog) {
+                    ackoScene.scene.fog.color.set(tc.fogColor);
+                    ackoScene.scene.fog.near = tc.fogNear;
+                    ackoScene.scene.fog.far = tc.fogFar;
+                }
                 
                 // Stripe texture
                 const newTex = ackoScene.buildStripeBg();
