@@ -140,28 +140,7 @@
     // ── Hero Animation ──
     function animateHero() {
         const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-
-        // Animate each character in the title
-        const titleLines = document.querySelectorAll('.hero-title .line');
-        titleLines.forEach(line => {
-            const text = line.textContent;
-            line.textContent = '';
-            [...text].forEach(char => {
-                const span = document.createElement('span');
-                span.className = 'char';
-                span.textContent = char === ' ' ? '\u00A0' : char;
-                line.appendChild(span);
-            });
-        });
-
-        const allChars = document.querySelectorAll('.hero-title .char');
-        tl.to(allChars, {
-            y: 0,
-            duration: 1.2,
-            stagger: 0.04,
-            ease: 'power4.out',
-        }, 0.1);
-        tl.to('.hero-distort-canvas', { opacity: 1, y: 0, duration: 0.9 }, 0.45);
+        tl.to('.hero-distort-canvas', { opacity: 1, y: 0, duration: 0.9 }, 0.1);
 
         tl.to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8 }, 0.4);
         tl.to('.hero-description', { opacity: 1, y: 0, duration: 0.8 }, 0.6);
