@@ -57,7 +57,8 @@
         chapterIdx: 0,
         beatShock: 0,
         colorShock: 0,
-        palette: { bg: '#0a0b0d', fg: '#32f08c', line: 'rgba(255,255,255,0.08)' }
+        palette: { bg: '#0a0b0d', fg: '#32f08c', line: 'rgba(255,255,255,0.08)' },
+        iconDrifters: []
     };
 
     const slices = [];
@@ -187,6 +188,49 @@
         context.restore();
     }
 
+    function spawnDrifter(xOverride) {
+        const keys = ['lockin', 'chicken', 'eggml', 'algo', 'mosquito'];
+        return {
+            key: keys[Math.floor(Math.random() * keys.length)],
+            x: typeof xOverride === 'number' ? xOverride : -120 - Math.random() * 420,
+            y: state.h * (0.22 + Math.random() * 0.58),
+            size: Math.max(120, Math.min(280, state.w * (0.12 + Math.random() * 0.08))),
+            speed: 0.45 + Math.random() * 1.05,
+            phase: Math.random() * Math.PI * 2
+        };
+    }
+
+    function ensureDrifters() {
+        const target = state.w < 900 ? 4 : 6;
+        if (state.iconDrifters.length === target) return;
+        state.iconDrifters = [];
+        for (let i = 0; i < target; i += 1) {
+            state.iconDrifters.push(spawnDrifter(-150 - i * (state.w / Math.max(1, target))));
+        }
+    }
+
+    function drawDriftingIcons(chapter) {
+        ensureDrifters();
+        const lift = 0.45 + state.bands.bass * 0.75 + state.bands.spectralFlux * 0.4;
+        const dominantKey = chapter.key;
+        state.iconDrifters.forEach((d, i) => {
+            d.x += d.speed * (0.8 + lift * 2.1);
+            d.y += Math.sin(state.tSong * 2.2 + d.phase + i * 0.2) * (0.15 + state.bands.air * 0.65);
+            if (d.x - d.size * 0.55 > state.w) {
+                const reset = spawnDrifter(-d.size - 40 - Math.random() * 160);
+                d.key = Math.random() > 0.6 ? dominantKey : reset.key;
+                d.x = reset.x;
+                d.y = reset.y;
+                d.size = reset.size;
+                d.speed = reset.speed;
+                d.phase = reset.phase;
+            }
+            const alphaBase = d.key === dominantKey ? 0.22 : 0.12;
+            const alpha = alphaBase + state.bands.beatFlash * 0.2;
+            drawChipIcon(srcCtx, d.key, d.x, d.y, d.size, rgb(chapter.tint, alpha), d.key === dominantKey);
+        });
+    }
+
     function pickChapterIndex(weights) {
         let best = 0;
         let bestV = -1;
@@ -261,23 +305,29 @@
     }
 
     function drawHeroText() {
-        const baseSize = Math.max(76, Math.min(286, state.w * 0.215));
+        const leftPad = Math.max(18, state.w * 0.035);
+        let baseSize = Math.max(76, Math.min(286, state.w * 0.215));
         srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
         const chapter = chapters[state.chapterIdx];
+        while (srcCtx.measureText('ELI YOUNG').width > state.w - leftPad * 2 && baseSize > 66) {
+            baseSize *= 0.95;
+            srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
+        }
         const huePulse = state.playing ? Math.min(1, state.bands.spectralFlux * 0.9 + state.beatShock * 0.7) : 0;
         srcCtx.fillStyle = huePulse > 0.02 ? mix('#c8ffe8', chapter.tint, Math.min(1, huePulse)) : state.palette.fg;
-        srcCtx.textAlign = 'center';
+        srcCtx.textAlign = 'left';
         srcCtx.textBaseline = 'middle';
         const pulseY = state.playing ? 8 + state.bands.bass * 18 + state.beatShock * 14 : 2;
         const y = state.h * 0.5 + Math.sin(performance.now() * 0.0016) * pulseY;
         const split = state.playing ? Math.min(42, state.bands.treble * 16 + state.bands.spectralFlux * 28 + state.beatShock * 24) : 0;
+        const textStartX = leftPad;
         if (split > 0.1) {
             let splitSize = baseSize;
             srcCtx.font = `900 ${splitSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
             let wEli = srcCtx.measureText('ELI').width;
             let wYoung = srcCtx.measureText('YOUNG').width;
             const desiredGap = Math.max(22, Math.min(84, state.w * 0.06)) + split * 1.45;
-            const maxAllowed = state.w * 0.9;
+            const maxAllowed = state.w - leftPad * 2;
             const totalWidth = wEli + wYoung + desiredGap;
             if (totalWidth > maxAllowed) {
                 const shrink = Math.max(0.72, maxAllowed / totalWidth);
@@ -286,17 +336,16 @@
                 wEli = srcCtx.measureText('ELI').width;
                 wYoung = srcCtx.measureText('YOUNG').width;
             }
-            const centerX = state.w * 0.5;
-            const xEli = centerX - (desiredGap * 0.5 + wEli * 0.5);
-            const xYoung = centerX + (desiredGap * 0.5 + wYoung * 0.5);
+            const xEli = textStartX;
+            const xYoung = xEli + wEli + desiredGap;
             srcCtx.fillStyle = rgb(chapter.tint, 0.85);
             srcCtx.fillText('ELI', xEli, y);
             srcCtx.fillText('YOUNG', xYoung, y);
             srcCtx.fillStyle = rgb('#ffffff', 0.12 + split / 80);
-            srcCtx.fillRect(state.w * 0.5 - 1, y - splitSize * 0.34, 2, splitSize * 0.64);
+            srcCtx.fillRect(xEli + wEli + desiredGap * 0.5 - 1, y - splitSize * 0.34, 2, splitSize * 0.64);
         } else {
             srcCtx.font = `900 ${baseSize}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
-            srcCtx.fillText('ELI YOUNG', state.w * 0.5, y);
+            srcCtx.fillText('ELI YOUNG', textStartX, y);
         }
 
         if (!state.playing) return;
@@ -327,35 +376,7 @@
             srcCtx.fillStyle = rgb(chapter.tint, Math.max(0.3, Math.min(0.95, alpha)));
             srcCtx.fillText(line, overlayX, Math.max(138, state.h * 0.72) + i * 26);
         });
-
-        const iconKeys = ['lockin', 'chicken', 'eggml', 'algo', 'mosquito'];
-        const activeIconKey = chapter.key;
-        const chipsY = Math.max(212, state.h * 0.84);
-        const chipSize = state.w < 700 ? 26 : 32;
-        const gap = state.w < 700 ? 8 : 10;
-        const chipW = state.w < 700 ? 44 : 50;
-        iconKeys.forEach((key, i) => {
-            const x = overlayX + i * (chipW + gap);
-            const isActive = key === activeIconKey;
-            srcCtx.fillStyle = isActive
-                ? rgb(chapter.tint, 0.36 + state.bands.beatFlash * 0.26)
-                : rgb('#0f172a', 0.46);
-            roundRectPath(srcCtx, x, chipsY, chipW, chipSize, 9);
-            srcCtx.fill();
-            srcCtx.strokeStyle = isActive ? rgb(chapter.tint, 0.9) : rgb('#475569', 0.42);
-            srcCtx.lineWidth = 1;
-            srcCtx.stroke();
-            const bounce = isActive ? Math.sin(state.tSong * 16 + i) * 2.4 * (0.4 + state.bands.beatFlash) : 0;
-            drawChipIcon(
-                srcCtx,
-                key,
-                x + chipW * 0.5,
-                chipsY + chipSize * 0.52 + bounce,
-                chipSize * 0.9,
-                rgb('#f8fafc', isActive ? 0.96 : 0.82),
-                isActive
-            );
-        });
+        drawDriftingIcons(chapter);
     }
 
     function drawSource() {
