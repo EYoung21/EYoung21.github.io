@@ -408,8 +408,8 @@
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        7 + Math.random() * 6,    // width 7–13 (wider, flatter strips like acko)
-                        1.5 + Math.random() * 1.0, // thickness 1.5–2.5 (thicker edges for visible 3D depth)
+                        2.5 + Math.random() * 2,     // width 2.5–4.5 (scaled down so 20pt letters are highly legible!)
+                        0.6 + Math.random() * 0.4,   // thickness 0.6–1.0 (thick enough to be 3D, thin enough to read)
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
                         tc.ribbonMetalness,
@@ -519,11 +519,14 @@
             // ── SWIRL-IN ANIMATION: ribbons fly in from the left ──
             // Gate this behind terminal boot completion so the overlay
             // doesn't appear while the terminal is still visible.
+            if (canvas) canvas.style.opacity = '0'; // Start totally hidden
+            
             const startSwirlIn = () => {
-                // Start all ribbons far to the left
-                ribbonsGroup.position.x = -300;
-                ribbonsGroup.rotation.y = -0.8;
-                ribbonsGroup.rotation.z = 0.3;
+                // Start all ribbons completely off-screen and slightly rotated
+                ribbonsGroup.position.x = -1200;
+                ribbonsGroup.position.z = -500;
+                ribbonsGroup.rotation.y = -1.5;
+                ribbonsGroup.rotation.z = 0.5;
 
                 // Show the intro overlay now (was hidden during terminal boot)
                 if (introOverlay) {
@@ -531,12 +534,15 @@
                     introOverlay.style.opacity = '1';
                 }
 
-                // Animate them into position
+                // Fade in canvas instantly
+                if (canvas) gsap.to(canvas, { opacity: 1, duration: 1.5 });
+
+                // Animate them flowing into position beautifully (like Acko's opening flow)
                 gsap.to(ribbonsGroup.position, {
-                    x: 0, duration: 2.5, ease: 'power3.out', delay: 0.3
+                    x: 0, z: 0, duration: 3.5, ease: 'power4.out', delay: 0.1
                 });
                 gsap.to(ribbonsGroup.rotation, {
-                    y: 0, z: 0, duration: 2.5, ease: 'power3.out', delay: 0.3,
+                    y: 0, z: 0, duration: 3.5, ease: 'power4.out', delay: 0.1,
                     onComplete: () => {
                         ribbonsFormed = true;
                         // Show masthead elements after ribbons form (cascading reveal)
