@@ -13,31 +13,41 @@
             key: 'lockin', label: 'LOCK IN',
             lines: ['focus.lock(apps.social)', 'session.start(90m)', 'streak += 1'],
             tint: '#32f08c',
-            icon: 'LOCK'
+            icon: 'LOCK',
+            persona: 'Founder building focus products',
+            impact: 'Shipped cross-platform productivity app with streak mechanics'
         },
         {
             key: 'chicken', label: 'CHICKEN',
             lines: ['lifeCycle.bootstrap()', 'hatch.seed(chicken)', 'iterate(instinct)'],
             tint: '#f59e0b',
-            icon: 'CHICK'
+            icon: 'CHICK',
+            persona: 'Applied ML in ag + lifecycle data',
+            impact: 'Research from signal mountain roots to real-world farms'
         },
         {
             key: 'eggml', label: 'EGG ML',
             lines: ['egg.scan(hsi)', 'model.fit(features)', 'loss -> 0.03'],
             tint: '#60a5fa',
-            icon: 'EGG-ML'
+            icon: 'EGG-ML',
+            persona: 'Research engineer (UIUC x USDA)',
+            impact: 'Built interpretable pipelines for egg viability prediction'
         },
         {
             key: 'algo', label: 'ALGOARENA',
             lines: ['battle.queue(opponents)', 'solve(dp | graphs)', 'rank.update(+42)'],
             tint: '#a78bfa',
-            icon: 'ARENA'
+            icon: 'ARENA',
+            persona: 'Builder + competitor + full-stack cofounder',
+            impact: 'Designed and shipped real-time coding battles at scale'
         },
         {
             key: 'mosquito', label: 'MOSQUITO / EPG',
             lines: ['epg.trace(frequency)', 'sharpshooter.target(lock)', 'ml.predict(trajectory)'],
             tint: '#f43f5e',
-            icon: 'EPG'
+            icon: 'EPG',
+            persona: 'Signal processing + ML systems',
+            impact: 'Extracted robust EPG features with measurable F1 gains'
         }
     ];
 
@@ -79,6 +89,47 @@
         const g = Math.round(((c1 >> 8) & 255) * (1 - t) + ((c2 >> 8) & 255) * t);
         const bl = Math.round((c1 & 255) * (1 - t) + (c2 & 255) * t);
         return `rgb(${r}, ${g}, ${bl})`;
+    }
+
+    function roundRectPath(context, x, y, w, h, r) {
+        const radius = Math.max(0, Math.min(r, Math.min(w, h) * 0.5));
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.lineTo(x + w - radius, y);
+        context.quadraticCurveTo(x + w, y, x + w, y + radius);
+        context.lineTo(x + w, y + h - radius);
+        context.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        context.lineTo(x + radius, y + h);
+        context.quadraticCurveTo(x, y + h, x, y + h - radius);
+        context.lineTo(x, y + radius);
+        context.quadraticCurveTo(x, y, x + radius, y);
+        context.closePath();
+    }
+
+    function drawWrappedText(context, text, x, y, maxWidth, lineHeight, maxLines) {
+        const words = String(text || '').split(/\s+/).filter(Boolean);
+        if (!words.length) return 0;
+        const lines = [''];
+        words.forEach((word) => {
+            const current = lines[lines.length - 1];
+            const candidate = current ? `${current} ${word}` : word;
+            if (context.measureText(candidate).width <= maxWidth) {
+                lines[lines.length - 1] = candidate;
+            } else if (lines.length < maxLines) {
+                lines.push(word);
+            } else {
+                let last = `${lines[maxLines - 1]} ${word}`.trim();
+                while (context.measureText(`${last}...`).width > maxWidth && last.length > 1) {
+                    last = last.slice(0, -1);
+                }
+                lines[maxLines - 1] = `${last.trimEnd()}...`;
+            }
+        });
+        if (lines.length > maxLines) {
+            lines.length = maxLines;
+        }
+        lines.slice(0, maxLines).forEach((ln, idx) => context.fillText(ln, x, y + idx * lineHeight));
+        return Math.min(lines.length, maxLines);
     }
 
     function pickChapterIndex(weights) {
@@ -202,6 +253,57 @@
             const alpha = 0.42 + (state.bands.spectralFlux || 0) * 0.56 + state.beatShock * 0.22 + Math.sin(phase * Math.PI * 2) * 0.16;
             srcCtx.fillStyle = rgb(chapter.tint, Math.max(0.3, Math.min(0.95, alpha)));
             srcCtx.fillText(line, overlayX, Math.max(138, state.h * 0.72) + i * 26);
+        });
+
+        const narrow = state.w < 820;
+        const tiny = state.w < 560;
+        const hudW = narrow ? Math.min(state.w - 28, 360) : Math.min(520, state.w * 0.48);
+        const hudH = narrow ? 116 : 96;
+        const hudY = narrow ? Math.max(212, state.h * 0.81) : Math.max(224, state.h * 0.84);
+        roundRectPath(srcCtx, overlayX - 16, hudY - 34, hudW, hudH, 14);
+        srcCtx.fillStyle = rgb('#050608', 0.44 + state.bands.bass * 0.2);
+        srcCtx.fill();
+        srcCtx.strokeStyle = rgb(chapter.tint, 0.35 + state.bands.beatFlash * 0.28);
+        srcCtx.lineWidth = 1;
+        srcCtx.stroke();
+
+        srcCtx.font = `600 ${Math.max(10, Math.min(13, state.w * (narrow ? 0.017 : 0.011)))}px Inter, system-ui, sans-serif`;
+        srcCtx.fillStyle = rgb('#ffffff', 0.86);
+        srcCtx.fillText(chapter.persona, overlayX, hudY - 10);
+
+        srcCtx.font = `500 ${Math.max(9, Math.min(12, state.w * (narrow ? 0.015 : 0.01)))}px Inter, system-ui, sans-serif`;
+        srcCtx.fillStyle = rgb('#d1d5db', 0.78);
+        const linesUsed = drawWrappedText(
+            srcCtx,
+            chapter.impact,
+            overlayX,
+            hudY + 12,
+            hudW - 28,
+            narrow ? 14 : 13,
+            narrow ? 2 : 1
+        );
+
+        const skills = [
+            ['build', Math.min(1, (state.weights.algo || 0) * 0.9 + (state.weights.lockin || 0) * 0.45 + state.bands.bass * 0.35)],
+            ['research', Math.min(1, (state.weights.eggml || 0) * 0.95 + (state.weights.mosquito || 0) * 0.55 + state.bands.mid * 0.28)],
+            ['ship', Math.min(1, (state.weights.lockin || 0) * 0.65 + (state.weights.algo || 0) * 0.52 + state.bands.spectralFlux * 0.4)]
+        ];
+        const meterY = hudY + (narrow ? 18 + linesUsed * 14 : 36);
+        const meterGap = tiny ? 8 : 12;
+        const meterW = Math.min(narrow ? 100 : 132, (hudW - 24 - meterGap * 2) / 3);
+        skills.forEach((item, i) => {
+            const x = overlayX + i * (meterW + meterGap);
+            srcCtx.font = `600 ${Math.max(9, Math.min(11, state.w * 0.009))}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+            srcCtx.fillStyle = rgb('#9ca3af', 0.95);
+            srcCtx.fillText(item[0], x, meterY);
+
+            roundRectPath(srcCtx, x, meterY + 8, meterW, 10, 6);
+            srcCtx.fillStyle = rgb('#111827', 0.84);
+            srcCtx.fill();
+
+            roundRectPath(srcCtx, x, meterY + 8, meterW * item[1], 10, 6);
+            srcCtx.fillStyle = rgb(chapter.tint, 0.78 + state.bands.beatFlash * 0.18);
+            srcCtx.fill();
         });
     }
 

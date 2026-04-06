@@ -370,6 +370,59 @@
         });
     }
 
+    // ── Hero grid dissolve when scrolling off intro ──
+    function setupHeroGridDissolve() {
+        const grid = document.getElementById('hero-grid-dissolve');
+        const hero = document.getElementById('hero');
+        if (!grid || !hero || typeof ScrollTrigger === 'undefined') return;
+
+        if (!grid.childElementCount) {
+            const cols = 12;
+            const rows = 8;
+            const total = cols * rows;
+            for (let i = 0; i < total; i += 1) {
+                const cell = document.createElement('span');
+                cell.className = 'grid-cell';
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const waveDelay = row * 35 + col * 18 + Math.floor(Math.random() * 120);
+                const xJitter = Math.round((Math.random() - 0.5) * 20);
+                const yJitter = -12 - Math.round(Math.random() * 22);
+                cell.style.setProperty('--delay', String(waveDelay));
+                cell.style.setProperty('--x-jitter', `${xJitter}px`);
+                cell.style.setProperty('--y-jitter', `${yJitter}px`);
+                grid.appendChild(cell);
+            }
+        }
+
+        let didDissolve = false;
+        const playDissolve = () => {
+            grid.classList.remove('active');
+            // Force reflow so class re-add replays animation.
+            void grid.offsetWidth;
+            grid.classList.add('active');
+        };
+
+        ScrollTrigger.create({
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            onUpdate: (self) => {
+                const mobile = window.matchMedia('(max-width: 768px)').matches;
+                const triggerAt = mobile ? 0.5 : 0.58;
+                const resetAt = mobile ? 0.28 : 0.35;
+                if (self.progress > triggerAt && !didDissolve) {
+                    didDissolve = true;
+                    playDissolve();
+                }
+                if (self.progress < resetAt && didDissolve) {
+                    didDissolve = false;
+                    grid.classList.remove('active');
+                }
+            }
+        });
+    }
+
     // ── Mobile Menu ──
     const navToggle = document.getElementById('navToggle');
     const mobileMenu = document.getElementById('mobileMenu');
@@ -437,6 +490,7 @@
     window.addEventListener('load', () => {
         // Small delay to ensure DOM is ready
         setTimeout(() => {
+            setupHeroGridDissolve();
             animateSplitHeadings();
             setupScrollAnimations();
         }, 500);
