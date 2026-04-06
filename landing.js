@@ -160,19 +160,113 @@
         scene.add(bgPlane);
 
         // ═══════════════════════════════════════════════
-        // RIBBON CREATION — solid TubeGeometry with proper scale
+        // RIBBON CREATION — flat strip geometry (acko.net style)
         // ═══════════════════════════════════════════════
         const ribbonsGroup = new THREE.Group();
         scene.add(ribbonsGroup);
 
-        // Creates a solid ribbon tube along a curve path
-        function createFlatRibbon(curvePath, ribbonRadius, unused, color, roughness, metalness, segments) {
+        /**
+         * Creates a FLAT RIBBON STRIP along a curve path.
+         * Unlike TubeGeometry (round tubes), this creates wide, flat tape-like bands
+         * that match acko.net's ribbon aesthetic — visible front/back faces with depth.
+         */
+        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments) {
             segments = segments || 200;
-            ribbonRadius = ribbonRadius || 3.0;
+            ribbonWidth = ribbonWidth || 6;       // Width of the flat strip (acko uses wide strips)
+            ribbonThickness = ribbonThickness || 1.2; // Thickness of the strip edge
 
-            // 12 radial segments for rounder, more solid-looking tubes (like acko)
-            const tubeGeo = new THREE.TubeGeometry(curvePath, segments, ribbonRadius, 12, false);
-            tubeGeo.userData.origPositions = new Float32Array(tubeGeo.attributes.position.array);
+            // Sample points along the curve
+            const points = [];
+            const tangents = [];
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                points.push(curvePath.getPointAt(t));
+                tangents.push(curvePath.getTangentAt(t));
+            }
+
+            // Build ribbon geometry: for each point, create 4 vertices forming a flat cross-section
+            //   top-left, top-right, bottom-left, bottom-right
+            const positions = [];
+            const normals = [];
+            const indices = [];
+
+            const up = new THREE.Vector3(0, 0, 1); // Reference up direction
+
+            for (let i = 0; i <= segments; i++) {
+                const pt = points[i];
+                const tan = tangents[i].normalize();
+
+                // Compute the "right" vector (perpendicular to tangent, in the horizontal plane)
+                let right = new THREE.Vector3().crossVectors(tan, up).normalize();
+                if (right.lengthSq() < 0.001) {
+                    right = new THREE.Vector3().crossVectors(tan, new THREE.Vector3(0, 1, 0)).normalize();
+                }
+
+                // Compute the "normal" of the ribbon face (up from the flat surface)
+                const faceNormal = new THREE.Vector3().crossVectors(right, tan).normalize();
+
+                const halfW = ribbonWidth / 2;
+                const halfT = ribbonThickness / 2;
+
+                // 4 vertices per cross-section: top-left, top-right, bottom-right, bottom-left
+                // Top face
+                positions.push(
+                    pt.x + right.x * halfW + faceNormal.x * halfT,
+                    pt.y + right.y * halfW + faceNormal.y * halfT,
+                    pt.z + right.z * halfW + faceNormal.z * halfT
+                );
+                positions.push(
+                    pt.x - right.x * halfW + faceNormal.x * halfT,
+                    pt.y - right.y * halfW + faceNormal.y * halfT,
+                    pt.z - right.z * halfW + faceNormal.z * halfT
+                );
+                // Bottom face
+                positions.push(
+                    pt.x - right.x * halfW - faceNormal.x * halfT,
+                    pt.y - right.y * halfW - faceNormal.y * halfT,
+                    pt.z - right.z * halfW - faceNormal.z * halfT
+                );
+                positions.push(
+                    pt.x + right.x * halfW - faceNormal.x * halfT,
+                    pt.y + right.y * halfW - faceNormal.y * halfT,
+                    pt.z + right.z * halfW - faceNormal.z * halfT
+                );
+
+                // Normals for each vertex
+                normals.push(faceNormal.x, faceNormal.y, faceNormal.z); // top-left
+                normals.push(faceNormal.x, faceNormal.y, faceNormal.z); // top-right
+                normals.push(-faceNormal.x, -faceNormal.y, -faceNormal.z); // bottom-right
+                normals.push(-faceNormal.x, -faceNormal.y, -faceNormal.z); // bottom-left
+            }
+
+            // Build faces between consecutive cross-sections (4 quads per segment = all 4 sides)
+            for (let i = 0; i < segments; i++) {
+                const a = i * 4;
+                const b = (i + 1) * 4;
+
+                // Top face (0-1 -> 4-5)
+                indices.push(a + 0, b + 0, b + 1);
+                indices.push(a + 0, b + 1, a + 1);
+
+                // Bottom face (2-3 -> 6-7)
+                indices.push(a + 2, b + 3, b + 2);
+                indices.push(a + 2, a + 3, b + 3);
+
+                // Right side (0-3 -> 4-7)
+                indices.push(a + 0, a + 3, b + 3);
+                indices.push(a + 0, b + 3, b + 0);
+
+                // Left side (1-2 -> 5-6)
+                indices.push(a + 1, b + 1, b + 2);
+                indices.push(a + 1, b + 2, a + 2);
+            }
+
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+            geo.setIndex(indices);
+            geo.computeVertexNormals(); // Smooth normals
+            geo.userData.origPositions = new Float32Array(positions);
 
             const mat = new THREE.MeshStandardMaterial({
                 color: color,
@@ -181,7 +275,7 @@
                 side: THREE.DoubleSide,
             });
 
-            return new THREE.Mesh(tubeGeo, mat);
+            return new THREE.Mesh(geo, mat);
         }
 
         let letterRibbons = [];
@@ -212,7 +306,8 @@
             const cameraWaypoints = [];
             const currentPalette = isDark() ? themeColors.dark.palette : themeColors.light.palette;
 
-            // ── Build letter ribbons: ONE ribbon per shape outline (not per curve) ──
+            // ── Build letter ribbons: ONE ribbon per shape outline ──
+            // CRITICAL: Low Z-depth variation so "Eli Young" is clearly READABLE
             shapes.forEach((shape, sIdx) => {
                 const allCurves = [...shape.curves];
                 if (shape.holes) {
@@ -229,7 +324,8 @@
                         allShapePoints.push(new THREE.Vector3(
                             p.x + xOffset,
                             p.y + yOffset,
-                            Math.sin(allShapePoints.length * 0.05 + sIdx * 2.0) * 18 + Math.cos(allShapePoints.length * 0.02) * 10
+                            // LOW Z variation — keeps letters readable like acko.net
+                            Math.sin(allShapePoints.length * 0.08 + sIdx * 1.5) * 3 + Math.cos(allShapePoints.length * 0.04) * 2
                         ));
                     });
                 });
@@ -244,8 +340,8 @@
                     const colorIdx = sIdx % currentPalette.length;
                     const ribbon = createFlatRibbon(
                         curvePath, 
-                        2.0 + Math.random() * 3.0,  // radius 2–5 (thick, wide, acko-style)
-                        0,
+                        5 + Math.random() * 4,    // width 5–9 (wide, flat strips)
+                        1.0 + Math.random() * 0.8, // thickness 1.0–1.8 (thin edge)
                         currentPalette[colorIdx],
                         tc.ribbonRoughness,
                         tc.ribbonMetalness,
@@ -256,20 +352,23 @@
                 }
             });
 
-            // ── Build CHAOTIC background ribbons (dense, interlocking) ──
-            const chaosCount = 30;
+            // ── Build CHAOTIC background ribbons — fewer, spread further out ──
+            const chaosCount = 12;
             for (let c = 0; c < chaosCount; c++) {
-                const numPts = 5 + Math.floor(Math.random() * 8);
+                const numPts = 4 + Math.floor(Math.random() * 6);
                 const chaosPts = [];
-                const cx = (Math.random() - 0.5) * 160;
-                const cy = (Math.random() - 0.5) * 80;
-                const cz = (Math.random() - 0.5) * 80;
+                // Push chaos ribbons FURTHER from center so they frame the text, not obscure it
+                const angle = (c / chaosCount) * Math.PI * 2;
+                const radius = 60 + Math.random() * 80;
+                const cx = Math.cos(angle) * radius;
+                const cy = Math.sin(angle) * (radius * 0.4);
+                const cz = (Math.random() - 0.5) * 60;
 
                 for (let j = 0; j < numPts; j++) {
                     chaosPts.push(new THREE.Vector3(
-                        cx + (Math.random() - 0.5) * 120,
-                        cy + (Math.random() - 0.5) * 60,
-                        cz + (Math.random() - 0.5) * 60 + Math.sin(j * 1.5) * 20
+                        cx + (Math.random() - 0.5) * 100,
+                        cy + (Math.random() - 0.5) * 50,
+                        cz + (Math.random() - 0.5) * 40 + Math.sin(j * 1.5) * 15
                     ));
                 }
 
@@ -277,12 +376,12 @@
                 const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 const chaosRibbon = createFlatRibbon(
                     chaosCurve,
-                    1.5 + Math.random() * 2.5,   // radius 1.5–4.0 (thick, like acko chaos)
-                    0,
+                    4 + Math.random() * 5,       // width 4–9 (flat strip)
+                    0.8 + Math.random() * 0.8,    // thickness 0.8–1.6
                     chaosColor,
                     tc.ribbonRoughness + Math.random() * 0.15,
                     tc.ribbonMetalness + Math.random() * 0.2,
-                    100
+                    80
                 );
                 chaosRibbons.push(chaosRibbon);
                 ribbonsGroup.add(chaosRibbon);
