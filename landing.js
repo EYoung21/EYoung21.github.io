@@ -161,6 +161,7 @@
             stagger: 0.04,
             ease: 'power4.out',
         }, 0.1);
+        tl.to('.hero-distort-canvas', { opacity: 1, y: 0, duration: 0.9 }, 0.45);
 
         tl.to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8 }, 0.4);
         tl.to('.hero-description', { opacity: 1, y: 0, duration: 0.8 }, 0.6);

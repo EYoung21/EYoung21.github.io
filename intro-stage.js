@@ -175,7 +175,12 @@
             // ML appears in egg+ML then intensifies in mosquito EPG chapter.
             ml: Math.max(0, wEggMl * 0.72 + wMosq * 0.9 + wAlgo * 0.22),
             // Product glyph chapter blends Lock In then AlgoArena.
-            products: Math.max(0, wLockIn * 0.85 + wAlgo * 1.0 + wMosq * 0.12)
+            products: Math.max(0, wLockIn * 0.85 + wAlgo * 1.0 + wMosq * 0.12),
+            lockin: wLockIn,
+            chicken: wChicken,
+            eggml: wEggMl,
+            algo: wAlgo,
+            mosquito: wMosq
         };
     }
 
@@ -353,7 +358,7 @@
     function addFocusLockObjects(parent) {
         const tc = themeColors();
         focusLockGroup = new THREE.Group();
-        focusLockGroup.position.set(0, -0.12, -0.1);
+        focusLockGroup.position.set(0, -0.72, 0.22);
         parent.add(focusLockGroup);
 
         const mkRing = (r, t, opacity) =>
@@ -368,22 +373,37 @@
                 })
             );
 
-        const ringA = mkRing(1.06, 0.018, 0.12);
-        const ringB = mkRing(1.22, 0.014, 0.09);
-        ringA.rotation.x = Math.PI / 2;
-        ringB.rotation.x = Math.PI / 2;
+        const ringA = mkRing(0.42, 0.022, 0.14);
+        const ringB = mkRing(0.58, 0.016, 0.1);
+        ringA.rotation.x = 0.22;
+        ringB.rotation.x = 0.22;
         ringB.rotation.y = Math.PI * 0.22;
         focusLockGroup.add(ringA);
         focusLockGroup.add(ringB);
+
+        const shackle = new THREE.Mesh(
+            new THREE.TorusGeometry(0.19, 0.028, 14, 56, Math.PI),
+            new THREE.MeshBasicMaterial({ color: tc.wire, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        shackle.position.set(0, 0.2, 0.02);
+        shackle.rotation.z = Math.PI;
+        focusLockGroup.add(shackle);
+
+        const body = new THREE.Mesh(
+            new THREE.BoxGeometry(0.34, 0.26, 0.08),
+            new THREE.MeshBasicMaterial({ color: tc.ml, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        body.position.set(0, -0.03, 0);
+        focusLockGroup.add(body);
 
         const latch = new THREE.Mesh(
             new THREE.BoxGeometry(0.16, 0.11, 0.08),
             new THREE.MeshBasicMaterial({ color: tc.specHi, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false })
         );
-        latch.position.set(0, 1.02, 0);
+        latch.position.set(0, -0.03, 0.05);
         focusLockGroup.add(latch);
 
-        focusLockGroup.userData = { ringA, ringB, latch };
+        focusLockGroup.userData = { ringA, ringB, latch, shackle, body };
     }
 
     function buildInsectTrails(parent) {
@@ -602,6 +622,8 @@
             focusLockGroup.userData.ringA.material.color.setHex(tc.ml);
             focusLockGroup.userData.ringB.material.color.setHex(tc.ml);
             focusLockGroup.userData.latch.material.color.setHex(tc.specHi);
+            if (focusLockGroup.userData.shackle) focusLockGroup.userData.shackle.material.color.setHex(tc.wire);
+            if (focusLockGroup.userData.body) focusLockGroup.userData.body.material.color.setHex(tc.ml);
         }
         if (syntaxConstellation) {
             syntaxConstellation.traverse((obj) => {
@@ -695,6 +717,11 @@
         const w = musicPlaying && !prefersReducedMotion ? narrativeWeights(tSong) : { insect: 0.15, egg: 0.1, hatch: 0.08, ml: 0.1, products: 0.08 };
         narrativePhase01 = tSong;
 
+        const wLock = w.lockin || 0;
+        const wChicken = w.chicken || 0;
+        const wEggMl = w.eggml || 0;
+        const wAlgo = w.algo || 0;
+        const wMosquito = w.mosquito || 0;
         const wInsect = Math.min(1, w.insect * (musicPlaying ? 1 : 0.3));
         const wEgg = w.egg;
         const wHatch = w.hatch;
@@ -728,7 +755,8 @@
             eggMesh.rotation.y += spin + mx * 0.008;
             eggMesh.rotation.x += Math.sin(time * 0.4) * 0.001 + my * 0.006;
             const pulse = 1 + bass * 0.09 + treble * 0.05 + sub * 0.06 + (musicPlaying ? 0.04 * Math.sin(tSong * Math.PI * 2 * 6) : 0);
-            eggMesh.scale.set(1.12 * pulse, 1.52 * pulse, 1.05 * pulse);
+            const eggStoryGain = 0.72 + wChicken * 0.28 + wEggMl * 0.42 + wMosquito * 0.1;
+            eggMesh.scale.set(1.12 * pulse * eggStoryGain, 1.52 * pulse * eggStoryGain, 1.05 * pulse * eggStoryGain);
             eggMesh.material.transparent = false;
             eggMesh.material.opacity = 1;
 
@@ -845,10 +873,10 @@
 
         if (syntaxConstellation && syntaxGlyphs.length) {
             const centroid = (sub * 0.1 + bass * 0.25 + mid * 0.5 + treble * 0.75 + air * 0.95) / Math.max(0.001, sub + bass + mid + treble + air);
-            const swirl = 0.5 + wProd * 0.8 + centroid * 0.6;
+            const swirl = 0.45 + (wAlgo * 1.1 + wProd * 0.5) + centroid * 0.6;
             syntaxConstellation.rotation.y += 0.0035 * swirl;
             syntaxConstellation.rotation.x = Math.sin(time * 0.35 + centroid * 3) * 0.22;
-            const alpha = Math.min(0.92, 0.12 + wProd * 0.65 + spectralFlux * 0.3);
+            const alpha = Math.min(0.92, 0.04 + wAlgo * 0.85 + wProd * 0.35 + spectralFlux * 0.3);
             syntaxGlyphs.forEach((glyph, i) => {
                 const ud = glyph.userData;
                 const ang = time * (0.38 + swirl) + ud.phase + tSong * Math.PI * 2 * (0.6 + i * 0.02);
@@ -864,7 +892,7 @@
 
         if (focusLockGroup && focusLockGroup.userData) {
             const d = focusLockGroup.userData;
-            const gate = Math.min(1, wProd * 1.2 + wMl * 0.4);
+            const gate = Math.min(1, wLock * 1.3 + wProd * 0.45 + wMl * 0.2);
             const lockPulse = 0.75 + beatFlash * 0.5 + spectralFlux * 0.35;
             focusLockGroup.rotation.y += 0.002 + gate * 0.006;
             focusLockGroup.rotation.x = Math.sin(time * 0.5 + tSong * Math.PI * 2) * 0.3;
@@ -873,7 +901,10 @@
             d.ringA.scale.setScalar(0.96 + gate * 0.12 + beatFlash * 0.08);
             d.ringB.scale.setScalar(0.98 + gate * 0.14 + spectralFlux * 0.1);
             d.latch.material.opacity = 0.08 + gate * 0.4;
-            d.latch.position.y = 0.94 + Math.sin(time * 4 + beatFlash * 6) * 0.08 + gate * 0.1;
+            d.latch.position.y = -0.03 + Math.sin(time * 4 + beatFlash * 6) * 0.03 + gate * 0.02;
+            if (d.shackle) d.shackle.material.opacity = 0.08 + gate * 0.35;
+            if (d.body) d.body.material.opacity = 0.06 + gate * 0.3;
+            focusLockGroup.position.y = -0.72 + wLock * 0.08 + Math.sin(time * 1.6) * 0.03;
         }
 
         if (rimLight) {
