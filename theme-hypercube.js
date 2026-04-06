@@ -99,11 +99,19 @@
 
     let mouseX = 0;
     let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
     let time = 0;
 
     document.addEventListener('mousemove', (e) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+        targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+    }, { passive: true });
+    document.addEventListener('touchmove', (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        targetMouseX = (t.clientX / window.innerWidth) * 2 - 1;
+        targetMouseY = -(t.clientY / window.innerHeight) * 2 + 1;
     }, { passive: true });
 
     function applyTheme() {
@@ -126,21 +134,31 @@
         if (cubeOpacity >= 0.02) {
             const rotSpeed = prefersReducedMotion ? 0.0008 : 0.0032;
             time += prefersReducedMotion ? 0.005 : 0.015;
+            const follow = prefersReducedMotion ? 0.03 : 0.11;
+            mouseX += (targetMouseX - mouseX) * follow;
+            mouseY += (targetMouseY - mouseY) * follow;
             const mouseDist = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
-            const expansion = 1 + mouseDist * 0.5;
+            const expansion = 1 + mouseDist * 0.75;
+            const parallaxX = mouseX * (isMobile ? 1.3 : 2.5);
+            const parallaxY = mouseY * (isMobile ? 0.8 : 1.6);
 
             hypercubeGroup.rotation.y += rotSpeed;
-            hypercubeGroup.rotation.x += (mouseY * 0.08 - hypercubeGroup.rotation.x) * 0.04;
+            hypercubeGroup.rotation.x += (mouseY * 0.18 - hypercubeGroup.rotation.x) * 0.07;
+            hypercubeGroup.rotation.y += (mouseX * 0.28 - hypercubeGroup.rotation.y) * 0.03;
+            hypercubeGroup.position.x += (parallaxX - hypercubeGroup.position.x) * 0.08;
+            hypercubeGroup.position.y += (parallaxY - hypercubeGroup.position.y) * 0.08;
 
             planes.forEach((p) => {
                 const wave = Math.sin(time * 3 + p.index * 0.3);
-                p.mesh.scale.setScalar(1 + wave * 0.03 * expansion);
-                p.mesh.position.z = p.baseZ * (0.8 + 0.2 * expansion) + wave * 0.2;
-                p.mesh.rotation.z = Math.sin(time) * 0.1 * (p.index / numPlanes) * expansion;
+                p.mesh.scale.setScalar(1 + wave * 0.045 * expansion);
+                p.mesh.position.z = p.baseZ * (0.72 + 0.28 * expansion) + wave * 0.26;
+                p.mesh.rotation.z = Math.sin(time + mouseX * 2.4) * 0.14 * (p.index / numPlanes) * expansion;
             });
 
-            outerGroup.rotation.x = hypercubeGroup.rotation.x * 0.3;
-            outerGroup.rotation.y = hypercubeGroup.rotation.y * 0.3;
+            outerGroup.rotation.x = hypercubeGroup.rotation.x * 0.4;
+            outerGroup.rotation.y = hypercubeGroup.rotation.y * 0.4;
+            outerGroup.position.x += ((-parallaxX * 0.45) - outerGroup.position.x) * 0.06;
+            outerGroup.position.y += ((-parallaxY * 0.45) - outerGroup.position.y) * 0.06;
             outerPlanes.forEach((plane) => {
                 plane.position.z += 0.05;
                 if (plane.position.z > (outerNum / 2) * 5) {
