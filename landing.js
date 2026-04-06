@@ -415,12 +415,20 @@
         }
     });
 
-    // ── Smooth scroll for anchor links ──
+    // ── Smooth scroll for anchor links (only #section — not href="#" that later becomes a full URL)
     document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const target = document.querySelector(link.getAttribute('href'));
-            if (target) lenis.scrollTo(target, { offset: -60 });
+            const href = link.getAttribute('href');
+            if (!href || !href.startsWith('#')) return;
+            if (href === '#') {
+                e.preventDefault();
+                return;
+            }
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                lenis.scrollTo(target, { offset: -60 });
+            }
         });
     });
 
