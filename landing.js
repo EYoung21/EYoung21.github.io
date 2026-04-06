@@ -460,55 +460,69 @@
             }
 
             // ── SWIRL-IN ANIMATION: ribbons fly in from the left ──
-            // Start all ribbons far to the left
-            ribbonsGroup.position.x = -300;
-            ribbonsGroup.rotation.y = -0.8;
-            ribbonsGroup.rotation.z = 0.3;
+            // Gate this behind terminal boot completion so the overlay
+            // doesn't appear while the terminal is still visible.
+            const startSwirlIn = () => {
+                // Start all ribbons far to the left
+                ribbonsGroup.position.x = -300;
+                ribbonsGroup.rotation.y = -0.8;
+                ribbonsGroup.rotation.z = 0.3;
 
-            // Show the intro overlay now (was hidden during terminal boot)
-            if (introOverlay) {
-                introOverlay.style.display = 'block';
-                introOverlay.style.opacity = '1';
-            }
-
-            // Animate them into position
-            gsap.to(ribbonsGroup.position, {
-                x: 0, duration: 2.5, ease: 'power3.out', delay: 0.3
-            });
-            gsap.to(ribbonsGroup.rotation, {
-                y: 0, z: 0, duration: 2.5, ease: 'power3.out', delay: 0.3,
-                onComplete: () => {
-                    ribbonsFormed = true;
-                    // Show masthead elements after ribbons form (cascading reveal)
-                    if (playBtn) {
-                        gsap.fromTo(playBtn, 
-                            { opacity: 0, scale: 0.5 },
-                            { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
-                        );
-                    }
-                    const mastheadTitle = document.querySelector('.masthead-title');
-                    const mastheadAuthor = document.querySelector('.masthead-author');
-                    const ackoArrow = document.getElementById('acko-arrow');
-                    if (mastheadTitle) {
-                        gsap.fromTo(mastheadTitle, 
-                            { opacity: 0, y: 15 },
-                            { opacity: 1, y: 0, duration: 0.7, delay: 0.3, ease: 'power2.out' }
-                        );
-                    }
-                    if (mastheadAuthor) {
-                        gsap.fromTo(mastheadAuthor, 
-                            { opacity: 0, y: 10 },
-                            { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: 'power2.out' }
-                        );
-                    }
-                    if (ackoArrow) {
-                        gsap.fromTo(ackoArrow, 
-                            { opacity: 0 },
-                            { opacity: 1, duration: 0.8, delay: 0.6, ease: 'power2.out' }
-                        );
-                    }
+                // Show the intro overlay now (was hidden during terminal boot)
+                if (introOverlay) {
+                    introOverlay.style.display = 'block';
+                    introOverlay.style.opacity = '1';
                 }
-            });
+
+                // Animate them into position
+                gsap.to(ribbonsGroup.position, {
+                    x: 0, duration: 2.5, ease: 'power3.out', delay: 0.3
+                });
+                gsap.to(ribbonsGroup.rotation, {
+                    y: 0, z: 0, duration: 2.5, ease: 'power3.out', delay: 0.3,
+                    onComplete: () => {
+                        ribbonsFormed = true;
+                        // Show masthead elements after ribbons form (cascading reveal)
+                        if (playBtn) {
+                            gsap.fromTo(playBtn, 
+                                { opacity: 0, scale: 0.5 },
+                                { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
+                            );
+                        }
+                        const mastheadTitle = document.querySelector('.masthead-title');
+                        const mastheadAuthor = document.querySelector('.masthead-author');
+                        const ackoArrow = document.getElementById('acko-arrow');
+                        if (mastheadTitle) {
+                            gsap.fromTo(mastheadTitle, 
+                                { opacity: 0, y: 15 },
+                                { opacity: 1, y: 0, duration: 0.7, delay: 0.3, ease: 'power2.out' }
+                            );
+                        }
+                        if (mastheadAuthor) {
+                            gsap.fromTo(mastheadAuthor, 
+                                { opacity: 0, y: 10 },
+                                { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: 'power2.out' }
+                            );
+                        }
+                        if (ackoArrow) {
+                            gsap.fromTo(ackoArrow, 
+                                { opacity: 0 },
+                                { opacity: 1, duration: 0.8, delay: 0.6, ease: 'power2.out' }
+                            );
+                        }
+                    }
+                });
+            };
+
+            // Check if terminal boot already completed
+            const terminalLoader = document.getElementById('terminalLoader');
+            if (!terminalLoader || terminalLoader.offsetParent === null) {
+                // Terminal already gone, start immediately
+                startSwirlIn();
+            } else {
+                // Wait for terminal boot to finish
+                window.addEventListener('terminalBootComplete', startSwirlIn, { once: true });
+            }
         });
 
         // ═══════════════════════════════════════════════
