@@ -206,387 +206,117 @@
         scene.add(bgPlane);
 
         // ═══════════════════════════════════════════════
-        // RIBBON CREATION — flat strip geometry (acko.net style)
+        // HYPERCUBE CREATION
         // ═══════════════════════════════════════════════
-        const ribbonsGroup = new THREE.Group();
-        scene.add(ribbonsGroup);
+        const hypercubeGroup = new THREE.Group();
+        scene.add(hypercubeGroup);
 
-        /**
-         * Creates a FLAT RIBBON STRIP along a curve path.
-         * Unlike TubeGeometry (round tubes), this creates wide, flat tape-like bands
-         * that match acko.net's ribbon aesthetic — visible front/back faces with depth.
-         */
-        function createFlatRibbon(curvePath, ribbonWidth, ribbonThickness, color, roughness, metalness, segments, opacity) {
-            segments = segments || 200;
-            ribbonWidth = ribbonWidth || 6;       // Width of the flat strip (acko uses wide strips)
-            ribbonThickness = ribbonThickness || 1.2; // Thickness of the strip edge
-
-            // Sample points along the curve
-            const points = [];
-            const tangents = [];
-            for (let i = 0; i <= segments; i++) {
-                const t = i / segments;
-                points.push(curvePath.getPointAt(t));
-                tangents.push(curvePath.getTangentAt(t));
-            }
-
-            // Build ribbon geometry: for each point, create 4 vertices forming a flat cross-section
-            //   top-left, top-right, bottom-left, bottom-right
-            const positions = [];
-            const normals = [];
-            const indices = [];
-
-            const up = new THREE.Vector3(0, 0, 1); // Reference up direction
-
-            for (let i = 0; i <= segments; i++) {
-                const pt = points[i];
-                const tan = tangents[i].normalize();
-
-                // Compute the "right" vector (perpendicular to tangent, in the horizontal plane)
-                let right = new THREE.Vector3().crossVectors(tan, up).normalize();
-                if (right.lengthSq() < 0.001) {
-                    right = new THREE.Vector3().crossVectors(tan, new THREE.Vector3(0, 1, 0)).normalize();
-                }
-
-                // Compute the "normal" of the ribbon face (up from the flat surface)
-                const faceNormal = new THREE.Vector3().crossVectors(right, tan).normalize();
-
-                const halfW = ribbonWidth / 2;
-                const halfT = ribbonThickness / 2;
-
-                // 4 vertices per cross-section: top-left, top-right, bottom-right, bottom-left
-                // Top face
-                positions.push(
-                    pt.x + right.x * halfW + faceNormal.x * halfT,
-                    pt.y + right.y * halfW + faceNormal.y * halfT,
-                    pt.z + right.z * halfW + faceNormal.z * halfT
-                );
-                positions.push(
-                    pt.x - right.x * halfW + faceNormal.x * halfT,
-                    pt.y - right.y * halfW + faceNormal.y * halfT,
-                    pt.z - right.z * halfW + faceNormal.z * halfT
-                );
-                // Bottom face
-                positions.push(
-                    pt.x - right.x * halfW - faceNormal.x * halfT,
-                    pt.y - right.y * halfW - faceNormal.y * halfT,
-                    pt.z - right.z * halfW - faceNormal.z * halfT
-                );
-                positions.push(
-                    pt.x + right.x * halfW - faceNormal.x * halfT,
-                    pt.y + right.y * halfW - faceNormal.y * halfT,
-                    pt.z + right.z * halfW - faceNormal.z * halfT
-                );
-
-                // Normals for each vertex
-                normals.push(faceNormal.x, faceNormal.y, faceNormal.z); // top-left
-                normals.push(faceNormal.x, faceNormal.y, faceNormal.z); // top-right
-                normals.push(-faceNormal.x, -faceNormal.y, -faceNormal.z); // bottom-right
-                normals.push(-faceNormal.x, -faceNormal.y, -faceNormal.z); // bottom-left
-            }
-
-            // Build faces between consecutive cross-sections (4 quads per segment = all 4 sides)
-            // Group 0: Top and Bottom faces
-            // Group 1: Side faces (edges)
-            let faceIndices = [];
-            let sideIndices = [];
-
-            for (let i = 0; i < segments; i++) {
-                const a = i * 4;
-                const b = (i + 1) * 4;
-
-                // Top face (0-1 -> 4-5)
-                faceIndices.push(a + 0, b + 0, b + 1);
-                faceIndices.push(a + 0, b + 1, a + 1);
-
-                // Bottom face (2-3 -> 6-7)
-                faceIndices.push(a + 2, b + 3, b + 2);
-                faceIndices.push(a + 2, a + 3, b + 3);
-
-                // Right side (0-3 -> 4-7)
-                sideIndices.push(a + 0, a + 3, b + 3);
-                sideIndices.push(a + 0, b + 3, b + 0);
-
-                // Left side (1-2 -> 5-6)
-                sideIndices.push(a + 1, b + 1, b + 2);
-                sideIndices.push(a + 1, b + 2, a + 2);
-            }
-            
-            // Combine indices
-            indices.push(...faceIndices, ...sideIndices);
-
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-            geo.setIndex(indices);
-            
-            // Define groups for the two materials
-            geo.addGroup(0, faceIndices.length, 0); // Material 0 (faces)
-            geo.addGroup(faceIndices.length, sideIndices.length, 1); // Material 1 (sides)
-            
-            geo.computeVertexNormals(); // Smooth normals
-            geo.userData.origPositions = new Float32Array(positions);
-
-            // Acko-style rendering: crisp, opaque, colorful sides, light faces
-            const baseFaceColor = isDark() ? 0xdcdcdc : 0xffffff;
-
-            const faceMat = new THREE.MeshStandardMaterial({
-                color: baseFaceColor,
-                roughness: roughness,
-                metalness: metalness,
-                side: THREE.DoubleSide
+        const H_SIZE = 30; // Radius of 4D space
+        const nodes4D = [];
+        for (let i = 0; i < 16; i++) {
+            nodes4D.push({
+                x: (i & 1 ? 1 : -1) * H_SIZE,
+                y: (i & 2 ? 1 : -1) * H_SIZE,
+                z: (i & 4 ? 1 : -1) * H_SIZE,
+                w: (i & 8 ? 1 : -1) * H_SIZE
             });
-
-            const sideMat = new THREE.MeshStandardMaterial({
-                color: color, // The vibrant palette color
-                roughness: Math.max(0.1, roughness - 0.2), // Sides a bit smoother
-                metalness: metalness + 0.1,
-                side: THREE.DoubleSide
-            });
-
-            return new THREE.Mesh(geo, [faceMat, sideMat]);
         }
 
-        let letterRibbons = [];
-        let chaosRibbons = [];
-        let allRibbons = [];
-        let masterCameraPath = null;
+        const edges = [];
+        for (let i = 0; i < 16; i++) {
+            for (let j = i + 1; j < 16; j++) {
+                let diff = i ^ j;
+                if (diff && !(diff & (diff - 1))) {
+                    edges.push([i, j]);
+                }
+            }
+        }
+
+        // Glowing nodes
+        const nodeGeo = new THREE.SphereGeometry(2.5, 32, 32);
+        const nodeMat = new THREE.MeshStandardMaterial({
+            color: tc.palette[1], // Bright green
+            emissive: tc.palette[1],
+            emissiveIntensity: 0.8,
+            roughness: 0.1,
+            metalness: 0.9
+        });
+        const instancedNodes = new THREE.InstancedMesh(nodeGeo, nodeMat, 16);
+        hypercubeGroup.add(instancedNodes);
+
+        // Glowing architectural edges
+        const edgeGeo = new THREE.CylinderGeometry(0.8, 0.8, 1, 16);
+        edgeGeo.rotateX(Math.PI / 2); // align Z
+        const edgeMat = new THREE.MeshStandardMaterial({
+            color: tc.palette[4], // coral/orange
+            emissive: tc.palette[4],
+            emissiveIntensity: 0.2,
+            roughness: 0.2,
+            metalness: 0.6,
+            side: THREE.DoubleSide
+        });
+        const instancedEdges = new THREE.InstancedMesh(edgeGeo, edgeMat, 32);
+        hypercubeGroup.add(instancedEdges);
+
+        const dummy = new THREE.Object3D();
+        const projected3D = new Array(16).fill(null).map(() => new THREE.Vector3());
+        const origProjected = new Array(16).fill(null).map(() => new THREE.Vector3());
+
+        let angleXY = 0, angleXZ = 0, angleXW = 0, angleYZ = 0, angleYW = 0, angleZW = 0;
+        let isDragging = false;
         let targetHover = 0; 
         let currentHover = 0;
         let introPlaying = false;
         let introTimeline = null;
         let mouseX = 0, mouseY = 0;
         let rotationX = 0, rotationY = 0;
-        let isDragging = false;
-        let ribbonsFormed = false; // tracks whether swirl-in is complete
         let startX = 0, startY = 0;
-        let playBtnHovering = false;
 
-        const loader = new THREE.FontLoader();
-        loader.load('https://unpkg.com/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
-            const message = "Eli Young";
-            const shapes = font.generateShapes(message, 20);
-            
-            const geometry = new THREE.ShapeGeometry(shapes);
-            geometry.computeBoundingBox();
-            const xOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-            const yOffset = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+        // ── SWIRL-IN ANIMATION: hypercube blooms from nowhere ──
+        if (canvas) canvas.style.opacity = '0';
+        
+        const startSwirlIn = () => {
+            // Start hypercube tiny and rotated
+            hypercubeGroup.scale.set(0.01, 0.01, 0.01);
+            hypercubeGroup.rotation.y = -2.5;
+            hypercubeGroup.rotation.z = 1.5;
 
-            const cameraWaypoints = [];
-            const currentPalette = isDark() ? themeColors.dark.palette : themeColors.light.palette;
+            if (introOverlay) {
+                introOverlay.style.display = 'block';
+                introOverlay.style.opacity = '1';
+            }
 
-            // ── Build letter ribbons: ONE ribbon per shape outline ──
-            // VERY LOW Z-depth variation for clean, readable letterforms like acko.net
-            shapes.forEach((shape, sIdx) => {
-                const allCurves = [...shape.curves];
-                if (shape.holes) {
-                    shape.holes.forEach(hole => allCurves.push(...hole.curves));
-                }
+            if (canvas) gsap.to(canvas, { opacity: 1, duration: 2.0 });
 
-                // Concatenate all curve points into one continuous 3D path
-                const allShapePoints = [];
-                allCurves.forEach((curve, ci) => {
-                    const pts = curve.getPoints(30); // Fewer points = smoother
-                    pts.forEach((p, idx) => {
-                        if (ci > 0 && idx === 0) return;
-                        allShapePoints.push(new THREE.Vector3(
-                            p.x + xOffset,
-                            p.y + yOffset,
-                            // More pronounced Z-depth for thick 3D letterforms like acko.net
-                            Math.sin(allShapePoints.length * 0.06 + sIdx * 1.5) * 5 + Math.cos(allShapePoints.length * 0.03) * 3
-                        ));
-                    });
-                });
-
-                // Camera waypoints
-                allShapePoints.forEach((pt, idx) => {
-                    if (idx % 5 === 0) cameraWaypoints.push(pt.clone());
-                });
-
-                if (allShapePoints.length >= 3) {
-                    const curvePath = new THREE.CatmullRomCurve3(allShapePoints, false, 'centripetal', 0.3);
-                    const colorIdx = sIdx % currentPalette.length;
-                    const ribbon = createFlatRibbon(
-                        curvePath, 
-                        2.5 + Math.random() * 2,     // width 2.5–4.5 (scaled down so 20pt letters are highly legible!)
-                        0.6 + Math.random() * 0.4,   // thickness 0.6–1.0 (thick enough to be 3D, thin enough to read)
-                        currentPalette[colorIdx],
-                        tc.ribbonRoughness,
-                        tc.ribbonMetalness,
-                        Math.min(allShapePoints.length * 2, 300)
-                    );
-                    letterRibbons.push(ribbon);
-                    ribbonsGroup.add(ribbon);
+            gsap.to(hypercubeGroup.scale, {
+                x: 1, y: 1, z: 1, duration: 4.0, ease: 'elastic.out(1, 0.75)', delay: 0.2
+            });
+            gsap.to(hypercubeGroup.rotation, {
+                y: 0, z: 0, duration: 4.0, ease: 'power4.out', delay: 0.2,
+                onComplete: () => {
+                    if (playBtn) {
+                        gsap.fromTo(playBtn, 
+                            { opacity: 0, scale: 0.5 },
+                            { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
+                        );
+                    }
+                    const mastheadTitle = document.querySelector('.masthead-title');
+                    const mastheadAuthor = document.querySelector('.masthead-author');
+                    const ackoArrow = document.getElementById('acko-arrow');
+                    
+                    if (mastheadTitle) gsap.fromTo(mastheadTitle, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.3 });
+                    if (mastheadAuthor) gsap.fromTo(mastheadAuthor, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.5 });
+                    if (ackoArrow) gsap.fromTo(ackoArrow, { opacity: 0 }, { opacity: 1, duration: 0.8, delay: 0.6 });
                 }
             });
+        };
 
-            // ── Build dense flowing background ribbons — like acko.net's architectural density ──
-            // Acko keeps ribbons everywhere so the camera ALWAYS has geometry in view
-            const chaosCount = 30; // Dense composition — fills the scene like acko.net
-            for (let c = 0; c < chaosCount; c++) {
-                const numPts = 8 + Math.floor(Math.random() * 6); // 8-13 points = longer, smoother
-                const chaosPts = [];
-                // Mix of ribbons: some weave through text, some arc around it
-                const angle = (c / chaosCount) * Math.PI * 2;
-                const layerType = c % 3; // 0=through-text, 1=around, 2=background
-                let radius, startX, startY, startZ;
-                
-                if (layerType === 0) {
-                    // Through-text ribbons: start outside, pass through center at varied depths
-                    radius = 40 + Math.random() * 30;
-                    startX = Math.cos(angle) * radius;
-                    startY = Math.sin(angle) * (radius * 0.3);
-                    startZ = (Math.random() - 0.5) * 20; // wider z spread
-                } else if (layerType === 1) {
-                    // Close orbit: stay near the text area, at various z layers
-                    radius = 25 + Math.random() * 40;
-                    startX = Math.cos(angle) * radius;
-                    startY = Math.sin(angle) * (radius * 0.4);
-                    startZ = -8 + Math.random() * 30; // z from -8 to +22
-                } else {
-                    // Background layer: wider sweep, creates depth layering
-                    radius = 60 + Math.random() * 60;
-                    startX = Math.cos(angle) * radius;
-                    startY = Math.sin(angle) * (radius * 0.35);
-                    startZ = -10 + Math.random() * 35; // z from -10 to +25
-                }
-
-                for (let j = 0; j < numPts; j++) {
-                    const t = j / (numPts - 1);
-                    const passThrough = layerType === 0 ? Math.sin(t * Math.PI) * 60 : Math.sin(t * Math.PI) * 35;
-                    chaosPts.push(new THREE.Vector3(
-                        startX + (Math.random() - 0.5) * 60 + passThrough,
-                        startY + (Math.random() - 0.5) * 25 + Math.cos(t * Math.PI) * 10,
-                        startZ + (Math.random() - 0.5) * 15 + Math.sin(j * 1.2) * 8
-                    ));
-                }
-
-                const chaosCurve = new THREE.CatmullRomCurve3(chaosPts, false, 'centripetal', 0.4);
-                const chaosColor = currentPalette[Math.floor(Math.random() * currentPalette.length)];
-                
-                // For acko-style variety, sometimes the face is colored and side is dark
-                const isInverse = Math.random() > 0.7;
-                
-                const chaosRibbon = createFlatRibbon(
-                    chaosCurve,
-                    4 + Math.random() * 6,       // width
-                    0.8 + Math.random() * 0.8,    // thickness
-                    chaosColor,
-                    tc.ribbonRoughness + Math.random() * 0.15,
-                    tc.ribbonMetalness + Math.random() * 0.15,
-                    150
-                );
-                
-                if (isInverse) {
-                    chaosRibbon.material[0].color.setHex(chaosColor);
-                    chaosRibbon.material[1].color.setHex(isDark() ? 0x222222 : 0xdddddd);
-                }
-                
-                chaosRibbons.push(chaosRibbon);
-                ribbonsGroup.add(chaosRibbon);
-            }
-
-            allRibbons = [...letterRibbons, ...chaosRibbons];
-
-            // ── Build the master camera path ──
-            // ACKO-STYLE: Camera flies FORWARD through the ribbon geometry,
-            // weaving in a serpentine pattern. This ensures ribbons pass by on
-            // all sides instead of the camera orbiting a fixed center.
-            {
-                const flyWaypoints = [];
-                const totalPoints = 200; // high resolution for smooth motion
-                
-                for (let i = 0; i < totalPoints; i++) {
-                    const t = i / totalPoints;
-                    
-                    // X: serpentine weave left-to-right through the text extent
-                    const x = Math.sin(t * Math.PI * 5) * 25 + Math.cos(t * Math.PI * 3.3) * 10;
-                    
-                    // Y: gentle up-down undulation
-                    const y = Math.sin(t * Math.PI * 3.7) * 12 + Math.cos(t * Math.PI * 6.1) * 5;
-                    
-                    // Z: forward sweep through the ribbon depth layers
-                    // Goes from 30 -> -10 -> 25 -> -5 -> 20 (weaving through layers)
-                    const z = 15 + Math.sin(t * Math.PI * 4.2) * 18 + Math.cos(t * Math.PI * 2.7) * 8;
-                    
-                    flyWaypoints.push(new THREE.Vector3(x, y, z));
-                }
-                
-                masterCameraPath = new THREE.CatmullRomCurve3(flyWaypoints, false, 'centripetal', 0.5);
-                console.log(`Camera fly-through path built with ${totalPoints} points, serpentine weave through ribbon space`);
-            }
-
-            // ── SWIRL-IN ANIMATION: ribbons fly in from the left ──
-            // Gate this behind terminal boot completion so the overlay
-            // doesn't appear while the terminal is still visible.
-            if (canvas) canvas.style.opacity = '0'; // Start totally hidden
-            
-            const startSwirlIn = () => {
-                // Start all ribbons completely off-screen and slightly rotated
-                ribbonsGroup.position.x = -1200;
-                ribbonsGroup.position.z = -500;
-                ribbonsGroup.rotation.y = -1.5;
-                ribbonsGroup.rotation.z = 0.5;
-
-                // Show the intro overlay now (was hidden during terminal boot)
-                if (introOverlay) {
-                    introOverlay.style.display = 'block';
-                    introOverlay.style.opacity = '1';
-                }
-
-                // Fade in canvas instantly
-                if (canvas) gsap.to(canvas, { opacity: 1, duration: 1.5 });
-
-                // Animate them flowing into position beautifully (like Acko's opening flow)
-                gsap.to(ribbonsGroup.position, {
-                    x: 0, z: 0, duration: 3.5, ease: 'power4.out', delay: 0.1
-                });
-                gsap.to(ribbonsGroup.rotation, {
-                    y: 0, z: 0, duration: 3.5, ease: 'power4.out', delay: 0.1,
-                    onComplete: () => {
-                        ribbonsFormed = true;
-                        // Show masthead elements after ribbons form (cascading reveal)
-                        if (playBtn) {
-                            gsap.fromTo(playBtn, 
-                                { opacity: 0, scale: 0.5 },
-                                { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.5)' }
-                            );
-                        }
-                        const mastheadTitle = document.querySelector('.masthead-title');
-                        const mastheadAuthor = document.querySelector('.masthead-author');
-                        const ackoArrow = document.getElementById('acko-arrow');
-                        if (mastheadTitle) {
-                            gsap.fromTo(mastheadTitle, 
-                                { opacity: 0, y: 15 },
-                                { opacity: 1, y: 0, duration: 0.7, delay: 0.3, ease: 'power2.out' }
-                            );
-                        }
-                        if (mastheadAuthor) {
-                            gsap.fromTo(mastheadAuthor, 
-                                { opacity: 0, y: 10 },
-                                { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: 'power2.out' }
-                            );
-                        }
-                        if (ackoArrow) {
-                            gsap.fromTo(ackoArrow, 
-                                { opacity: 0 },
-                                { opacity: 1, duration: 0.8, delay: 0.6, ease: 'power2.out' }
-                            );
-                        }
-                    }
-                });
-            };
-
-            // Check if terminal boot already completed
-            const terminalLoader = document.getElementById('terminalLoader');
-            if (!terminalLoader || terminalLoader.offsetParent === null) {
-                // Terminal already gone, start immediately
-                startSwirlIn();
-            } else {
-                // Wait for terminal boot to finish
-                window.addEventListener('terminalBootComplete', startSwirlIn, { once: true });
-            }
-        });
+        const terminalLoader = document.getElementById('terminalLoader');
+        if (!terminalLoader || terminalLoader.offsetParent === null) {
+            startSwirlIn();
+        } else {
+            window.addEventListener('terminalBootComplete', startSwirlIn, { once: true });
+        }
 
         // ═══════════════════════════════════════════════
         // INTERACTION — play button hover "sucking" effect 
@@ -642,18 +372,15 @@
         if (playBtn) {
             playBtn.addEventListener('mouseenter', () => { 
                 targetHover = 0.85;
-                playBtnHovering = true;
             });
             playBtn.addEventListener('mouseleave', () => { 
                 targetHover = 0;
-                playBtnHovering = false;
             });
 
             playBtn.addEventListener('click', () => {
                 if (introPlaying) return;
                 introPlaying = true;
                 targetHover = 0;
-                playBtnHovering = false;
                 
                 // Start audio
                 if (currentAudio) currentAudio.play().catch(() => {});
@@ -678,96 +405,70 @@
                 const mastheadEl = document.getElementById('acko-masthead');
                 if (mastheadEl) gsap.to(mastheadEl, { opacity: 0, duration: 0.6 });
 
-                // Phase 1: Camera SMOOTHLY approaches and then SLIDES THROUGH "Eli Young" text
-                // Start from overview (z=140), dive into the thick of the letters
+                // Phase 1: Camera orbits and dives INTO the Hypercube
                 tl.to({}, {
-                    duration: 7,
+                    duration: 6,
                     onUpdate: function() {
                         const p = this.progress();
                         
-                        // Smoothly transition from starting position (z=140) down to close range (z=20)
-                        const zDepth = 140 - p * 120; // 140 -> 20
-                        camera.position.z = zDepth;
+                        // Z transitions from 140 -> 10 (inside the structure)
+                        camera.position.z = 140 - p * 130;
                         
-                        // Slide horizontally across the letters as we get closer
-                        const textWidth = 60; 
-                        // Start centered (x=0), start sweeping right to left as we get closer
-                        camera.position.x = (p * textWidth * 0.8) - (p * p * textWidth * 1.5); 
+                        // Sweeping arc via X
+                        camera.position.x = Math.sin(p * Math.PI) * 40;
                         
-                        camera.position.y = Math.sin(p * Math.PI) * 6; // gentle vertical arc
+                        // Look at center
+                        camera.lookAt(0, 0, 0);
                         
-                        // Look slightly ahead of where we're going, but start centered
-                        const lookX = camera.position.x - (p * 15);
-                        const lookY = camera.position.y + Math.sin(p * Math.PI * 2) * 5;
-                        camera.lookAt(lookX * p, lookY * p, 0); // interpolate look from 0,0,0
-                        
-                        camera.fov = 55 + p * 15; // Widen FOV as we enter for speed feeling
+                        camera.fov = 55 + p * 30; // speed feeling
                         camera.updateProjectionMatrix();
                         
-                        // Bring fog close as camera enters geometry — creates depth atmosphere
                         if (scene.fog) {
-                            scene.fog.near = 150 - p * 120;  // 150 -> 30
-                            scene.fog.far = 600 - p * 500;   // 600 -> 100
+                            scene.fog.near = 150 - p * 120;
+                            scene.fog.far = 600 - p * 400;
                         }
-                        
-                        // Gentle camera roll banking into the turn
+
+                        // Gentle camera roll
                         camera.rotation.z = Math.sin(p * Math.PI) * 0.15;
                     },
                     ease: "power2.inOut"
                 });
 
-                // Phase 2: Camera flies THROUGH ribbon geometry (song duration)
-                // Acko-style: camera looks AHEAD along its serpentine path
+                // Phase 2: Hyper-spin and inner traversal (song duration)
                 tl.to({}, {
-                    duration: Math.max(songDuration - 16, 25),
+                    duration: Math.max(songDuration - 11, 20),
                     onUpdate: function() {
                         const p = this.progress();
+                        // While inside, do crazy camera maneuvers synced to music 
+                        camera.position.x = Math.sin(p * Math.PI * 10) * 15;
+                        camera.position.y = Math.cos(p * Math.PI * 8) * 15;
+                        camera.position.z = 10 + Math.sin(p * Math.PI * 6) * 15;
                         
-                        if (masterCameraPath) {
-                            const point = masterCameraPath.getPointAt(p);
-                            camera.position.copy(point);
-                            
-                            // Look AHEAD along the flight path (like flying a drone)
-                            // Small lookahead = smoother turns, large = snappier direction changes
-                            const lookP = Math.min(p + 0.02, 0.999);
-                            const lookTarget = masterCameraPath.getPointAt(lookP);
-                            
-                            // Add a gentle vertical offset so we're not staring directly down the path
-                            // This creates a slight "looking up/down" that shows more geometry
-                            lookTarget.y += Math.sin(p * 4) * 5;
-                            lookTarget.x += Math.cos(p * 3) * 3;
-                            camera.lookAt(lookTarget);
-                            
-                            // Cinematic camera roll — gentle banking into turns
-                            camera.rotation.z = Math.sin(p * 15) * 0.08;
-                            
-                            // Wider FOV for immersion — oscillate gently
-                            camera.fov = 70 + Math.sin(p * 5) * 8;
-                            camera.updateProjectionMatrix();
-                            
-                            // Push fog very far during fly-through (fog was washing everything out)
-                            if (scene.fog) {
-                                scene.fog.near = 200;
-                                scene.fog.far = 800;
-                            }
+                        const lookX = Math.cos(p * Math.PI * 12) * 5;
+                        const lookY = Math.sin(p * Math.PI * 14) * 5;
+                        camera.lookAt(lookX, lookY, 0);
+                        
+                        camera.rotation.z += Math.sin(p * Math.PI * 20) * 0.05;
+
+                        if (scene.fog) {
+                            scene.fog.near = 50;
+                            scene.fog.far = 200;
                         }
                     },
                     ease: "none"
                 });
 
-                // Phase 3: Pull back and exit (5 seconds)
+                // Phase 3: Pull back and exit
                 tl.to({}, {
                     duration: 5,
                     onUpdate: function() {
                         const p = this.progress();
                         targetHover = -3.0 * p;
+                        camera.position.z = 15 + p * 125;
+                        camera.position.x = Math.sin((1-p) * 4) * 50;
                         
-                        camera.position.z = 40 + p * 300;
-                        camera.position.x = Math.sin(p * 4) * 50 * p;
-                        camera.position.y = Math.cos(p * 4) * 25 * p;
                         camera.lookAt(0, 0, 0);
-                        camera.rotation.z = p * 1.2;
-                        camera.fov = 75 - p * 20;
+                        camera.fov = 85 - p * 30;
                         camera.updateProjectionMatrix();
 
                         if (p > 0.3) {
@@ -839,16 +540,9 @@
                         if (scrollStopMsg) scrollStopMsg.classList.remove('active');
                     }
                     
-                    if (canvas) {
-                        // Ribbons slide UP and LEFT within the 3D space for parallax
-                        ribbonsGroup.position.x = -p * 80;
-                        ribbonsGroup.position.y = p * 40;
-                        ribbonsGroup.position.z = -p * 60;
-                        bgPlane.position.z = -300 - (p * 200);
-                        // Slight rotation as it slides away
-                        ribbonsGroup.rotation.x = p * 0.1;
-                        ribbonsGroup.rotation.y = -p * 0.2;
-                    }
+                    // We no longer move the canvas items offscreen physically, 
+                    // since the canvas uses position: fixed and z-index: 0
+                    // it stays in the background naturally while scrolling.
                     if (introOverlay) {
                         introOverlay.style.pointerEvents = (p > 0.2) ? 'none' : 'auto';
                     }
@@ -856,22 +550,24 @@
                     // SCROLL BACK UP — reset everything to initial state
                     if (p < 0.01 && wasScrolledDown) {
                         wasScrolledDown = false;
-                        // Reset ribbon positions
-                        ribbonsGroup.position.set(0, 0, 0);
-                        ribbonsGroup.rotation.set(0, 0, 0);
-                        bgPlane.position.z = -300;
+                        // Reset geometry
+                        hypercubeGroup.position.set(0, 0, 0);
+                        hypercubeGroup.rotation.set(0, 0, 0);
+                        bgPlane.position.z = -150;
                         // Reset camera
                         camera.position.set(0, 0, 140);
                         camera.lookAt(0, 0, 0);
                         camera.fov = 55;
                         camera.updateProjectionMatrix();
-                        // Show canvas and overlay
+                        // Show canvas and overlay (display was set none after intro completes)
                         if (canvas) {
+                            canvas.style.display = 'block';
                             canvas.style.pointerEvents = 'auto';
                             canvas.style.transform = 'none';
                             canvas.style.opacity = '1';
                         }
                         if (introOverlay) {
+                            introOverlay.style.display = 'block';
                             introOverlay.style.pointerEvents = 'auto';
                             introOverlay.classList.remove('playing');
                             introOverlay.style.transform = 'none';
@@ -917,8 +613,8 @@
         if (styleSelect) {
             styleSelect.addEventListener('change', (e) => {
                 const isWireframe = e.target.value === 'wireframe';
-                ribbonsGroup.children.forEach(mesh => {
-                    if (mesh.material) mesh.material.wireframe = isWireframe;
+                [instancedNodes, instancedEdges].forEach(mesh => {
+                    if (mesh && mesh.material) mesh.material.wireframe = isWireframe;
                 });
             });
         }
@@ -938,69 +634,104 @@
             // Compute play button world target for sucking effect
             const playTarget = getPlayBtnTarget();
 
-            // Animate ALL ribbons (letter + chaos)
-            ribbonsGroup.children.forEach((mesh, idx) => {
-                const geo = mesh.geometry;
-                const pos = geo.attributes.position;
-                const orig = geo.userData.origPositions;
+            // Hypercube 4D rotation & update
+            angleXY += 0.003;
+            angleXZ += 0.002;
+            angleXW += introPlaying ? 0.015 : 0.005; 
+            angleZW += 0.004;
 
-                if (pos && orig) {
-                    const isLetter = idx < letterRibbons.length;
-                    // MUCH gentler breathing — acko ribbons barely move when idle
-                    const noiseScale = isLetter ? 0.3 : 0.8;
-                    const noiseSpeed = isLetter ? 0.4 : 0.3;
+            const wDistance = 100;
+            for (let i = 0; i < 16; i++) {
+                let p = Object.assign({}, nodes4D[i]);
+                
+                // Rotate XY
+                let x = p.x * Math.cos(angleXY) - p.y * Math.sin(angleXY);
+                let y = p.x * Math.sin(angleXY) + p.y * Math.cos(angleXY);
+                p.x = x; p.y = y;
 
-                    for (let i = 0; i < pos.count; i++) {
-                        const ox = orig[i * 3];
-                        const oy = orig[i * 3 + 1];
-                        const oz = orig[i * 3 + 2];
+                // Rotate XZ
+                x = p.x * Math.cos(angleXZ) - p.z * Math.sin(angleXZ);
+                let z = p.x * Math.sin(angleXZ) + p.z * Math.cos(angleXZ);
+                p.x = x; p.z = z;
+                
+                // Rotate XW
+                x = p.x * Math.cos(angleXW) - p.w * Math.sin(angleXW);
+                let w = p.x * Math.sin(angleXW) + p.w * Math.cos(angleXW);
+                p.x = x; p.w = w;
 
-                        // Very subtle organic breathing — keeps letters readable
-                        const nx = ox + Math.sin(time * noiseSpeed + idx * 0.15 + i * 0.002) * noiseScale;
-                        const ny = oy + Math.cos(time * noiseSpeed + idx * 0.15 + i * 0.003) * noiseScale;
-                        const nz = oz + Math.sin(time * noiseSpeed * 1.5 + idx * 0.5 + i * 0.001) * noiseScale * 1.5;
+                // Rotate ZW
+                z = p.z * Math.cos(angleZW) - p.w * Math.sin(angleZW);
+                w = p.z * Math.sin(angleZW) + p.w * Math.cos(angleZW);
+                p.z = z; p.w = w;
 
-                        if (currentHover > 0.01 && !introPlaying) {
-                            // ACKO-STYLE: Ribbons STRETCH toward the play button.
-                            // Close vertices get pulled hard, far vertices stay anchored.
-                            const intensity = Math.pow(currentHover, 0.8);
-                            const dx = playTarget.x - nx;
-                            const dy = playTarget.y - ny;
-                            const dz = playTarget.z - nz;
-                            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                            
-                            // Key: proximity-based pull. Closer = more pull. Far = anchored.
-                            // maxReach defines the radius. Beyond this, vertices don't move.
-                            const maxReach = 200;
-                            const proximity = Math.max(0, 1 - dist / maxReach);
-                            // Cubic ramp: close vertices snap hard, mid-range stretches, far stays put
-                            const pull = intensity * proximity * proximity * proximity;
-                            
-                            pos.setXYZ(i, 
-                                nx + dx * pull * 0.95,
-                                ny + dy * pull * 0.95, 
-                                nz + dz * pull * 0.85
-                            );
-                        } else if (currentHover < -0.01) {
-                            // Explosion outward
-                            const push = Math.abs(currentHover);
-                            pos.setXYZ(i,
-                                nx + nx * push * 1.2,
-                                ny + ny * push * 1.2,
-                                nz + push * 300
-                            );
-                        } else {
-                            pos.setXYZ(i, nx, ny, nz);
-                        }
-                    }
-                    pos.needsUpdate = true;
+                // Stereographic projection
+                let projW = 1 / (wDistance - p.w); 
+                let scale = projW * 250; 
+                origProjected[i].set(p.x * scale, p.y * scale, p.z * scale);
+            }
+
+            // Magnetic SUCK towards play button
+            for (let i = 0; i < 16; i++) {
+                let px = origProjected[i].x;
+                let py = origProjected[i].y;
+                let pz = origProjected[i].z;
+
+                if (currentHover > 0.01 && !introPlaying) {
+                    const intensity = Math.pow(currentHover, 0.8);
+                    const dx = playTarget.x - px;
+                    const dy = playTarget.y - py;
+                    const dz = playTarget.z - pz;
+                    const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    
+                    const pullStr = Math.max(0, 1 - dist / 250);
+                    const suck = pullStr * intensity * 0.95; 
+                    
+                    px += dx * suck;
+                    py += dy * suck;
+                    pz += dz * suck;
+                } else if (currentHover < -0.01) {
+                    const push = Math.abs(currentHover);
+                    px += px * push;
+                    py += py * push;
+                    pz += push * 150;
                 }
-            });
+                
+                projected3D[i].set(px, py, pz);
+                
+                dummy.position.copy(projected3D[i]);
+                dummy.scale.set(1, 1, 1);
+                dummy.updateMatrix();
+                instancedNodes.setMatrixAt(i, dummy.matrix);
+            }
+            instancedNodes.instanceMatrix.needsUpdate = true;
 
-            // Smooth rotation (only when not in cinematic mode)
+            // Edge updates
+            edges.forEach((edge, idx) => {
+                const v1 = projected3D[edge[0]];
+                const v2 = projected3D[edge[1]];
+                
+                dummy.position.copy(v1).lerp(v2, 0.5);
+                const direction = new THREE.Vector3().subVectors(v2, v1);
+                if (direction.lengthSq() > 0.001) {
+                    // Instanced tube looks along Z, so map Z to direction
+                    const axis = new THREE.Vector3(0,0,1);
+                    dummy.quaternion.setFromUnitVectors(axis, direction.normalize());
+                }
+                const dist = v1.distanceTo(v2);
+                dummy.scale.set(1, dist, 1); // Because cylinder goes along Y initially, wait we rotated it X=PI/2 so Z.
+                // Wait! CylinderGeometry rotated X by PI/2 aligns it on Z! 
+                // So scaling Z stretches its length. Wait, original height was Y. Scale Z!
+                // Actually scale is along Z!
+                dummy.scale.set(1, 1, dist);
+                dummy.updateMatrix();
+                instancedEdges.setMatrixAt(idx, dummy.matrix);
+            });
+            instancedEdges.instanceMatrix.needsUpdate = true;
+
+            // Smooth rotation
             if (!introPlaying) {
-                ribbonsGroup.rotation.y += (rotationY - ribbonsGroup.rotation.y) * 0.05;
-                ribbonsGroup.rotation.x += (rotationX - ribbonsGroup.rotation.x) * 0.05;
+                hypercubeGroup.rotation.y += (rotationY - hypercubeGroup.rotation.y) * 0.05;
+                hypercubeGroup.rotation.x += (rotationX - hypercubeGroup.rotation.x) * 0.05;
             }
 
             renderer.render(scene, camera);
@@ -1016,9 +747,9 @@
 
         // Store scene reference for theme updates
         ackoScene = { 
-            scene, renderer, camera, ribbonsGroup, bgPlane, bgMaterial,
-            ambientLight, mouseLight, dirLight, dirLight2, dirLight3, themeColors, 
-            buildStripeBg, stripeTex, letterRibbons, chaosRibbons
+            scene, renderer, camera, hypercubeGroup, instancedNodes, instancedEdges,
+            bgPlane, bgMaterial, ambientLight, mouseLight, dirLight, dirLight2, dirLight3, themeColors, 
+            buildStripeBg, stripeTex
         };
     };
 
@@ -1066,15 +797,17 @@
                     ackoScene.dirLight.intensity = tc.dirIntensity;
                 }
 
-                // Ribbon colors
-                ackoScene.ribbonsGroup.children.forEach((mesh, idx) => {
-                    if (mesh.material) {
-                        mesh.material.color.set(tc.palette[idx % tc.palette.length]);
-                        mesh.material.roughness = tc.ribbonRoughness;
-                        mesh.material.metalness = tc.ribbonMetalness;
-                        mesh.material.needsUpdate = true;
-                    }
-                });
+                // Theme nodes and edges
+                if (ackoScene.instancedNodes) {
+                    ackoScene.instancedNodes.material.color.set(tc.palette[1]);
+                    ackoScene.instancedNodes.material.emissive.set(tc.palette[1]);
+                    ackoScene.instancedNodes.material.needsUpdate = true;
+                }
+                if (ackoScene.instancedEdges) {
+                    ackoScene.instancedEdges.material.color.set(tc.palette[4]);
+                    ackoScene.instancedEdges.material.emissive.set(tc.palette[4]);
+                    ackoScene.instancedEdges.material.needsUpdate = true;
+                }
             }
 
             // Update Hypercube scene
@@ -1264,9 +997,9 @@
                 if (currentAudio) {
                     currentAudio.volume = Math.max(0, 1 - progress);
                     if (progress > 0.8) {
-                        introOverlay.classList.add('hidden');
-                        songPopup.classList.remove('active');
-                    } else {
+                        if (introOverlay) introOverlay.classList.add('hidden');
+                        if (songPopup) songPopup.classList.remove('active');
+                    } else if (introOverlay) {
                         introOverlay.classList.remove('hidden');
                     }
                 }
