@@ -860,17 +860,24 @@
                         const nz = oz + Math.sin(time * noiseSpeed * 1.5 + idx * 0.5 + i * 0.001) * noiseScale * 1.5;
 
                         if (currentHover > 0.01 && !introPlaying) {
-                            // "SUCKING" into play button — SHARP CONVERGENCE like acko
-                            const intensity = Math.pow(currentHover, 1.2);
+                            // ACKO-STYLE: Ribbons STRETCH toward the play button.
+                            // Close vertices get pulled hard, far vertices stay anchored.
+                            const intensity = Math.pow(currentHover, 0.8);
                             const dx = playTarget.x - nx;
                             const dy = playTarget.y - ny;
                             const dz = playTarget.z - nz;
                             const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                            const falloff = Math.min(1, 350 / (dist + 1));
-                            const pull = intensity * falloff;
+                            
+                            // Key: proximity-based pull. Closer = more pull. Far = anchored.
+                            // maxReach defines the radius. Beyond this, vertices don't move.
+                            const maxReach = 200;
+                            const proximity = Math.max(0, 1 - dist / maxReach);
+                            // Cubic ramp: close vertices snap hard, mid-range stretches, far stays put
+                            const pull = intensity * proximity * proximity * proximity;
+                            
                             pos.setXYZ(i, 
-                                nx + dx * pull * 0.92,
-                                ny + dy * pull * 0.92, 
+                                nx + dx * pull * 0.95,
+                                ny + dy * pull * 0.95, 
                                 nz + dz * pull * 0.85
                             );
                         } else if (currentHover < -0.01) {
