@@ -133,6 +133,17 @@
         return Math.exp(-x * x);
     }
 
+    function smoothstep(edge0, edge1, x) {
+        const t = Math.max(0, Math.min(1, (x - edge0) / Math.max(1e-6, edge1 - edge0)));
+        return t * t * (3 - 2 * t);
+    }
+
+    function chapterWeight(t01, start, end, feather) {
+        const a = smoothstep(start - feather, start + feather, t01);
+        const b = 1 - smoothstep(end - feather, end + feather, t01);
+        return Math.max(0, Math.min(1, a * b));
+    }
+
     /** 0..1 over estimated song length */
     function songProgress01() {
         if (!audioEl || !musicPlaying) return 0;
@@ -142,19 +153,29 @@
     }
 
     /**
-     * Weights for narrative beats — stronger overlap with explicit song-time “acts”
-     * so the story arc tracks playback position, not only the live spectrum.
+     * Story-first chapters:
+     * 1) Lock In (focus lock) -> 2) Chicken/Lifecycle -> 3) Egg+ML scan/hatch
+     * -> 4) AlgoArena syntax/operator -> 5) Mosquito/sharpshooter EPG + ML.
      */
     function narrativeWeights(t01) {
-        const sweep = 0.82 + 0.18 * Math.sin(t01 * Math.PI * 2 * 5);
-        const bridge = 0.75 + 0.25 * Math.sin(t01 * Math.PI * 2 * 2.5);
-        const cresc = Math.min(1, 0.3 + 1.4 * bell(t01, 0.48, 0.22));
+        const feather = 0.05;
+        const wLockIn = chapterWeight(t01, 0.00, 0.18, feather);
+        const wChicken = chapterWeight(t01, 0.16, 0.36, feather);
+        const wEggMl = chapterWeight(t01, 0.34, 0.58, feather);
+        const wAlgo = chapterWeight(t01, 0.56, 0.78, feather);
+        const wMosq = chapterWeight(t01, 0.76, 1.00, feather);
+        const ph = Math.sin(t01 * Math.PI * 2 * 6) * 0.08;
         return {
-            insect: (bell(t01, 0.1, 0.12) + bell(t01, 0.52, 0.18) * 0.45 + bell(t01, 0.78, 0.1) * 0.2) * sweep * bridge,
-            egg: (bell(t01, 0.28, 0.14) + bell(t01, 0.62, 0.2) * 0.35) * cresc * bridge,
-            hatch: (bell(t01, 0.52, 0.11) + bell(t01, 0.72, 0.12) * 0.5) * (0.85 + 0.15 * sweep) * cresc,
-            ml: (bell(t01, 0.68, 0.14) + bell(t01, 0.88, 0.08)) * sweep,
-            products: bell(t01, 0.86, 0.1) * (0.9 + 0.1 * Math.sin(t01 * Math.PI * 2 * 2))
+            // Final insect/EPG story chapter is explicit and dominant near track end.
+            insect: Math.max(0, wMosq * 1.1 + wEggMl * 0.18 + ph),
+            // Chicken + egg lifecycle occupies early-mid track.
+            egg: Math.max(0, wChicken * 0.95 + wEggMl * 0.88 + wLockIn * 0.12),
+            // Hatch is mostly in egg+ML chapter and late mosquito chapter.
+            hatch: Math.max(0, wEggMl * 1.05 + wMosq * 0.22 + Math.max(0, ph)),
+            // ML appears in egg+ML then intensifies in mosquito EPG chapter.
+            ml: Math.max(0, wEggMl * 0.72 + wMosq * 0.9 + wAlgo * 0.22),
+            // Product glyph chapter blends Lock In then AlgoArena.
+            products: Math.max(0, wLockIn * 0.85 + wAlgo * 1.0 + wMosq * 0.12)
         };
     }
 
@@ -708,6 +729,8 @@
             eggMesh.rotation.x += Math.sin(time * 0.4) * 0.001 + my * 0.006;
             const pulse = 1 + bass * 0.09 + treble * 0.05 + sub * 0.06 + (musicPlaying ? 0.04 * Math.sin(tSong * Math.PI * 2 * 6) : 0);
             eggMesh.scale.set(1.12 * pulse, 1.52 * pulse, 1.05 * pulse);
+            eggMesh.material.transparent = false;
+            eggMesh.material.opacity = 1;
 
             const em = eggMesh.material;
             const hue = (hsiPhase * 0.08 + wEgg * 0.14 + treble * 0.18 + (musicPlaying ? tSong * 0.12 : 0)) % 1;
@@ -721,19 +744,24 @@
             eggWire.material.opacity = (themeLight ? 0.22 : 0.35) * (1 - hatchAmount * 0.45) + treble * 0.15;
         }
 
-        const showSplit = hatchAmount > 0.35;
+        const showSplit = hatchAmount > 0.45 && wHatch > 0.34;
         if (eggTop && eggBot && eggMesh) {
             eggTop.visible = showSplit;
             eggBot.visible = showSplit;
-            eggMesh.visible = !showSplit;
-            if (eggWire) eggWire.visible = !showSplit;
+            // Keep the core shell visible to avoid intermittent “opacity drop” artifacts.
+            eggMesh.visible = true;
+            if (eggWire) eggWire.visible = true;
             if (showSplit) {
                 eggTop.scale.copy(eggMesh.scale);
                 eggBot.scale.copy(eggMesh.scale);
                 eggTop.rotation.copy(eggMesh.rotation);
                 eggBot.rotation.copy(eggMesh.rotation);
+                eggTop.material.transparent = false;
+                eggTop.material.opacity = 1;
                 eggTop.material.emissive.copy(eggMesh.material.emissive);
                 eggTop.material.emissiveIntensity = eggMesh.material.emissiveIntensity;
+                eggBot.material.transparent = false;
+                eggBot.material.opacity = 1;
                 eggBot.material.emissive.copy(eggMesh.material.emissive);
                 eggBot.material.emissiveIntensity = eggMesh.material.emissiveIntensity;
                 const gap = hatchAmount * 0.35;
