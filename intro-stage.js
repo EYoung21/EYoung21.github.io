@@ -41,6 +41,13 @@
     let rimLight;
     let time = 0;
     let mouseX = 0, mouseY = 0;
+    let dragYaw = 0;
+    let dragPitch = 0;
+    let dragYawVel = 0;
+    let dragPitchVel = 0;
+    let dragActive = false;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
     let bass = 0, mid = 0, treble = 0;
     let bassPrev = 0;
     let sub = 0;
@@ -845,17 +852,30 @@
             rimLight.intensity = (themeLight ? 0.4 : 0.65) * (1 + beatFlash * 0.5 + wHatch * 0.3);
         }
 
+        if (!dragActive) {
+            dragYaw += dragYawVel;
+            dragPitch += dragPitchVel;
+            dragYawVel *= 0.92;
+            dragPitchVel *= 0.9;
+            dragPitch = Math.max(-0.5, Math.min(0.5, dragPitch));
+            if (Math.abs(dragYawVel) < 0.00002) dragYawVel = 0;
+            if (Math.abs(dragPitchVel) < 0.00002) dragPitchVel = 0;
+        }
+
+        const dragX = Math.sin(dragYaw) * 0.95;
+        const dragY = -dragPitch * 0.7;
+        const dragZ = (1 - Math.cos(dragYaw)) * 0.35 + Math.abs(dragPitch) * 0.12;
         const musicZ = musicPlaying && !prefersReducedMotion ? Math.sin(tSong * Math.PI * 2 * 3) * 0.14 + songArc * 0.08 : 0;
-        const targetZ = baseCameraZ + scrollHandoff01 * 0.85 + musicZ;
-        const targetY = 0.15 + my * 0.22;
-        const targetX = mx * 0.35;
+        const targetZ = baseCameraZ + scrollHandoff01 * 0.85 + musicZ + dragZ;
+        const targetY = 0.15 + my * 0.22 + dragY;
+        const targetX = mx * 0.35 + dragX;
         if (camera) {
             camera.position.x += (targetX - camera.position.x) * 0.04;
             camera.position.y += (targetY - camera.position.y) * 0.04;
             camera.position.z += (targetZ - camera.position.z) * 0.06;
             camera.lookAt(
-                Math.sin(tSong * Math.PI * 2 * 2) * 0.04 * (musicPlaying ? 1 : 0),
-                -0.05 + wEgg * 0.05 + (musicPlaying ? Math.sin(tSong * Math.PI * 2 * 8) * 0.07 : 0),
+                Math.sin(tSong * Math.PI * 2 * 2) * 0.04 * (musicPlaying ? 1 : 0) + dragX * 0.15,
+                -0.05 + wEgg * 0.05 + (musicPlaying ? Math.sin(tSong * Math.PI * 2 * 8) * 0.07 : 0) + dragY * 0.16,
                 0
             );
         }
@@ -1024,6 +1044,39 @@
         mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     }
 
+    function onDragStart(e) {
+        if (!canvasEl) return;
+        dragActive = true;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+        if (typeof canvasEl.setPointerCapture === 'function') {
+            try { canvasEl.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        }
+    }
+
+    function onDragMove(e) {
+        onPointerMove(e);
+        if (!dragActive) return;
+        const dx = e.clientX - lastPointerX;
+        const dy = e.clientY - lastPointerY;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+        const sens = isMobile ? 0.0032 : 0.0024;
+        dragYaw += dx * sens;
+        dragPitch += dy * sens * 0.85;
+        dragPitch = Math.max(-0.48, Math.min(0.48, dragPitch));
+        dragYawVel = dx * sens;
+        dragPitchVel = dy * sens * 0.85;
+    }
+
+    function onDragEnd(e) {
+        dragActive = false;
+        if (!canvasEl) return;
+        if (typeof canvasEl.releasePointerCapture === 'function') {
+            try { canvasEl.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        }
+    }
+
     document.addEventListener('visibilitychange', () => {
         tabHidden = document.hidden;
     });
@@ -1036,6 +1089,11 @@
         pickPlaylist().then(() => {});
 
         document.addEventListener('mousemove', onPointerMove, { passive: true });
+        canvasEl.addEventListener('pointerdown', onDragStart);
+        canvasEl.addEventListener('pointermove', onDragMove);
+        canvasEl.addEventListener('pointerup', onDragEnd);
+        canvasEl.addEventListener('pointercancel', onDragEnd);
+        canvasEl.addEventListener('pointerleave', onDragEnd);
         window.addEventListener('resize', onResize);
 
         playBtn?.addEventListener('click', onPlayClick);
