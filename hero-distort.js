@@ -461,6 +461,57 @@
         }
     }
 
+    function renderPointerWarp(now, amp) {
+        if (state.pointerX < -1000 || state.pointerY < -1000) return;
+        const px = state.pointerX;
+        const py = state.pointerY;
+        if (px < 0 || py < 0 || px > state.w || py > state.h) return;
+
+        const pointerAge = now - state.lastMoveAt;
+        const pointerHot = Math.max(0, 1 - pointerAge / 900);
+        if (pointerHot <= 0.02 && !state.playing) return;
+
+        const tile = state.w < 900 ? 20 : 26;
+        const radius = Math.min(state.w * 0.36, state.playing ? 300 : 220);
+        const minX = Math.max(0, Math.floor((px - radius) / tile) * tile);
+        const maxX = Math.min(state.w, Math.ceil((px + radius) / tile) * tile);
+        const minY = Math.max(0, Math.floor((py - radius) / tile) * tile);
+        const maxY = Math.min(state.h, Math.ceil((py + radius) / tile) * tile);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.08 + pointerHot * (state.playing ? 0.28 : 0.16);
+        for (let y = minY; y < maxY; y += tile) {
+            for (let x = minX; x < maxX; x += tile) {
+                const cx = x + tile * 0.5;
+                const cy = y + tile * 0.5;
+                const dx = cx - px;
+                const dy = cy - py;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > radius) continue;
+                const t = 1 - dist / radius;
+                const swirl = Math.sin(now * 0.004 + cx * 0.03 + cy * 0.02) * t;
+                const pull = (state.playing ? 1.3 : 0.75) * (0.8 + state.bands.spectralFlux * 1.6 + state.bands.beatFlash * 1.4);
+                const ox = (dx * 0.02 + dy * 0.05) * t * amp * 0.12 * pull + swirl * amp * 0.08;
+                const oy = (dy * 0.02 - dx * 0.05) * t * amp * 0.11 * pull - swirl * amp * 0.06;
+                const tw = Math.min(tile, state.w - x);
+                const th = Math.min(tile, state.h - y);
+                ctx.drawImage(
+                    srcCanvas,
+                    x * state.dpr,
+                    y * state.dpr,
+                    tw * state.dpr,
+                    th * state.dpr,
+                    x + ox,
+                    y + oy,
+                    tw,
+                    th
+                );
+            }
+        }
+        ctx.restore();
+    }
+
     function render(now) {
         drawSource();
         distortStep(now);
@@ -479,6 +530,7 @@
             const dy = (slices[i].dy + Math.cos(i * 0.05 + now * 0.0032) * (state.playing ? state.bands.air * 3.2 + state.beatShock * 2.2 : 0.2)) * amp * 0.055;
             ctx.drawImage(srcCanvas, sx * state.dpr, 0, w * state.dpr, state.h * state.dpr, dx, dy, w, state.h);
         }
+        renderPointerWarp(now, amp);
         applyDissolveMask();
         requestAnimationFrame(render);
     }
