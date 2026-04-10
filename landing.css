@@ -1419,8 +1419,8 @@ body.intro-play-active .intro-stage::after {
     inset: 0;
     z-index: 2;
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(12, 1fr);
     opacity: 0;
     pointer-events: none;
 }
@@ -1442,8 +1442,8 @@ body.intro-play-active .intro-stage::after {
 }
 @media (max-width: 768px) {
     .hero-grid-dissolve {
-        grid-template-columns: repeat(8, 1fr);
-        grid-template-rows: repeat(12, 1fr);
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: repeat(18, 1fr);
     }
 }
 

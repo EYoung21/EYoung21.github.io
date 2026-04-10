@@ -395,22 +395,14 @@
 
         if (!grid.childElementCount) {
             const mobile = window.matchMedia('(max-width: 768px)').matches;
-            const cols = mobile ? 8 : 12;
-            const rows = mobile ? 12 : 8;
+            const cols = mobile ? 12 : 20;
+            const rows = mobile ? 18 : 12;
             const total = cols * rows;
             for (let i = 0; i < total; i += 1) {
                 const cell = document.createElement('span');
                 cell.className = 'grid-cell';
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                const waveDelay = row * 24 + col * 14 + Math.floor(Math.random() * 80);
-                const xJitter = Math.round((Math.random() - 0.5) * 20);
-                const yJitter = -12 - Math.round(Math.random() * 22);
-                const order = (waveDelay / (rows * 24 + cols * 14 + 80));
-                cell.style.setProperty('--delay', String(waveDelay));
-                cell.style.setProperty('--x-jitter', `${xJitter}px`);
-                cell.style.setProperty('--y-jitter', `${yJitter}px`);
-                cell.dataset.order = String(Math.max(0, Math.min(1, order)));
+                const order = (Math.sin(i * 127.1 + 311.7) * 43758.5453123);
+                cell.dataset.order = String(order - Math.floor(order));
                 grid.appendChild(cell);
             }
         }
@@ -421,13 +413,13 @@
             grid.classList.toggle('active', d > 0.001 && d < 0.999);
             cells.forEach((cell) => {
                 const order = Number(cell.dataset.order || '0');
-                const local = Math.max(0, Math.min(1, (d - order + 0.18) / 0.24));
-                const drift = Math.max(0, Math.min(1, d * 1.2));
-                const xJitter = parseFloat(getComputedStyle(cell).getPropertyValue('--x-jitter')) || 0;
-                const yJitter = parseFloat(getComputedStyle(cell).getPropertyValue('--y-jitter')) || -12;
-                cell.style.opacity = String(local * (1 - d * 0.12));
-                cell.style.transform = `translate3d(${(xJitter * local * drift).toFixed(2)}px, ${(yJitter * local * drift).toFixed(2)}px, 0) scale(${(1 - local * 0.18).toFixed(3)})`;
-                cell.style.filter = `blur(${(local * 1.8).toFixed(2)}px)`;
+                if (d > order) {
+                    cell.style.opacity = '0';
+                } else {
+                    cell.style.opacity = '1';
+                }
+                cell.style.transform = 'translate3d(0, 0, 0) scale(1)';
+                cell.style.filter = 'blur(0px)';
             });
         };
 

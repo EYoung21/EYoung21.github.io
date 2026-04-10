@@ -277,17 +277,14 @@
         for (let r = 0; r < rows; r += 1) {
             for (let c = 0; c < cols; c += 1) {
                 const i = r * cols + c;
-                const order = (r / rows) * 0.45 + (c / cols) * 0.35 + pseudoRand(i) * 0.2;
+                const order = pseudoRand(i);
                 if (d <= order) continue;
-                const local = Math.max(0, Math.min(1, (d - order) / 0.24));
-                const inset = Math.min(cw, ch) * 0.06 * local;
-                const driftX = (pseudoRand(i + 77) - 0.5) * cw * 0.22 * local;
-                const driftY = (pseudoRand(i + 137) - 0.5) * ch * 0.22 * local;
+                
                 ctx.clearRect(
-                    c * cw + inset + driftX,
-                    r * ch + inset + driftY,
-                    Math.max(0, cw - inset * 2),
-                    Math.max(0, ch - inset * 2)
+                    c * cw - 0.5,
+                    r * ch - 0.5,
+                    cw + 1,
+                    ch + 1
                 );
             }
         }
