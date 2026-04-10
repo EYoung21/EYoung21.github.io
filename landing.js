@@ -488,6 +488,7 @@
                     trigger: horizontalWrapper,
                     pin: true,
                     scrub: 1,
+                    start: "center center",
                     end: () => "+=" + horizontalContainer.scrollWidth
                 }
             });
