@@ -75,24 +75,21 @@
             if (i >= bootLines.length) {
                 // Done booting
                 setTimeout(() => {
-                    // GSAP 3D Shatter/Flip out
-                    gsap.to("#terminalWindow", {
-                        rotationX: 45,
-                        rotationY: -20,
-                        z: -500,
-                        scale: 0.8,
-                        opacity: 0,
-                        duration: 1.2,
-                        ease: "power3.in",
-                        onComplete: () => {
-                            terminalLoader.remove();
-                            // TRIGGER WEBGL METAMORPHOSIS!
-                            window.dispatchEvent(new Event('terminalBootComplete'));
-                            document.getElementById('nav')?.classList.add('visible');
-                            bootComplete = true;
-                            animateHero();
-                        }
-                    });
+                    // WebGL Shatter replacement
+                    const terminalWin = document.getElementById("terminalWindow");
+                    if (terminalWin) {
+                        terminalWin.style.opacity = '0';
+                        terminalWin.style.visibility = 'hidden';
+                    }
+                    window.dispatchEvent(new Event('triggerTerminalShatter'));
+                    setTimeout(() => {
+                        terminalLoader.remove();
+                        window.dispatchEvent(new Event('terminalBootComplete'));
+                        const navEl = document.getElementById('nav');
+                        if (navEl) navEl.classList.add('visible');
+                        bootComplete = true;
+                        animateHero();
+                    }, 50);
                 }, 400);
                 return;
             }

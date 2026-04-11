@@ -603,6 +603,11 @@
         buildInsectTrails(scene);
         addSyntaxConstellation(scene);
         addFocusLockObjects(scene);
+        
+        // Precompile shaders to prevent stuttering
+        if (renderer && scene && camera) {
+            renderer.compile(scene, camera);
+        }
     }
 
     function updateThemeScene() {

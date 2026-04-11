@@ -792,6 +792,44 @@
         applyThemePalette();
     });
 
+    window.addEventListener('triggerTerminalShatter', () => {
+        const chapter = chapters[state.chapterIdx] || chapters[0];
+        const numParticles = prefersReducedMotion ? 60 : 350;
+        const cx = state.w / 2;
+        const cy = state.h / 2;
+        
+        state.beatShock = 1.0;
+        state.motion = 450;
+        if (!state.bands) state.bands = {};
+        state.bands.beatFlash = 1.0;
+
+        for (let i = 0; i < numParticles; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 7 + Math.random() * 30;
+            state.particles.push({
+                x: cx + (Math.random() - 0.5) * (state.w * 0.4),
+                y: cy + (Math.random() - 0.5) * (state.h * 0.4),
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1.0 + Math.random() * 1.5,
+                color: Math.random() > 0.25 ? chapter.tint : '#ffffff'
+            });
+        }
+        
+        for (let i = 0; i < tiles.length; i++) {
+            const col = i % tileCols;
+            const row = Math.floor(i / tileCols);
+            const midX = col * TILE + TILE * 0.5;
+            const midY = row * TILE + TILE * 0.5;
+            const dx = midX - cx;
+            const dy = midY - cy;
+            const dist = Math.sqrt(dx*dx + dy*dy) + 1;
+            const force = 3000 / dist;
+            tiles[i].dx += (dx / dist) * force;
+            tiles[i].dy += (dy / dist) * force;
+        }
+    });
+
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     const mo = new MutationObserver(() => applyThemePalette());
