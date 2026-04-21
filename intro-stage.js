@@ -1021,9 +1021,7 @@
             window.dispatchEvent(new CustomEvent('portfolioHeroScroll', { detail: { p, dissolveP, scrolledPast, heroHeight: total } }));
         } catch (e) { /* ignore */ }
 
-        const heroContent = hero.querySelector('.hero-content');
-        const infoReached = heroContent ? heroContent.getBoundingClientRect().top <= window.innerHeight * 0.9 : false;
-        if ((infoReached || dissolveP > 0.86) && musicPlaying && audioEl && !audioEl.paused) {
+        if (dissolveP >= 0.99 && musicPlaying && audioEl && !audioEl.paused) {
             stopTrackFromScroll();
         }
     }
