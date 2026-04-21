@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow noisy/internal assets that aren't meaningful for indexing
+Disallow: /music/
+Disallow: /assets/
+
+Sitemap: https://eyoung21.github.io/sitemap.xml

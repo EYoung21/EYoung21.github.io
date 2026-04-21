@@ -1,0 +1,39 @@
+{
+  "name": "Eli Young — Portfolio",
+  "short_name": "Eli Young",
+  "description": "Portfolio of Eli Young — ML Engineer, Researcher, and Co-Founder of AlgoArena.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050505",
+  "theme_color": "#00ff66",
+  "lang": "en-US",
+  "categories": ["portfolio", "developer", "education"],
+  "icons": [
+    {
+      "src": "/imgs/favicon/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/imgs/favicon/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/imgs/favicon/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/imgs/favicon/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

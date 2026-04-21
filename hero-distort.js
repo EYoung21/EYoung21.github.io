@@ -248,13 +248,11 @@
                 d.phase = reset.phase;
             }
             
-            // Decrease transparency (increase alpha base) and add dynamic flash
-            const alphaBase = d.key === dominantKey ? 0.65 : 0.35;
-            const alpha = Math.min(1.0, alphaBase + state.bands.beatFlash * 0.35);
-            
+            const alpha = 1.0;
+
             srcCtx.save();
             if (d.key === dominantKey) {
-                srcCtx.shadowColor = rgb(chapter.tint, alpha);
+                srcCtx.shadowColor = rgb(chapter.tint, 0.55 + state.bands.beatFlash * 0.45);
                 srcCtx.shadowBlur = 10 + state.bands.beatFlash * 25;
             }
             drawChipIcon(srcCtx, d.key, d.x, d.y, d.size, rgb(chapter.tint, alpha), d.key === dominantKey);
