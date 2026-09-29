@@ -1,0 +1,195 @@
+:root {
+  --bg-deep: #070b12;
+  --bg-mid: #0f1a24;
+  --ink: #e8f0e9;
+  --muted: #8aa094;
+  --accent: #3fb950;
+  --accent-dim: #238636;
+  --panel: rgba(7, 11, 18, 0.72);
+  --line: rgba(63, 185, 80, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+#canvas:active {
+  cursor: grabbing;
+}
+
+.brand {
+  position: absolute;
+  top: clamp(1.25rem, 4vw, 2.5rem);
+  left: clamp(1.25rem, 4vw, 2.5rem);
+  z-index: 2;
+  max-width: min(28rem, 80vw);
+  pointer-events: none;
+  animation: fade-up 0.9s ease both;
+}
+
+.eyebrow {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(0.55rem, 1.4vw, 0.7rem);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(63, 185, 80, 0.35);
+  margin-bottom: 0.85rem;
+}
+
+.brand h1 {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(1.35rem, 4.2vw, 2.4rem);
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-shadow:
+    2px 0 0 rgba(63, 185, 80, 0.35),
+    -2px 0 0 rgba(35, 134, 54, 0.25);
+}
+
+.tagline {
+  margin-top: 0.9rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 22rem;
+}
+
+.hud {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.25rem, 4vw, 2.25rem);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  animation: fade-up-center 0.9s 0.15s ease both;
+}
+
+.stats {
+  font-size: 0.95rem;
+  color: var(--muted);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  padding: 0.55rem 1rem;
+  letter-spacing: 0.02em;
+}
+
+.stats #year-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.sep {
+  opacity: 0.45;
+  margin: 0 0.35rem;
+}
+
+.years {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.years button {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.years button:hover {
+  color: var(--ink);
+}
+
+.years button[aria-current="true"] {
+  color: var(--accent);
+  border-color: var(--line);
+  background: var(--panel);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  transform: translate(-50%, calc(-100% - 12px));
+  white-space: nowrap;
+}
+
+.tooltip strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up-center {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 640px) {
+  .tagline {
+    display: none;
+  }
+
+  .brand h1 {
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EYoung21 — GitHub Skyline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="canvas"></canvas>
+
+      <header class="brand">
+        <p class="eyebrow">GitHub Skyline</p>
+        <h1>EYoung21</h1>
+        <p class="tagline">Contribution cityscape · drag to orbit · scroll to zoom</p>
+      </header>
+
+      <div class="hud">
+        <div class="stats" aria-live="polite">
+          <span id="year-label">2026</span>
+          <span class="sep">·</span>
+          <span id="total-label">— contributions</span>
+        </div>
+        <nav class="years" id="years" aria-label="Select year"></nav>
+      </div>
+
+      <div id="tooltip" class="tooltip" hidden></div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="skyline.js?v=5"></script>
+  </body>
+</html>

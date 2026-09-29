@@ -1,0 +1,47 @@
+name: Update skyline preview
+
+on:
+  schedule:
+    # Mondays 06:00 UTC — free on public repos
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "skyline/generate-preview.mjs"
+      - "skyline/fetch.sh"
+      - ".github/workflows/skyline-preview.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch contribution data
+        working-directory: skyline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x fetch.sh
+          ./fetch.sh EYoung21
+
+      - name: Generate preview SVG
+        working-directory: skyline
+        run: node generate-preview.mjs
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add skyline/data skyline/preview.svg
+          if git diff --staged --quiet; then
+            echo "No skyline changes"
+            exit 0
+          fi
+          git commit -m "chore(skyline): refresh contribution data and preview"
+          git push
