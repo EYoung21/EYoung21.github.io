@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supporting Active Learning in Computer Science with Live, Gamified Classroom Quizzes</title>
+    <meta name="description" content="Andy Luu, Eli Young, and Michael Wehar. The Journal of Computing Sciences in Colleges 42(5), 2026. Author's version.">
+    <link rel="canonical" href="https://eyoung21.github.io/papers/ccsc-se-2026-classroom-quizzes.html">
+    <link rel="icon" type="image/png" sizes="32x32" href="/imgs/favicon/favicon-32.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <!-- Google Scholar (Highwire Press) citation tags -->
+    <meta name="citation_title" content="Supporting Active Learning in Computer Science with Live, Gamified Classroom Quizzes">
+    <meta name="citation_author" content="Luu, Andy">
+    <meta name="citation_author_institution" content="AlgoArena">
+    <meta name="citation_author" content="Young, Eli">
+    <meta name="citation_author_institution" content="AlgoArena">
+    <meta name="citation_author" content="Wehar, Michael">
+    <meta name="citation_author_institution" content="AlgoArena">
+    <meta name="citation_author_institution" content="Haverford College">
+    <meta name="citation_publication_date" content="2026">
+    <meta name="citation_journal_title" content="The Journal of Computing Sciences in Colleges">
+    <meta name="citation_publisher" content="Consortium for Computing Sciences in Colleges">
+    <meta name="citation_volume" content="42">
+    <meta name="citation_issue" content="5">
+    <meta name="citation_issn" content="1937-4771">
+    <meta name="citation_language" content="en">
+    <meta name="citation_pdf_url" content="https://eyoung21.github.io/papers/ccsc-se-2026-classroom-quizzes.pdf">
+    <meta name="citation_abstract_html_url" content="https://eyoung21.github.io/papers/ccsc-se-2026-classroom-quizzes.html">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --text-dim: #777;
+            --border: rgba(255,255,255,0.1);
+            --accent: #00ff66;
+            --code-bg: #111;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f5f5f7;
+                --text: #1d1d1f;
+                --text-muted: #55555a;
+                --text-dim: #6e6e73;
+                --border: rgba(0,0,0,0.12);
+                --accent: #15803d;
+                --code-bg: #ffffff;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+        }
+        main { max-width: 760px; margin: 0 auto; padding: 56px 16px 80px; }
+        a { color: var(--accent); }
+        .back {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: clamp(26px, 5vw, 36px);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin: 32px 0 16px;
+        }
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 18px;
+            margin: 40px 0 8px;
+        }
+        .authors { font-size: 17px; margin: 0; }
+        .venue { color: var(--text-muted); margin: 4px 0 0; }
+        .links { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 24px 0 0; }
+        .links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .notice {
+            font-size: 13px;
+            color: var(--text-dim);
+            border-left: 2px solid var(--border);
+            padding-left: 12px;
+            margin: 32px 0 0;
+        }
+        p.abstract { color: var(--text-muted); }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <a class="back" href="/#papers">&larr; eyoung21.github.io</a>
+
+    <h1>Supporting Active Learning in Computer Science with Live, Gamified Classroom Quizzes</h1>
+    <p class="authors">Andy Luu, Eli Young, and Michael Wehar</p>
+    <p class="venue">The Journal of Computing Sciences in Colleges, Vol. 42, No. 5 (2026). Presented at the CCSC Southeastern Conference, East Tennessee State University, October 2026.</p>
+
+    <div class="links">
+        <a href="ccsc-se-2026-classroom-quizzes.pdf">PDF (author's version)</a>
+        <a href="https://dl.acm.org/loi/jcsc" target="_blank" rel="noopener noreferrer">JCSC in the ACM Digital Library</a>
+    </div>
+
+    <p class="notice">&copy; CCSC, (2026). This is the author's version of the work. It is posted here by permission of CCSC for your personal use. Not for redistribution. The definitive version was published in The Journal of Computing Sciences in Colleges, (42, 5, 2026), <a href="http://dl.acm.org/">http://dl.acm.org/</a>.</p>
+
+    <h2>Abstract</h2>
+    <p class="abstract">Active learning measurably improves outcomes in STEM courses: across a meta-analysis of 225 studies, average examination scores rose by about 6% under active learning, and students in traditional lecture courses were 1.5 times more likely to fail. Tools such as Kahoot and Poll Everywhere are widely used to support active learning in classrooms, but they are subject-agnostic and lack question types tailored to computer science, such as code execution or diagram drawing. Platforms such as zyBooks, EdStem, and PrairieLearn support code execution and automated grading, but they are built for asynchronous, self-paced work rather than live, whole-class sessions. In this paper, we present AlgoArena Classroom, a live, gamified classroom platform that offers computer science question types, including coding challenges, code output prediction, time complexity analysis, and whiteboard diagramming, alongside standard multiple-choice and true/false formats. The system is built around a shared, real-time game state that keeps instructor and student views in sync, and supports both automated code execution for grading coding questions and AI-assisted grading for open-ended whiteboard questions. We describe the system's design, implementation, and the trade-offs made in building it, and we report on a first classroom pilot along with early independent adoption.</p>
+
+    <h2>BibTeX</h2>
+<pre>@article{luu2026classroom,
+  title     = {Supporting Active Learning in Computer Science
+               with Live, Gamified Classroom Quizzes},
+  author    = {Luu, Andy and Young, Eli and Wehar, Michael},
+  journal   = {The Journal of Computing Sciences in Colleges},
+  volume    = {42},
+  number    = {5},
+  year      = {2026},
+  publisher = {Consortium for Computing Sciences in Colleges}
+}</pre>
+</main>
+</body>
+</html>

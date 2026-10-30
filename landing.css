@@ -863,6 +863,13 @@ a.exp-company:hover { opacity: 0.7; }
     letter-spacing: 0.04em;
     background: var(--accent-dim);
 }
+.exp-content p.pub-notice {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin: 4px 0 0;
+}
+.pub-notice a { color: inherit; text-decoration: underline; }
 
 /* ── PROJECTS ── */
 .project-featured {
