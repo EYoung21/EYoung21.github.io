@@ -166,14 +166,16 @@
 
         // Counter animation
         document.querySelectorAll('[data-count]').forEach(el => {
-            const target = parseInt(el.dataset.count);
+            const target = parseFloat(el.dataset.count);
+            const decimals = (el.dataset.count.split('.')[1] || '').length;
             gsap.to({ val: 0 }, {
                 val: target,
                 duration: 2,
                 delay: 1,
                 ease: 'power2.out',
                 onUpdate: function() {
-                    el.textContent = Math.floor(this.targets()[0].val).toLocaleString();
+                    const val = this.targets()[0].val;
+                    el.textContent = decimals ? val.toFixed(decimals) : Math.floor(val).toLocaleString();
                 }
             });
         });
