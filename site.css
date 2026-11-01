@@ -177,7 +177,13 @@ cite { font-style: italic; }
     box-shadow: 0 0 0 1px var(--shade);
 }
 .project p { font-size: 1.05rem; margin-bottom: 0.6rem; }
-.project .meta { color: var(--muted); font-size: 0.95rem; margin-bottom: 0.5rem; }
+.project .meta { color: var(--muted); font-size: 0.95rem; margin-bottom: 0.15rem; }
+.project .stack {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+}
 
 /* Plain lists */
 .plain { list-style: none; margin: 0; padding: 0; }
@@ -215,7 +221,7 @@ footer p { margin: 0 0 0.5rem; }
 @media (max-width: 640px) {
     body { font-size: 1.125rem; }
     .page { padding: 1.75rem 1.25rem 3rem; }
-    .top-nav { margin-bottom: 2.25rem; gap: 0.25rem 0.8rem; font-size: 0.9rem; }
+    .top-nav { margin-bottom: 2.25rem; gap: 0.25rem 0.5rem; font-size: 0.84rem; }
     .intro { grid-template-columns: 1fr; }
     .portrait { width: 6rem; height: 6rem; margin-bottom: 1.25rem; grid-row: 1; }
     h1 { font-size: 2.25rem; }
