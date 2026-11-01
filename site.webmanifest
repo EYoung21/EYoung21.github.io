@@ -1,15 +1,17 @@
 {
-  "name": "Eli Young — Portfolio",
+  "name": "Eli Young",
   "short_name": "Eli Young",
-  "description": "Portfolio of Eli Young — ML Engineer, Researcher, and Co-Founder of AlgoArena.",
+  "description": "Eli Young studies how people learn to program with AI models and how to assess it.",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#050505",
-  "theme_color": "#00ff66",
+  "display": "browser",
+  "background_color": "#fbfaf7",
+  "theme_color": "#0b6b3d",
   "lang": "en-US",
-  "categories": ["portfolio", "developer", "education"],
+  "categories": [
+    "education",
+    "personal"
+  ],
   "icons": [
     {
       "src": "/imgs/favicon/favicon-192.png",
