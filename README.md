@@ -2,7 +2,7 @@
 
 Source for [eyoung21.github.io](https://eyoung21.github.io), Eli Young's personal site. Static HTML and CSS served by GitHub Pages; the main page has no JavaScript.
 
-- `index.html`, `site.css`: the site.
+- `index.html`, `site.css`: the site. `tesseract.js` draws the small 4D cube by the name (about 2 KB, no libraries; stops after a few seconds, drag to spin, respects reduced motion).
 - `Eli_Young_CV.pdf`: public CV, built from the academic CV with phone number and town removed.
 - `Eli_Young_Resume.pdf`: public one-page resume, built from the job-search resume with phone number and town removed.
 - `papers/`: author's versions of papers.

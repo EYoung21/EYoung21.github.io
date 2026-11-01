@@ -1,4 +1,4 @@
-/* eyoung21.github.io — one page, no scripts. Light by default, dark follows the system setting. */
+/* eyoung21.github.io — one page; the only script draws the small cube by the name. Light by default, dark follows the system setting. */
 
 :root {
     --bg: #fbfaf7;
@@ -97,6 +97,16 @@ h1 {
     letter-spacing: -0.01em;
     margin: 0 0 0.75rem;
 }
+.tesseract {
+    width: 2.7rem;
+    height: 2.7rem;
+    margin-left: 0.6rem;
+    vertical-align: -0.3rem;
+    color: var(--accent);
+    cursor: grab;
+    touch-action: none;
+}
+.tesseract:active { cursor: grabbing; }
 .lede {
     font-size: 1.45rem;
     line-height: 1.4;
@@ -232,7 +242,7 @@ footer p { margin: 0 0 0.5rem; }
 }
 
 @media print {
-    .top-nav, .portrait { display: none; }
+    .top-nav, .portrait, .tesseract { display: none; }
     body { font-size: 11pt; background: #fff; color: #000; }
     a { color: inherit; text-decoration: none; }
     section { break-inside: avoid-page; }
