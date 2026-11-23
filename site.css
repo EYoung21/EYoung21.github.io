@@ -125,6 +125,36 @@ h1 {
     color: var(--muted);
 }
 
+/* Home page header: photo and icon links on the left, intro on the right */
+.hero {
+    display: grid;
+    grid-template-columns: 12.75rem minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "photo main" "links main";
+    gap: 1.1rem 2.5rem;
+    align-items: start;
+}
+.hero .portrait { grid-area: photo; width: 10rem; height: 10rem; }
+.hero-main { grid-area: main; }
+.hero-main p:last-child { margin-bottom: 0; }
+.link-list {
+    grid-area: links;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+.link-list li { margin: 0 0 0.55rem; }
+.link-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+}
+.link-list a:hover span { text-decoration: underline; text-underline-offset: 0.18em; }
+.icon { width: 1.05rem; height: 1.05rem; flex: none; }
+
 /* Sections */
 section { margin-top: 3.75rem; }
 h2 {
@@ -234,6 +264,11 @@ footer p { margin: 0 0 0.5rem; }
     .top-nav { margin-bottom: 2.25rem; gap: 0.25rem 0.5rem; font-size: 0.84rem; }
     .intro { grid-template-columns: 1fr; }
     .portrait { width: 6rem; height: 6rem; margin-bottom: 1.25rem; grid-row: 1; }
+    .hero { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "photo" "main" "links"; gap: 1.1rem; }
+    .hero .portrait { width: 6rem; height: 6rem; margin-bottom: 0; }
+    .link-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem 1rem; }
+    .link-list li { margin: 0; }
+    .link-list li:first-child { grid-column: 1 / -1; }
     h1 { font-size: 2.25rem; }
     .lede { font-size: 1.3rem; }
     .project { grid-template-columns: 1fr; gap: 0.9rem; }
@@ -242,7 +277,8 @@ footer p { margin: 0 0 0.5rem; }
 }
 
 @media print {
-    .top-nav, .portrait, .tesseract { display: none; }
+    .top-nav, .portrait, .tesseract, .icon { display: none; }
+    .hero { grid-template-areas: "main" "links"; grid-template-columns: 1fr; }
     body { font-size: 11pt; background: #fff; color: #000; }
     a { color: inherit; text-decoration: none; }
     section { break-inside: avoid-page; }
